@@ -10,7 +10,13 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="font-sans">
+    <div className="font-sans relative">
+      <Link
+        href="/reservation"
+        className="fixed bottom-5 right-5 inline-block sm:hidden z-10 bg-black text-white px-3 py-2 rounded-full shadow-xl"
+      >
+        Jetzt reservieren
+      </Link>
       <header className="fixed w-full bg-white shadow z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <img src="/logo.png" alt="WEINZELT" className="w-32 sm:w-40" />
