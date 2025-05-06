@@ -5,6 +5,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import { Divider, Drawer } from '@mui/material';
 import CountdownSection from '@/components/countdown';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import FacebookIcon from '@mui/icons-material/Facebook';
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -13,13 +15,15 @@ export default function Home() {
     <div className="font-sans relative">
       <Link
         href="/reservation"
-        className="fixed bottom-5 right-5 inline-block sm:hidden z-10 bg-black text-white px-3 py-2 rounded-full shadow-xl"
+        className="fixed bottom-5 left-5 inline-block sm:hidden z-10 bg-black text-white px-3 py-2 rounded-full shadow-xl"
       >
         Jetzt reservieren
       </Link>
       <header className="fixed w-full bg-white shadow z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <img src="/logo.png" alt="WEINZELT" className="w-32 sm:w-40" />
+          <Link href="#">
+            <img src="/logo.png" alt="WEINZELT" className="w-32 sm:w-40" />
+          </Link>
           <nav className="hidden md:flex gap-6 items-center">
             <Link href="#vip">VIP</Link>
             <Link href="#gastro">Speisen & Getränke</Link>
@@ -42,29 +46,47 @@ export default function Home() {
           open={menuOpen}
           onClose={() => setMenuOpen(false)}
         >
-          <div className="p-5 flex flex-col gap-4 text-left text-xl min-w-[70vw]">
-            <div className="flex justify-end">
-              <button onClick={() => setMenuOpen(false)}>
-                <CloseIcon fontSize="large" />
-              </button>
+          <div className="p-5 flex flex-col justify-between text-left text-xl min-w-[70vw] h-full">
+            <div className="flex flex-col gap-4">
+              <div className="flex justify-end">
+                <button onClick={() => setMenuOpen(false)}>
+                  <CloseIcon fontSize="large" />
+                </button>
+              </div>
+              <Link href="#vip" onClick={() => setMenuOpen(false)}>
+                VIP
+              </Link>
+              <Divider />
+              <Link href="#gastro" onClick={() => setMenuOpen(false)}>
+                Speisen & Getränke
+              </Link>
+              <Divider />
+              <Link href="#musik" onClick={() => setMenuOpen(false)}>
+                Musik
+              </Link>
+              <Divider />
+              <Link href="#partner" onClick={() => setMenuOpen(false)}>
+                Partner
+              </Link>
+              <Divider />
+              <Link href="/reservation">Tisch reservieren</Link>
             </div>
-            <Link href="#vip" onClick={() => setMenuOpen(false)}>
-              VIP
-            </Link>
-            <Divider />
-            <Link href="#gastro" onClick={() => setMenuOpen(false)}>
-              Speisen & Getränke
-            </Link>
-            <Divider />
-            <Link href="#musik" onClick={() => setMenuOpen(false)}>
-              Musik
-            </Link>
-            <Divider />
-            <Link href="#partner" onClick={() => setMenuOpen(false)}>
-              Partner
-            </Link>
-            <Divider />
-            <Link href="/reservation">Tisch reservieren</Link>
+            <div className="mx-auto flex gap-5 items-center text-4xl">
+              <Link
+                href="https://www.instagram.com/weinzelt.dus/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <InstagramIcon fontSize="inherit" />
+              </Link>
+              <Link
+                href="https://www.facebook.com/weinzelt.dus/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FacebookIcon fontSize="inherit" />
+              </Link>
+            </div>
           </div>
         </Drawer>
       </header>
@@ -299,15 +321,35 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-black text-white text-sm py-6 px-4 text-center">
-        <p>&copy; 2025 Weinzelt GmbH</p>
-        <div className="mt-2">
-          <Link href="/imprint" className="underline mx-2">
-            Impressum
-          </Link>
-          <Link href="/privacy" className="underline mx-2">
-            Datenschutz
-          </Link>
+      <footer className="bg-black text-white text-sm py-6 px-4">
+        <div className="w-full max-w-6xl mx-auto flex gap-5 flex-col sm:flex-row items-center sm:justify-between">
+          <div>
+            <p>&copy; 2025 Weinzelt GmbH</p>
+            <div className="mt-2">
+              <Link href="/imprint" className="underline mr-2">
+                Impressum
+              </Link>
+              <Link href="/privacy" className="underline">
+                Datenschutz
+              </Link>
+            </div>
+          </div>
+          <div className="flex gap-5 items-center text-3xl">
+            <Link
+              href="https://www.instagram.com/weinzelt.dus/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <InstagramIcon fontSize="inherit" />
+            </Link>
+            <Link
+              href="https://www.facebook.com/weinzelt.dus/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <FacebookIcon fontSize="inherit" />
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
