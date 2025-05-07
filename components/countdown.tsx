@@ -41,7 +41,7 @@ export default function CountdownSection() {
   return (
     <section
       id="countdown"
-      className="py-20 bg-gradient-to-tl from-gray-100 to-blue-50 text-black text-center px-4"
+      className="py-20 bg-gradient-to-tr from-gray-100 to-blue-100 text-black text-center px-4"
     >
       <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
         <img src="/logo.png" alt="Logo" className="w-80 h-auto mb-4" />
