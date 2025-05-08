@@ -12,55 +12,60 @@ import {
   DialogActions,
   CircularProgress,
 } from '@mui/material';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
+import { ApiGetReservationDataResponse } from './api/reservationData';
+import Link from 'next/link';
+import { packages, PackageType } from '@/lib/packages';
 
-interface ReservationData {
-  dates: {
-    date: string;
-    dow: string;
-    seatings: {
-      timeslot: string;
-      available: number;
-    }[];
-  }[];
-}
-
-interface PackageOption {
-  name: string;
-  description: string;
-  strikePrice?: number;
-  price: number;
-  image: string;
-}
+type SeatingType =
+  ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
 
 export default function ReservationPage() {
-  const [data, setData] = useState<ReservationData | null>(null);
+  const [data, setData] = useState<ApiGetReservationDataResponse | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
-  const [personCount, setPersonCount] = useState<string>('1');
+  const [selectedSlot, setSelectedSlot] = useState<SeatingType | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<PackageType | null>(
+    null
+  );
+  const [personCount, setPersonCount] = useState<string>('8');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+  const [fetchError, setFetchError] = useState<string>();
 
   useEffect(() => {
-    axios.get('/api/reservations').then((res) => setData(res.data));
-    setIsClient(true);
+    axios
+      .get('/api/reservationData')
+      .then((res) => setData(res.data))
+      .catch((e) => {
+        if (isAxiosError(e)) {
+          if (e.status == 404) {
+            setFetchError(
+              'Im Moment gibt es keine aktiven Veranstaltungen. Probiere es später nochmal.'
+            );
+          } else {
+            setFetchError(
+              'Es ist ein unbekannter Fehler aufgetreten. Versuche es später nochmal.'
+            );
+          }
+        }
+      });
   }, []);
 
   const handleSubmit = async () => {
     setLoading(true);
-    await axios.post('/api/reservations', {
-      date: selectedDate,
-      slot: selectedSlot,
-      package: selectedPackage,
-      personCount,
+    await axios.post('/api/reservationData', {
       name,
       email,
+      packageName: selectedPackage?.name,
+      packageDescription: selectedPackage?.description,
+      packagePrice: selectedPackage?.price,
+      people: Number(personCount),
+      seatingId: selectedSlot?.id,
     });
+
     setSuccess(true);
     setDialogOpen(true);
     setLoading(false);
@@ -68,7 +73,7 @@ export default function ReservationPage() {
     setSelectedDate(null);
     setSelectedSlot(null);
     setSelectedPackage(null);
-    setPersonCount('1');
+    setPersonCount('8');
     setName('');
     setEmail('');
   };
@@ -84,7 +89,7 @@ export default function ReservationPage() {
     }, 300);
   };
 
-  const selectTimeslot = (slot: string) => {
+  const selectTimeslot = (slot: SeatingType) => {
     setSelectedSlot(slot);
     setTimeout(() => {
       document
@@ -93,7 +98,7 @@ export default function ReservationPage() {
     }, 300);
   };
 
-  const selectPackage = (pkg: string) => {
+  const selectPackage = (pkg: PackageType) => {
     setSelectedPackage(pkg);
     setTimeout(() => {
       document
@@ -101,6 +106,19 @@ export default function ReservationPage() {
         ?.scrollIntoView({ behavior: 'smooth' });
     }, 300);
   };
+
+  if (fetchError)
+    return (
+      <Box className="flex flex-col gap-5 text-center justify-center items-center h-screen">
+        <img src="/logo.png" alt="Weinzelt Logo" className="mx-auto h-20" />
+        <Typography variant="h6" gutterBottom>
+          {fetchError}
+        </Typography>
+        <Link href="/" className="underline text-lg">
+          Zurück zur Startseite
+        </Link>
+      </Box>
+    );
 
   if (!data)
     return (
@@ -110,53 +128,18 @@ export default function ReservationPage() {
     );
 
   const allBooked =
-    [...data.dates].reduce(
-      (a, b) => a + b.seatings.reduce((c, d) => c + d.available, 0),
+    [...data.eventDates].reduce(
+      (a, b) =>
+        a +
+        b.seatings.reduce(
+          (c, d) => c + (d.available - d._count.reservations),
+          0
+        ),
       0
     ) === 0;
-  const selectedDateData = [...data.dates].find((d) => d.date === selectedDate);
-
-  const packages: PackageOption[] = [
-    {
-      name: 'Champagner Package',
-      description:
-        'Inklusive 3 Flaschen Champagner, 3 Flaschen Wein, bevorzugter Einlass.',
-      strikePrice: 800,
-      price: 800,
-      image: '/packages/champagner.png',
-    },
-    {
-      name: 'Sommelier Package',
-      description:
-        'Raritäten-Verkostung mit persönlichem Sommelier, 6 Top-Weine, bevorzugter Einlass.',
-      strikePrice: 550,
-      price: 550,
-      image: '/packages/sommelier.png',
-    },
-    {
-      name: 'Party Package',
-      description:
-        '2 Flaschen Wein nach Wahl, 1 Flasche Belvedere inkl. Mischgetränken, bevorzugter Einlass.',
-      strikePrice: 480,
-      price: 480,
-      image: '/packages/party.png',
-    },
-    {
-      name: 'Magnum Package',
-      description:
-        '2 Flaschen Wein nach Wahl, 1 Flasche Belvedere inkl. Mischgetränken, bevorzugter Einlass.',
-      strikePrice: 480,
-      price: 480,
-      image: '/packages/magnum.png',
-    },
-    {
-      name: 'Individuell',
-      description:
-        'Kein Paket - Mindestverzehr 65€ pro Person, bevorzugter Einlass.',
-      price: 0,
-      image: '/packages/individual.png',
-    },
-  ];
+  const selectedDateData = [...data.eventDates].find(
+    (d) => d.date === selectedDate
+  );
 
   return (
     <Box className="max-w-4xl mx-auto px-4 py-16 font-sans text-gray-800">
@@ -183,7 +166,7 @@ export default function ReservationPage() {
           justifyContent="center"
           mb={4}
         >
-          {data.dates
+          {data.eventDates
             .sort((a, b) => a.date.localeCompare(b.date))
             .map(({ date, dow, seatings }) => (
               <Grid key={date}>
@@ -193,7 +176,12 @@ export default function ReservationPage() {
                       ? 'bg-black text-white'
                       : 'bg-white border-gray-300 text-gray-800'
                   }`}
-                  disabled={seatings.reduce((a, b) => a + b.available, 0) === 0}
+                  disabled={
+                    seatings.reduce(
+                      (a, b) => a + (b.available - b._count.reservations),
+                      0
+                    ) === 0
+                  }
                   onClick={() => selectDate(date)}
                 >
                   <span className="text-xs text-gray-500 mr-2">{dow}</span>
@@ -210,77 +198,84 @@ export default function ReservationPage() {
             Wähle einen Timeslot
           </Typography>
           <Grid container spacing={2}>
-            {selectedDateData.seatings.map(({ timeslot, available }) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={timeslot}>
-                <button
-                  className={`w-full rounded-full mb-2 px-4 py-2 text-sm font-medium disabled:opacity-50 shadow-sm border transition-all duration-300 ${
-                    selectedSlot === timeslot
-                      ? 'bg-black text-white'
-                      : 'bg-white border-gray-300 text-gray-800'
-                  }`}
-                  onClick={() => selectTimeslot(timeslot)}
-                  disabled={available === 0}
-                >
-                  {timeslot}
-                </button>
-                <Typography
-                  variant="body2"
-                  className="text-center"
-                  color={available === 1 ? 'error' : 'textSecondary'}
-                >
-                  {available == 0
-                    ? 'Sold Out'
-                    : `Noch ${available} Tisch${
-                        available === 1 ? '' : 'e'
-                      } verfügbar`}
-                </Typography>
-              </Grid>
-            ))}
+            {selectedDateData.seatings
+              .sort((a, b) => a.timeslot.localeCompare(b.timeslot))
+              .map((seat) => {
+                const tablesLeft = seat.available - seat._count.reservations;
+                return (
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={seat.timeslot}>
+                    <button
+                      className={`w-full rounded-full mb-2 px-4 py-2 text-sm font-medium disabled:opacity-50 shadow-sm border transition-all duration-300 ${
+                        selectedSlot?.timeslot === seat.timeslot
+                          ? 'bg-black text-white'
+                          : 'bg-white border-gray-300 text-gray-800'
+                      }`}
+                      onClick={() => selectTimeslot(seat)}
+                      disabled={tablesLeft === 0}
+                    >
+                      {seat.timeslot}
+                    </button>
+                    <Typography
+                      variant="body2"
+                      className="text-center"
+                      color={tablesLeft === 1 ? 'error' : 'textSecondary'}
+                    >
+                      {tablesLeft == 0
+                        ? 'Sold Out'
+                        : `Noch ${tablesLeft} Tisch${
+                            tablesLeft === 1 ? '' : 'e'
+                          } verfügbar`}
+                    </Typography>
+                  </Grid>
+                );
+              })}
           </Grid>
         </Box>
       )}
 
-      {isClient && selectedSlot && (
+      {selectedSlot && (
         <Box id="packages" className="mb-8">
           <Typography variant="h5" gutterBottom>
             Wähle ein Package
           </Typography>
           <Grid container spacing={3}>
-            {packages.map((pkg) => (
-              <Grid size={{ xs: 12, sm: 6 }} key={pkg.name}>
-                <div
-                  className={`rounded-xl overflow-hidden border-2 shadow-sm cursor-pointer transition-all duration-300 ${
-                    selectedPackage === pkg.name
-                      ? 'border-black bg-gray-100'
-                      : 'border-white'
-                  }`}
-                  onClick={() => selectPackage(pkg.name)}
-                >
-                  <img
-                    src={pkg.image}
-                    alt={pkg.name}
-                    className="w-full h-56 object-cover"
-                  />
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold mb-1">{pkg.name}</h3>
-                    <p className="text-sm mb-2 text-gray-600">
-                      {pkg.description}
-                    </p>
-                    <div className="flex gap-3 items-center">
-                      {pkg.strikePrice && (
-                        <s className="text-gray-500">{pkg.strikePrice} €</s>
-                      )}
-                      <p className="font-bold">
-                        {pkg.name === 'Individuell'
-                          ? Number(personCount) * 65
-                          : pkg.price}{' '}
-                        €
+            {packages
+              .filter(({ id }) => selectedSlot.availablePackageIds.includes(id))
+              .map((pkg) => (
+                <Grid size={{ xs: 12, sm: 6 }} key={pkg.name}>
+                  <div
+                    className={`rounded-xl overflow-hidden border-2 shadow-sm cursor-pointer transition-all duration-300 ${
+                      selectedPackage?.id === pkg.id
+                        ? 'border-black bg-gray-100'
+                        : 'border-white'
+                    }`}
+                    onClick={() => selectPackage(pkg)}
+                  >
+                    <img
+                      src={pkg.image}
+                      alt={pkg.name}
+                      className="w-full h-56 object-cover"
+                    />
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold mb-1">{pkg.name}</h3>
+                      <p className="text-sm mb-2 text-gray-600">
+                        {pkg.description}
                       </p>
+                      <div className="flex gap-3 items-center">
+                        {pkg.strikePrice && (
+                          <s className="text-gray-500">{pkg.strikePrice} €</s>
+                        )}
+                        <p className="font-bold">
+                          {pkg.name === 'Individuell'
+                            ? Number(personCount) * 65
+                            : pkg.price}{' '}
+                          €
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Grid>
-            ))}
+                </Grid>
+              ))}
           </Grid>
         </Box>
       )}
@@ -318,9 +313,9 @@ export default function ReservationPage() {
             margin="normal"
           />
           <button
-            className="w-full mt-5 rounded-full bg-black text-white py-3 font-semibold text-center hover:bg-gray-900 transition"
+            className="w-full mt-5 rounded-full bg-black text-white py-3 font-semibold text-center hover:bg-gray-800 transition disabled:bg-gray-600"
             onClick={handleSubmit}
-            disabled={loading}
+            disabled={loading || !name.trim() || !email.trim()}
           >
             Reservierung anfragen
           </button>

@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String    @id @default(uuid())
+  name     String
+  email    String    @unique
+  password String
+  sessions Session[]
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Event {
+  id         String      @id @default(uuid())
+  name       String
+  current    Boolean
+  eventDates EventDate[]
+  createdAt  DateTime    @default(now())
+}
+
+model EventDate {
+  id       String    @id @default(uuid())
+  date     String
+  dow      String
+  eventId  String
+  event    Event     @relation(fields: [eventId], references: [id])
+  seatings Seating[]
+}
+
+model Seating {
+  id                  String        @id @default(uuid())
+  eventDate           EventDate     @relation(fields: [eventDateId], references: [id])
+  eventDateId         String
+  timeslot            String
+  available           Int
+  foodRequired        Boolean
+  availablePackageIds Int[]
+  reservations        Reservation[]
+}
+
+model Reservation {
+  id                 String            @id @default(uuid())
+  name               String
+  email              String
+  people             Int
+  seatingId          String
+  seating            Seating           @relation(fields: [seatingId], references: [id])
+  confirmationState  ConfirmationState @default(REQUESTED)
+  packageName        String
+  packageDescription String
+  packagePrice       Int
+  tableNumber        String?
+}
+
+enum ConfirmationState {
+  REQUESTED
+  ACCEPTED
+  DECLINED
+}
