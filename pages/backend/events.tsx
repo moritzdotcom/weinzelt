@@ -73,8 +73,10 @@ export default function BackendEventsPage({ session }: { session: Session }) {
 
   return (
     <Box className="max-w-5xl mx-auto px-4 py-16">
-      <Box className="flex justify-between items-center mb-6">
-        <Typography variant="h4">Veranstaltungen verwalten</Typography>
+      <Box className="flex flex-col sm:flex-row gap-3 justify-between items-center mb-6">
+        <Typography variant="h4" className="text-center">
+          Veranstaltungen verwalten
+        </Typography>
         <button
           className="rounded-full bg-black text-white px-6 py-2 text-sm font-medium shadow-sm hover:bg-gray-800 transition"
           onClick={() => setCreateDialogOpen(true)}
