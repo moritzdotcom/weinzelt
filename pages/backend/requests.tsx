@@ -99,13 +99,19 @@ export default function BackendRequestsPage({ session }: { session: Session }) {
   }, [session.status, router.isReady]);
 
   useEffect(() => {
-    axios.get('/api/events').then((res) => {
-      setEvents(res.data);
-      const preselect = router.query.eventId as string;
-      if (preselect) {
-        setSelectedEventId(preselect);
-      }
-    });
+    axios
+      .get('/api/events')
+      .then(({ data }: { data: ApiGetEventsResponse }) => {
+        setEvents(data);
+        const preselect = router.query.eventId as string;
+        if (preselect) {
+          setSelectedEventId(preselect);
+          setSelectedEventDateIndex(0);
+        } else if (data.length == 1) {
+          setSelectedEventId(data[0].id);
+          setSelectedEventDateIndex(0);
+        }
+      });
   }, [router.query.eventId]);
 
   useEffect(() => {

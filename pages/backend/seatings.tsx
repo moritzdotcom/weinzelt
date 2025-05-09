@@ -54,13 +54,17 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
   }, [session.status, router.isReady]);
 
   useEffect(() => {
-    axios.get('/api/events').then((res) => {
-      setEvents(res.data);
-      const preselect = router.query.eventId as string;
-      if (preselect) {
-        setSelectedEventId(preselect);
-      }
-    });
+    axios
+      .get('/api/events')
+      .then(({ data }: { data: ApiGetEventsResponse }) => {
+        setEvents(data);
+        const preselect = router.query.eventId as string;
+        if (preselect) {
+          setSelectedEventId(preselect);
+        } else if (data.length == 1) {
+          setSelectedEventId(data[0].id);
+        }
+      });
   }, [router.query.eventId]);
 
   useEffect(() => {
