@@ -7,8 +7,9 @@ import { Divider, Drawer } from '@mui/material';
 import CountdownSection from '@/components/countdown';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import FacebookIcon from '@mui/icons-material/Facebook';
+import { Session } from '@/hooks/useSession';
 
-export default function Home() {
+export default function Home({ session }: { session: Session }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -20,6 +21,19 @@ export default function Home() {
         Jetzt reservieren
       </Link>
       <header className="fixed w-full bg-white shadow z-50">
+        {session.status == 'authenticated' && (
+          <div className="w-full bg-gray-100">
+            <div className="max-w-7xl mx-auto px-4 py-1 flex items-center justify-between">
+              <p className="font-bold">Hallo {session.user.name}!</p>
+              <Link
+                href="/backend"
+                className="flex items-center gap-1 underline"
+              >
+                Zur Admin Seite
+              </Link>
+            </div>
+          </div>
+        )}
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="#">
             <img src="/logo.png" alt="WEINZELT" className="w-32 sm:w-40" />
