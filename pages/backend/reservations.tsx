@@ -77,6 +77,7 @@ export default function BackendReservationsPage({
         ? res.map((r) => (r.id == reservationId ? { ...r, tableNumber } : r))
         : undefined
     );
+    if (tableNumber.length <= 0) return;
     await axios.put(`/api/reservations/${reservationId}`, { tableNumber });
     setSnackbarOpen(true);
   };
@@ -89,13 +90,19 @@ export default function BackendReservationsPage({
   }, [session.status, router.isReady]);
 
   useEffect(() => {
-    axios.get('/api/events').then((res) => {
-      setEvents(res.data);
-      const preselect = router.query.eventId as string;
-      if (preselect) {
-        setSelectedEventId(preselect);
-      }
-    });
+    axios
+      .get('/api/events')
+      .then(({ data }: { data: ApiGetEventsResponse }) => {
+        setEvents(data);
+        const preselect = router.query.eventId as string;
+        if (preselect) {
+          setSelectedEventId(preselect);
+          setSelectedEventDateIndex(0);
+        } else if (data.length == 1) {
+          setSelectedEventId(data[0].id);
+          setSelectedEventDateIndex(0);
+        }
+      });
   }, [router.query.eventId]);
 
   useEffect(() => {
@@ -130,8 +137,7 @@ export default function BackendReservationsPage({
         <TextField
           select
           label="Veranstaltung wählen"
-          fullWidth
-          sx={{ maxWidth: 'var(--container-xl)' }}
+          sx={{ width: { xs: '100%', sm: '50%' } }}
           value={selectedEventId || ''}
           onChange={(e) => {
             setSelectedEventId(e.target.value);
@@ -199,54 +205,71 @@ export default function BackendReservationsPage({
                     {timeslot}
                   </Typography>
                   <div className="space-y-4">
-                    {reservations.map((reservation) => (
-                      <motion.div
-                        key={reservation.id}
-                        variants={{
-                          hidden: { opacity: 0, x: -30 },
-                          show: {
-                            opacity: 1,
-                            x: 0,
-                            transition: { duration: 0.4 },
-                          },
-                        }}
-                        className="p-4 border border-gray-200 rounded-xl shadow-sm"
-                      >
-                        <Box className="flex flex-col sm:flex-row gap-2 justify-between items-start mb-2">
-                          <Typography variant="h6" className="font-medium">
-                            {reservation.name} ({reservation.people} Personen)
+                    {reservations.map((reservation) => {
+                      const doubleBooking = reservations.find(
+                        (r) =>
+                          r.id !== reservation.id &&
+                          r.tableNumber == reservation.tableNumber &&
+                          reservation.tableNumber
+                      );
+                      return (
+                        <motion.div
+                          key={reservation.id}
+                          variants={{
+                            hidden: { opacity: 0, x: -30 },
+                            show: {
+                              opacity: 1,
+                              x: 0,
+                              transition: { duration: 0.4 },
+                            },
+                          }}
+                          className="p-4 border border-gray-200 rounded-xl shadow-sm"
+                        >
+                          <Box className="flex flex-col sm:flex-row gap-2 justify-between items-start mb-2">
+                            <Typography variant="h6" className="font-medium">
+                              {reservation.name} ({reservation.people} Personen)
+                            </Typography>
+                            <Typography className="text-xs px-2 py-1 border rounded-full border-gray-300 text-gray-600">
+                              {reservation.seating.timeslot}
+                            </Typography>
+                          </Box>
+
+                          <Typography className="text-sm text-gray-500">
+                            {reservation.email}
                           </Typography>
-                          <Typography className="text-xs px-2 py-1 border rounded-full border-gray-300 text-gray-600">
-                            {reservation.seating.timeslot}
+
+                          <Typography className="text-sm mt-1 font-medium">
+                            {reservation.packageName} -{' '}
+                            {reservation.packagePrice} €
                           </Typography>
-                        </Box>
 
-                        <Typography className="text-sm text-gray-500">
-                          {reservation.email}
-                        </Typography>
+                          <Typography className="text-sm text-gray-600">
+                            {reservation.packageDescription}
+                          </Typography>
 
-                        <Typography className="text-sm mt-1 font-medium">
-                          {reservation.packageName} – {reservation.packagePrice}{' '}
-                          €
-                        </Typography>
-
-                        <Typography className="text-sm text-gray-600">
-                          {reservation.packageDescription}
-                        </Typography>
-
-                        <Box className="mt-4">
-                          <TextField
-                            label="Tischnummer"
-                            variant="outlined"
-                            size="small"
-                            value={reservation.tableNumber || ''}
-                            onChange={(e) =>
-                              updateTableNumber(reservation.id, e.target.value)
-                            }
-                          />
-                        </Box>
-                      </motion.div>
-                    ))}
+                          <Box className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                            <TextField
+                              label="Tischnummer"
+                              variant="outlined"
+                              size="small"
+                              error={Boolean(doubleBooking)}
+                              value={reservation.tableNumber || ''}
+                              onChange={(e) =>
+                                updateTableNumber(
+                                  reservation.id,
+                                  e.target.value
+                                )
+                              }
+                            />
+                            {doubleBooking && (
+                              <p className="text-red-600">
+                                Tisch doppelt belegt!
+                              </p>
+                            )}
+                          </Box>
+                        </motion.div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
