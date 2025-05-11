@@ -46,8 +46,8 @@ export default function CountdownSection() {
       <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
         <img src="/logo.png" alt="Logo" className="w-80 h-auto mb-4" />
         <p className="text-xl md:text-2xl">
-          Wir freuen uns auf euch auf der nächsten Rheinkirmes - ab dem{' '}
-          <strong>11.07.2025</strong>!
+          Ab <b>11.07.2025</b> wird wieder eingeschenkt! Wein, Beats & beste
+          Stimmung - <b>wir sehen uns im Weinzelt auf der Rheinkirmes!</b>
         </p>
         <p className="uppercase tracking-widest text-sm text-gray-700 mt-10">
           Noch

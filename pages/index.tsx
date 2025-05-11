@@ -8,18 +8,23 @@ import CountdownSection from '@/components/countdown';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import { Session } from '@/hooks/useSession';
+import { KeyboardArrowRight } from '@mui/icons-material';
+import { events } from '@/lib/events';
 
 export default function Home({ session }: { session: Session }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className="font-sans relative">
-      <Link
-        href="/reservation"
-        className="fixed bottom-5 left-5 inline-block sm:hidden z-10 bg-black text-white px-3 py-2 rounded-full shadow-xl"
-      >
-        Jetzt reservieren
-      </Link>
+      <div className="fixed bottom-0 left-0 w-full sm:hidden z-10 bg-gray-100 px-3 py-2 flex items-center justify-center">
+        <Link
+          href="/reservation"
+          className="flex items-center justify-center text-2xl"
+        >
+          <p className="font-semibold text-lg">Jetzt reservieren</p>
+          <KeyboardArrowRight fontSize="inherit" />
+        </Link>
+      </div>
       <header className="fixed w-full bg-white shadow z-50">
         {session.status == 'authenticated' && (
           <div className="w-full bg-gray-100">
@@ -40,8 +45,8 @@ export default function Home({ session }: { session: Session }) {
           </Link>
           <nav className="hidden md:flex gap-6 items-center">
             <Link href="#vip">VIP</Link>
-            <Link href="#gastro">Speisen & Getränke</Link>
             <Link href="#musik">Musik</Link>
+            <Link href="#gastro">Speisen & Getränke</Link>
             <Link href="#partner">Partner</Link>
             <Link
               href="/reservation"
@@ -67,16 +72,24 @@ export default function Home({ session }: { session: Session }) {
                   <CloseIcon fontSize="large" />
                 </button>
               </div>
-              <Link href="#vip" onClick={() => setMenuOpen(false)}>
-                VIP
+              <Link href="#" onClick={() => setMenuOpen(false)}>
+                Start
               </Link>
               <Divider />
-              <Link href="#gastro" onClick={() => setMenuOpen(false)}>
-                Speisen & Getränke
+              <Link href="#vip" onClick={() => setMenuOpen(false)}>
+                VIP-Tische
+              </Link>
+              <Divider />
+              <Link href="#standing-tables" onClick={() => setMenuOpen(false)}>
+                Stehtische
               </Link>
               <Divider />
               <Link href="#musik" onClick={() => setMenuOpen(false)}>
                 Musik
+              </Link>
+              <Divider />
+              <Link href="#gastro" onClick={() => setMenuOpen(false)}>
+                Speisen & Getränke
               </Link>
               <Divider />
               <Link href="#partner" onClick={() => setMenuOpen(false)}>
@@ -118,24 +131,42 @@ export default function Home({ session }: { session: Session }) {
 
       {/* Konzept */}
       <section id="konzept" className="max-w-6xl mx-auto px-4 py-20">
-        <h2 className="text-4xl font-bold mb-6 text-center">Das Weinzelt</h2>
+        <h2 className="text-4xl font-bold mb-6 text-center">
+          Weinzelt - Wine meets Rheinkirmes
+        </h2>
         <h3 className="text-2xl italic font-medium text-center text-gray-700 mb-10">
-          „Ein Zelt, das den Düsseldorfer Lifestyle widerspiegelt“
+          „Von Düsseldorfern für alle die Lust auf Wein haben!“
         </h3>
-        <div className="grid md:grid-cols-[2fr_1fr] lg:grid-cols-2 gap-10 items-center">
+        <div className="grid md:grid-cols-[7fr_4fr] gap-10 items-center">
           <div className="space-y-4">
             <p className="text-lg leading-relaxed text-gray-800">
-              Das Weinzelt vereint stilvollen Weingenuss, kulinarische
-              Highlights aus der Region und eine energiegeladene Partystimmung -
-              perfekt abgestimmt auf die Atmosphäre der Rheinkirmes und das
-              Lebensgefühl Düsseldorfs.
+              Willkommen im Weinzelt - dein Platz für Genuss, Musik und echtes
+              Düsseldorfer Lebensgefühl auf der Rheinkirmes!
+            </p>
+            <p className="text-lg leading-relaxed text-gray-800 font-bold text-center">
+              Wein. Beats. Düsseldorf.
             </p>
             <p className="text-lg leading-relaxed text-gray-800">
-              Als besonderes Highlight bringt der Carlsplatz, Düsseldorfs
-              kulinarisches Herz, den Weinstand „Concept Riesling“ ins Zelt.
-              Tagsüber ist das Weinzelt ein entspannter Treffpunkt - abends
-              verwandelt es sich in eine vibrierende Location mit elektronischer
-              Musik.
+              Im <b>Weinzelt</b> wird nicht einfach nur getrunken - hier wird
+              gefeiert, geschlemmt und stilvoll zelebriert. Zwischen feinem
+              Riesling, regionalen Leckerbissen und einer Atmosphäre, die
+              zwischen Afterwork-Vibes und Spontan-Urlaub liegt, erlebst du die
+              <b> Rheinkirmes von ihrer geschmackvollsten Seite.</b>
+            </p>
+            <p className="text-lg leading-relaxed text-gray-800">
+              Tagsüber ist das Zelt dein Place-to-be für entspanntes Daydrinking
+              und gute Gespräche. Und abends? Da drehen wir auf. Mit
+              elektronischen Sounds, kühlen Gläsern und besten Leuten wird aus
+              dem Weinzelt eine pulsierende Party-Location.
+            </p>
+            <p className="text-lg leading-relaxed text-gray-800">
+              Mit dabei: <b>„Concept Riesling“ vom Carlsplatz</b> - Düsseldorfs
+              Antwort auf langweilige Weinkarten. Hier trifft Charakter auf
+              Qualität und Spaß am Glas!
+            </p>
+            <p className="text-lg leading-relaxed text-gray-800">
+              Komm vorbei. Probier dich durch. Und genieß Düsseldorf von seiner
+              leckersten Seite.
             </p>
           </div>
           <div>
@@ -149,36 +180,38 @@ export default function Home({ session }: { session: Session }) {
       </section>
 
       {/* VIP Bereich */}
-      <section id="vip" className="bg-gray-100 py-20 px-4">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-[2fr_1fr] gap-12 items-center">
+      <section id="vip" className="bg-stone-100 py-20 px-4">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row-reverse gap-12 items-center">
           {/* Textbereich */}
-          <div>
-            <h2 className="text-4xl font-bold mb-6">Exklusiver VIP-Bereich</h2>
+          <div className="w-full sm:w-2/3">
+            <h2 className="text-4xl font-bold mb-6">VIP, Baby!</h2>
             <p className="text-lg text-gray-800 mb-4">
-              Wein-Genuss in Perfektion: Von unkomplizierten Rieslingen bis hin
-              zu seltenen Raritäten - im VIP-Bereich erleben echte Weinliebhaber
-              ausgewählte Spitzenweine, kuratiert von{' '}
-              <span className="font-semibold">Concept Riesling</span>.
+              Hier wird Wein zu deinem Erlebnis: an deinem exklusiven Tisch
+              triffst du auf feine Tropfen mit Charakter - von{' '}
+              <b>easy-drinking Rieslingen bis zu echten Raritäten</b>, die du
+              garantiert nicht an jeder Ecke bekommst. Concept Riesling hat für
+              dich kuratiert, was das Herz anspruchsvoller Genießer höher
+              schlagen lässt.
             </p>
             <p className="text-lg text-gray-800 mb-4">
-              Jeden Abend finden exklusive Raritäten-Verkostungen statt -
-              begleitet von einem erfahrenen Sommelier, der spannende
-              Hintergründe zu jedem Wein liefert.
+              Jeden Abend gibt's was Besonderes auf die Zunge:{' '}
+              <b>Weincorner mit Sommelier-Begleitung</b>, charmant,
+              kenntnisreich und garantiert nicht trocken. Wenn du auf den
+              Geschmack gekommen bist bekommst bietet dir die Weincorner über
+              100 Positionen feinster Raritäten.
             </p>
             <p className="text-lg text-gray-800 mb-4">
-              Für die richtige Stimmung sorgen ein Live-DJ, elektronische Musik
-              und eine beeindruckende LED-Lichtshow - perfekt abgestimmt auf die
-              Atmosphäre des Abends.
+              Dazu? Beats, Bass & gute Laune. Ein Live-DJ legt auf, die Stimmung
+              steigt, das Licht tanzt - und du mittendrin mit einem Glas in der
+              einen Hand und deinen Freunden in der anderen Hand!
             </p>
             <p className="text-lg text-gray-800 mb-4">
-              Neben rheinischen Weinen aus <span className="italic">Mosel</span>
-              , <span className="italic">Rheingau</span> und{' '}
-              <span className="italic">Rheinhessen</span> umfasst die Auswahl
-              auch internationale Klassiker wie{' '}
-              <span className="italic">Chardonnay</span> und{' '}
-              <span className="italic">Merlot</span> sowie{' '}
-              <span className="italic">Champagner</span> und{' '}
-              <span className="italic">Sekt</span> für besondere Anlässe.
+              Zugang zu Raritätencorner inklusive. Champagner, Sekt &
+              Signature-Weine. Live-DJ & Beats on Point. Concept Riesling
+              curated.
+            </p>
+            <p className="text-lg text-gray-800 mb-4 font-bold">
+              Limitiert. Besonders. Und absolut nicht langweilig.
             </p>
             <Link
               href="/reservation"
@@ -189,7 +222,7 @@ export default function Home({ session }: { session: Session }) {
           </div>
 
           {/* Bildbereich */}
-          <div>
+          <div className="w-full sm:w-1/3">
             <img
               src="/home/vipArea.jpg"
               alt="VIP Bereich im Weinzelt"
@@ -199,36 +232,48 @@ export default function Home({ session }: { session: Session }) {
         </div>
       </section>
 
-      {/* Speisen & Getränke */}
-      <section id="gastro" className="py-20 px-4 bg-white">
+      {/* Stehtische */}
+      <section id="standing-tables" className="bg-stone-800 py-20 px-4">
         <div className="max-w-6xl mx-auto grid md:grid-cols-[2fr_1fr] gap-12 items-center">
           {/* Textbereich */}
           <div>
-            <h2 className="text-4xl font-bold mb-6">Speisen & Getränke</h2>
-            <p className="text-lg text-gray-800 mb-4">
-              Freu dich auf eine kuratierte Auswahl regionaler Spezialitäten -
-              perfekt abgestimmt auf unser Weinangebot. Ob herzhafte Klassiker
-              oder feine Snacks zum Glas Riesling - unsere Küche verbindet
-              Qualität mit Genuss.
+            <h2 className="text-4xl font-bold text-white mb-6">
+              Stehtische für die Crew
+            </h2>
+            <p className="text-lg text-gray-300 mb-4">
+              Du und deine Freunde, bereit für eine Nacht, die sich gewaschen
+              hat? Unsere Stehtische bieten Platz für bis zu 16 Personen -
+              perfekt für eine coole Crew, die den Vibe spüren will. Ohne
+              Schnickschnack, dafür mit allem, was den Abend unvergesslich
+              macht.
             </p>
-            <p className="text-lg text-gray-800 mb-6">
-              Die Getränkekarte umfasst hochwertige Weine, prickelnden Sekt,
-              ausgewählte Cocktails sowie alkoholfreie Alternativen - alles, was
-              den Abend unvergesslich macht.
+            <p className="text-lg text-gray-300 mb-4">
+              Der perfekte Spot für spontane Partys: Musik, Drinks und jede
+              Menge Action. Kein Sitzen - dafür tanzen, feiern und das Leben
+              genießen. Direkt inmitten des Geschehens. Was brauchst du mehr?
+            </p>
+            <p className="text-lg text-gray-300 mb-4">
+              Stehtische sind die erschwingliche Alternative für alle, die
+              zusammen kommen wollen, ohne auf Spaß zu verzichten. Hol dir
+              deinen Platz für die nächste große Nacht!
+            </p>
+            <p className="text-lg text-gray-300 mb-4 font-bold">
+              Mach dich bereit für gute Musik, coole Leute und natürlich: den
+              besten Platz auf der Tanzfläche!
             </p>
             <Link
-              href="/getraenkekarte"
-              className="inline-block bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-300 hover:text-black transition"
+              href="/reservation"
+              className="inline-block bg-white text-black px-6 py-3 rounded-full shadow-md hover:bg-stone-300 transition"
             >
-              Zur Getränkekarte
+              Jetzt Stehtisch reservieren
             </Link>
           </div>
 
           {/* Bildbereich */}
           <div>
             <img
-              src="/home/champagne.jpg"
-              alt="Speisen und Weine"
+              src="/home/standing-tables.jpeg"
+              alt="Stehtische im Weinzelt"
               className="w-full h-full object-cover rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105"
             />
           </div>
@@ -236,25 +281,19 @@ export default function Home({ session }: { session: Session }) {
       </section>
 
       {/* Musik */}
-      <section id="musik" className="py-20 px-4 bg-black text-white">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+      <section id="musik" className="py-20 bg-black text-white">
+        <div className="px-4 max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           {/* Textbereich */}
           <div>
-            <h2 className="text-4xl font-bold mb-6">Musik & DJs</h2>
+            <h2 className="text-4xl font-bold mb-6">Sound on, Alltag off.</h2>
             <p className="text-lg mb-4 text-gray-300">
-              Wenn die Sonne untergeht, beginnt die Party: Unser Zelt verwandelt
-              sich abends in eine pulsierende Tanzfläche mit ausgewählten House-
-              und Electro-DJs.
-            </p>
-            <p className="text-lg mb-4 text-gray-300">
-              Begleitet von einer eindrucksvollen LED-Lichtshow entsteht eine
-              Atmosphäre, die zum Feiern einlädt - urban, stilvoll und mit
-              echtem Club-Feeling mitten auf der Rheinkirmes.
-            </p>
-            <p className="text-lg text-gray-300">
-              Von Deep House über treibende Beats bis hin zu elektronischen
-              Klassikern - unsere musikalische Kuratierung sorgt für
-              einzigartige Nächte unter dem Sternenhimmel.
+              Sobald die Sonne untergeht, übernimmt der Beat:{' '}
+              <b>Das Weinzelt wird zur Tanzfläche</b> - und zwar nicht
+              irgendeine. Ausgewählte House- und Electro-DJs sorgen für den
+              Soundtrack deiner Nacht, live begleitet von einer{' '}
+              <b>LED-Lichtshow</b>, die mehr Festival als Volksfest schreit.
+              Hier trifft <b>urbaner Club-Vibe auf Kirmesflair</b> - stilvoll,
+              elektrisierend und garantiert tanzbar.
             </p>
           </div>
 
@@ -263,6 +302,72 @@ export default function Home({ session }: { session: Session }) {
             <img
               src="/home/dj.jpg"
               alt="DJ auf der Bühne"
+              className="w-full h-full object-cover rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105"
+            />
+          </div>
+        </div>
+
+        {/* Eventkalender */}
+        <div className="mt-12">
+          <h3 className="text-2xl font-bold text-center text-white mb-6">
+            Unsere Events im Weinzelt
+          </h3>
+          <div className="flex overflow-x-auto space-x-4 p-4">
+            {events.map((e) => (
+              <div
+                key={e.date}
+                className="flex-shrink-0 w-64 bg-stone-800 rounded-lg shadow-lg hover:bg-stone-700 hover:scale-105 transition overflow-hidden"
+              >
+                <img src={e.image} />
+                <div className="px-3 py-2 flex flex-col gap-2">
+                  <p className="text-lg font-semibold text-white">{e.date}</p>
+                  <p className="text-gray-300 text-xl">{e.title}</p>
+                  <Divider className="bg-gray-400 w-2/3" />
+                  <p className="text-gray-400 text-sm">{e.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Speisen & Getränke */}
+      <section id="gastro" className="py-20 px-4 bg-white">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-[2fr_1fr] gap-12 items-center">
+          {/* Textbereich */}
+          <div>
+            <h2 className="text-4xl font-bold mb-6">
+              Für Foodies & Feintrinker.
+            </h2>
+            <p className="text-lg text-gray-800 mb-4">
+              Hungrig bleibst du hier ganz sicher nicht - unsere{' '}
+              <b>ausgesuchte Auswahl regionaler Leckerbissen</b> passt wie ein
+              gut temperierter Riesling zu deinem Glas. Von herzhaften
+              Klassikern bis zu feinen Snacks für zwischendurch: Unsere Küche
+              trifft den Geschmack - ehrlich, hochwertig und einfach richtig
+              gut.
+            </p>
+            <p className="text-lg text-gray-800 mb-6">
+              <b>Weine mit Charakter</b>, spritziger Sekt, ausgewählte Drinks
+              und clevere alkoholfreie Alternativen. Alles, was du brauchst für
+              einen Abend, der stilvoll knallt!
+            </p>
+            <Link
+              href="/getraenkekarte"
+              className="inline-block bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-300 hover:text-black transition"
+            >
+              Jetzt Karte checken{' '}
+              <span className="hidden sm:inline">
+                & Lieblingstropfen finden!
+              </span>
+            </Link>
+          </div>
+
+          {/* Bildbereich */}
+          <div>
+            <img
+              src="/home/champagne.jpg"
+              alt="Speisen und Weine"
               className="w-full h-full object-cover rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105"
             />
           </div>
@@ -335,7 +440,7 @@ export default function Home({ session }: { session: Session }) {
       </section>
 
       {/* Footer */}
-      <footer className="bg-black text-white text-sm py-6 px-4">
+      <footer className="bg-black text-white text-sm pt-6 pb-16 sm:pb-8 px-4">
         <div className="w-full max-w-6xl mx-auto flex gap-5 flex-col sm:flex-row items-center sm:justify-between">
           <div>
             <p>&copy; 2025 Weinzelt GmbH</p>
