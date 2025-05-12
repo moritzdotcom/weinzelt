@@ -15,7 +15,7 @@ export default function Document() {
         <meta name="twitter:card" content="summary" />
         <meta
           name="twitter:image"
-          content={encodeURI('https://weinzelt.vercel.app/home/weinzelt.png')}
+          content={encodeURI('https://dasweinzelt.de/home/logo-sm.png')}
         />
         <meta name="twitter:url" content="https://dasweinzelt.de" />
         <meta name="twitter:title" content="Weinzelt" />
@@ -27,7 +27,7 @@ export default function Document() {
         <meta property="og:type" content="website" />
         <meta
           property="og:image"
-          content={encodeURI('https://weinzelt.vercel.app/home/weinzelt.png')}
+          content={encodeURI('https://dasweinzelt.de/home/logo-sm.png')}
         />
         <meta property="og:title" content="Weinzelt" />
         <meta
