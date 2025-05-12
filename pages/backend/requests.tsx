@@ -21,6 +21,7 @@ import {
   translateStateAdj,
   translateType,
 } from '@/lib/reservation';
+import SortButton from '@/components/sortButton';
 
 export default function BackendRequestsPage({ session }: { session: Session }) {
   const router = useRouter();
@@ -35,6 +36,32 @@ export default function BackendRequestsPage({ session }: { session: Session }) {
   >(null);
   const [reservations, setReservations] =
     useState<ApiGetReservationsResponse>();
+  const [sortOption, setSortOption] = useState<string>('Neuste zuerst');
+
+  function sortReservations(
+    reservations: typeof filteredReservations,
+    sortBy: string
+  ) {
+    if (!reservations) return [];
+    return [...reservations].sort((a, b) => {
+      switch (sortBy) {
+        case 'Preis absteigend':
+          return b.packagePrice - a.packagePrice;
+        case 'Preis aufsteigend':
+          return a.packagePrice - b.packagePrice;
+        case 'Neuste zuerst':
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        case 'Personen aufsteigend':
+          return a.people - b.people;
+        case 'Personen absteigend':
+          return b.people - a.people;
+        default:
+          return 0;
+      }
+    });
+  }
 
   const selectedEvent = useMemo(
     () => events.filter((e) => e.id == selectedEventId)[0],
@@ -70,11 +97,13 @@ export default function BackendRequestsPage({ session }: { session: Session }) {
   const groupedByTimeslot = useMemo(() => {
     if (!filteredReservations) return {};
     const map: Record<string, typeof filteredReservations> = {};
-    filteredReservations.forEach((r) => {
-      const key = r.seating.timeslot;
-      if (!map[key]) map[key] = [];
-      map[key].push(r);
-    });
+    filteredReservations
+      .sort((a, b) => a.seating.timeslot.localeCompare(b.seating.timeslot))
+      .forEach((r) => {
+        const key = r.seating.timeslot;
+        if (!map[key]) map[key] = [];
+        map[key].push(r);
+      });
     return map;
   }, [filteredReservations]);
 
@@ -217,6 +246,19 @@ export default function BackendRequestsPage({ session }: { session: Session }) {
               <ArrowForwardIosIcon fontSize="inherit" />
             </button>
           </div>
+          <div className="flex justify-end text-sky-600">
+            <SortButton
+              options={[
+                'Preis absteigend',
+                'Preis aufsteigend',
+                'Neuste zuerst',
+                'Personen aufsteigend',
+                'Personen absteigend',
+              ]}
+              defaultSelected="Neuste zuerst"
+              onChange={setSortOption}
+            />
+          </div>
           {!filteredReservations ? (
             <Box className="flex justify-center items-center">
               <CircularProgress />
@@ -253,27 +295,29 @@ export default function BackendRequestsPage({ session }: { session: Session }) {
                         )
                       </span>
                     </Typography>
-                    {reservations.map((reservation) => (
-                      <ReservationCard
-                        key={reservation.id}
-                        reservation={reservation}
-                        onUpdateState={(state) =>
-                          updateState(reservation.id, state)
-                        }
-                        selectedType={selectedReservationType}
-                        reservationsAccepted={
-                          acceptedPerSeating[reservation.seatingId]
-                        }
-                        variants={{
-                          hidden: { opacity: 0, x: -50 },
-                          show: {
-                            opacity: 1,
-                            x: 0,
-                            transition: { duration: 0.4, ease: 'easeOut' },
-                          },
-                        }}
-                      />
-                    ))}
+                    {sortReservations(reservations, sortOption).map(
+                      (reservation) => (
+                        <ReservationCard
+                          key={reservation.id}
+                          reservation={reservation}
+                          onUpdateState={(state) =>
+                            updateState(reservation.id, state)
+                          }
+                          selectedType={selectedReservationType}
+                          reservationsAccepted={
+                            acceptedPerSeating[reservation.seatingId]
+                          }
+                          variants={{
+                            hidden: { opacity: 0, x: -50 },
+                            show: {
+                              opacity: 1,
+                              x: 0,
+                              transition: { duration: 0.4, ease: 'easeOut' },
+                            },
+                          }}
+                        />
+                      )
+                    )}
                   </div>
                 )
               )}
