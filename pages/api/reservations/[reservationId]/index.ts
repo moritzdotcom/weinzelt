@@ -1,5 +1,6 @@
 import prisma from '@/lib/prismadb';
 import { getServerSession } from '@/lib/session';
+import { ReservationType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handle(
@@ -23,6 +24,7 @@ export default async function handle(
 }
 
 export type ApiPutReservationResponse = {
+  type: ReservationType;
   name: string;
   id: string;
   email: string;

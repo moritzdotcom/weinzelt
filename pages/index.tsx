@@ -41,7 +41,7 @@ export default function Home({ session }: { session: Session }) {
         )}
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="#">
-            <img src="/logo.png" alt="WEINZELT" className="w-32 sm:w-40" />
+            <img src="/logo-sm.png" alt="WEINZELT" className="w-32 sm:w-40" />
           </Link>
           <nav className="hidden md:flex gap-6 items-center">
             <Link href="#vip">VIP</Link>
@@ -214,7 +214,7 @@ export default function Home({ session }: { session: Session }) {
               Limitiert. Besonders. Und absolut nicht langweilig.
             </p>
             <Link
-              href="/reservation"
+              href="/reservation/vip"
               className="inline-block bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-300 hover:text-black transition"
             >
               Jetzt Tisch reservieren
@@ -262,7 +262,7 @@ export default function Home({ session }: { session: Session }) {
               besten Platz auf der Tanzfläche!
             </p>
             <Link
-              href="/reservation"
+              href="/reservation/standing"
               className="inline-block bg-white text-black px-6 py-3 rounded-full shadow-md hover:bg-stone-300 transition"
             >
               Jetzt Stehtisch reservieren

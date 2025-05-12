@@ -6,21 +6,21 @@ import {
   TextField,
   Snackbar,
   Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
 } from '@mui/material';
 import axios, { isAxiosError } from 'axios';
-import { ApiGetReservationDataResponse } from './api/reservationData';
-import Link from 'next/link';
+import { ApiGetReservationDataResponse } from '../api/reservationData';
 import { packages, PackageType } from '@/lib/packages';
+import ReservationError from '@/components/reservation/error';
+import ReservationLoading from '@/components/reservation/loading';
+import ReservationHeader from '@/components/reservation/header';
+import PackageCard from '@/components/reservation/packageCard';
+import ReservationConfirmationDialog from '@/components/reservation/confirmationDialog';
+import ARGBConfirmation from '@/components/reservation/argbConfirmation';
 
 type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
 
-export default function ReservationPage() {
+export default function VipReservationPage() {
   const [data, setData] = useState<ApiGetReservationDataResponse | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<SeatingType | null>(null);
@@ -37,13 +37,13 @@ export default function ReservationPage() {
 
   useEffect(() => {
     axios
-      .get('/api/reservationData')
+      .get('/api/reservationData?type=VIP')
       .then((res) => setData(res.data))
       .catch((e) => {
         if (isAxiosError(e)) {
           if (e.status == 404) {
             setFetchError(
-              'Im Moment gibt es keine aktiven Veranstaltungen. Probiere es später nochmal.'
+              'Bald kannst du dein Erlebnis im Weinzelt reservieren. Wir freuen uns auf dich!'
             );
           } else {
             setFetchError(
@@ -57,6 +57,7 @@ export default function ReservationPage() {
   const handleSubmit = async () => {
     setLoading(true);
     await axios.post('/api/reservationData', {
+      type: 'VIP',
       name,
       email,
       packageName: selectedPackage?.name,
@@ -107,90 +108,65 @@ export default function ReservationPage() {
     }, 300);
   };
 
-  if (fetchError)
-    return (
-      <Box className="flex flex-col gap-5 text-center justify-center items-center h-screen">
-        <img src="/logo.png" alt="Weinzelt Logo" className="mx-auto h-20" />
-        <Typography variant="h6" gutterBottom>
-          {fetchError}
-        </Typography>
-        <Link href="/" className="underline text-lg">
-          Zurück zur Startseite
-        </Link>
-      </Box>
-    );
+  if (fetchError) return <ReservationError text={fetchError} />;
 
-  if (!data)
-    return (
-      <Box className="flex justify-center items-center h-screen">
-        <CircularProgress />
-      </Box>
-    );
+  if (!data) return <ReservationLoading />;
 
   const allBooked =
     [...data.eventDates].reduce(
       (a, b) =>
         a +
         b.seatings.reduce(
-          (c, d) => c + (d.available - d._count.reservations),
+          (c, d) => c + (d.availableVip - d._count.reservations),
           0
         ),
       0
     ) === 0;
+
   const selectedDateData = [...data.eventDates].find(
     (d) => d.date === selectedDate
   );
 
+  if (allBooked)
+    return (
+      <ReservationError text="Leider gibt es für dieses Jahr keine Tische mehr zu vergeben." />
+    );
+
   return (
     <Box className="max-w-4xl mx-auto px-4 py-16 font-sans text-gray-800">
-      <Box className="text-center mb-6">
-        <img
-          src="/logo.png"
-          alt="Weinzelt Logo"
-          className="mx-auto h-20 mb-12"
-        />
-        <Typography variant="h4" gutterBottom>
-          Tisch reservieren
-        </Typography>
-      </Box>
+      <ReservationHeader>Tisch reservieren</ReservationHeader>
 
-      {allBooked ? (
-        <Typography className="text-center">
-          Leider gibt es für dieses Jahr keine Tische mehr zu vergeben.
-        </Typography>
-      ) : (
-        <Grid
-          id="date-selection"
-          container
-          spacing={2}
-          justifyContent="center"
-          mb={4}
-        >
-          {data.eventDates
-            .sort((a, b) => a.date.localeCompare(b.date))
-            .map(({ date, dow, seatings }) => (
-              <Grid key={date}>
-                <button
-                  className={`rounded-full px-4 py-2 text-sm font-medium shadow-sm border disabled:opacity-50 transition-all duration-300 ${
-                    selectedDate === date
-                      ? 'bg-black text-white'
-                      : 'bg-white border-gray-300 text-gray-800'
-                  }`}
-                  disabled={
-                    seatings.reduce(
-                      (a, b) => a + (b.available - b._count.reservations),
-                      0
-                    ) === 0
-                  }
-                  onClick={() => selectDate(date)}
-                >
-                  <span className="text-xs text-gray-500 mr-2">{dow}</span>
-                  <span>{date}</span>
-                </button>
-              </Grid>
-            ))}
-        </Grid>
-      )}
+      <Grid
+        id="date-selection"
+        container
+        spacing={2}
+        justifyContent="center"
+        mb={4}
+      >
+        {data.eventDates
+          .sort((a, b) => a.date.localeCompare(b.date))
+          .map(({ date, dow, seatings }) => (
+            <Grid key={date}>
+              <button
+                className={`rounded-full px-4 py-2 text-sm font-medium shadow-sm border disabled:opacity-50 transition-all duration-300 ${
+                  selectedDate === date
+                    ? 'bg-black text-white'
+                    : 'bg-white border-gray-300 text-gray-800'
+                }`}
+                disabled={
+                  seatings.reduce(
+                    (a, b) => a + (b.availableVip - b._count.reservations),
+                    0
+                  ) === 0
+                }
+                onClick={() => selectDate(date)}
+              >
+                <span className="text-xs text-gray-500 mr-2">{dow}</span>
+                <span>{date}</span>
+              </button>
+            </Grid>
+          ))}
+      </Grid>
 
       {selectedDate && selectedDateData && (
         <Box id="timeslots" className="mb-8">
@@ -201,7 +177,7 @@ export default function ReservationPage() {
             {selectedDateData.seatings
               .sort((a, b) => a.timeslot.localeCompare(b.timeslot))
               .map((seat) => {
-                const tablesLeft = seat.available - seat._count.reservations;
+                const tablesLeft = seat.availableVip - seat._count.reservations;
                 return (
                   <Grid size={{ xs: 12, sm: 6, md: 4 }} key={seat.timeslot}>
                     <button
@@ -243,37 +219,11 @@ export default function ReservationPage() {
               .filter(({ id }) => selectedSlot.availablePackageIds.includes(id))
               .map((pkg) => (
                 <Grid size={{ xs: 12, sm: 6 }} key={pkg.name}>
-                  <div
-                    className={`rounded-xl overflow-hidden border-2 shadow-sm cursor-pointer transition-all duration-300 ${
-                      selectedPackage?.id === pkg.id
-                        ? 'border-black bg-gray-100'
-                        : 'border-white'
-                    }`}
-                    onClick={() => selectPackage(pkg)}
-                  >
-                    <img
-                      src={pkg.image}
-                      alt={pkg.name}
-                      className="w-full h-56 object-cover"
-                    />
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold mb-1">{pkg.name}</h3>
-                      <p className="text-sm mb-2 text-gray-600">
-                        {pkg.description}
-                      </p>
-                      <div className="flex gap-3 items-center">
-                        {pkg.strikePrice && (
-                          <s className="text-gray-500">{pkg.strikePrice} €</s>
-                        )}
-                        <p className="font-bold">
-                          {pkg.name === 'Individuell'
-                            ? Number(personCount) * 65
-                            : pkg.price}{' '}
-                          €
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  <PackageCard
+                    pkg={pkg}
+                    selected={selectedPackage?.id === pkg.id}
+                    onSelect={() => selectPackage(pkg)}
+                  />
                 </Grid>
               ))}
           </Grid>
@@ -312,8 +262,9 @@ export default function ReservationPage() {
             fullWidth
             margin="normal"
           />
+          <ARGBConfirmation />
           <button
-            className="w-full mt-5 rounded-full bg-black text-white py-3 font-semibold text-center hover:bg-gray-800 transition disabled:bg-gray-600"
+            className="w-full rounded-full bg-black text-white py-3 font-semibold text-center hover:bg-gray-800 transition disabled:bg-gray-600"
             onClick={handleSubmit}
             disabled={loading || !name.trim() || !email.trim()}
           >
@@ -336,24 +287,10 @@ export default function ReservationPage() {
         </Alert>
       </Snackbar>
 
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>Buchungsanfrage gesendet</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Vielen Dank! Ihre Anfrage wurde übermittelt. Sie erhalten in Kürze
-            eine Rückmeldung von uns. Bitte beachten Sie: Ihre Reservierung ist
-            noch nicht bestätigt.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <button
-            className="rounded-full px-4 py-2 bg-gray-100 text-gray-800 hover:bg-gray-200 transition"
-            onClick={() => setDialogOpen(false)}
-          >
-            Weitere Reservierung
-          </button>
-        </DialogActions>
-      </Dialog>
+      <ReservationConfirmationDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+      />
     </Box>
   );
 }

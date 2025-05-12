@@ -27,7 +27,8 @@ export type ApiPutSeatingResponse = {
   eventDateId: string;
   id: string;
   timeslot: string;
-  available: number;
+  availableVip: number;
+  availableStanding: number;
   foodRequired: boolean;
   availablePackageIds: number[];
 };
@@ -37,11 +38,23 @@ async function handlePUT(
   res: NextApiResponse,
   id: string
 ) {
-  const { available, foodRequired, timeslot, availablePackageIds } = req.body;
+  const {
+    availableVip,
+    availableStanding,
+    foodRequired,
+    timeslot,
+    availablePackageIds,
+  } = req.body;
 
   const seating = await prisma.seating.update({
     where: { id },
-    data: { available, foodRequired, timeslot, availablePackageIds },
+    data: {
+      availableVip,
+      availableStanding,
+      foodRequired,
+      timeslot,
+      availablePackageIds,
+    },
   });
 
   return res.json(seating);

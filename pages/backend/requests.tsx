@@ -14,9 +14,13 @@ import {
 } from '@mui/material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import { ConfirmationState } from '@prisma/client';
+import { ConfirmationState, ReservationType } from '@prisma/client';
 import { motion } from 'framer-motion';
-import { translateState, translateStateAdj } from '@/lib/reservation';
+import {
+  translateState,
+  translateStateAdj,
+  translateType,
+} from '@/lib/reservation';
 
 export default function BackendRequestsPage({ session }: { session: Session }) {
   const router = useRouter();
@@ -24,6 +28,8 @@ export default function BackendRequestsPage({ session }: { session: Session }) {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedConfirmationState, setSelectedConfirmationState] =
     useState<ConfirmationState>('REQUESTED');
+  const [selectedReservationType, setSelectedReservationType] =
+    useState<ReservationType>('VIP');
   const [selectedEventDateIndex, setSelectedEventDateIndex] = useState<
     number | null
   >(null);
@@ -51,9 +57,15 @@ export default function BackendRequestsPage({ session }: { session: Session }) {
     return reservations?.filter(
       (r) =>
         r.confirmationState == selectedConfirmationState &&
+        r.type == selectedReservationType &&
         r.seating.eventDateId == selectedEventDate?.id
     );
-  }, [selectedEventDate, reservations, selectedConfirmationState]);
+  }, [
+    selectedEventDate,
+    reservations,
+    selectedConfirmationState,
+    selectedReservationType,
+  ]);
 
   const groupedByTimeslot = useMemo(() => {
     if (!filteredReservations) return {};
@@ -70,13 +82,16 @@ export default function BackendRequestsPage({ session }: { session: Session }) {
     if (!reservations) return {};
     const counts: Record<string, number> = {};
     reservations.forEach((r) => {
-      if (r.confirmationState === 'ACCEPTED') {
+      if (
+        r.confirmationState === 'ACCEPTED' &&
+        r.type == selectedReservationType
+      ) {
         const id = r.seatingId;
         counts[id] = (counts[id] || 0) + 1;
       }
     });
     return counts;
-  }, [reservations]);
+  }, [reservations, selectedReservationType]);
 
   const updateState = async (
     reservationId: string,
@@ -142,6 +157,21 @@ export default function BackendRequestsPage({ session }: { session: Session }) {
           {events.map((event) => (
             <MenuItem key={event.id} value={event.id}>
               {event.name}
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          select
+          label="Reservierungs Typ"
+          fullWidth
+          value={selectedReservationType}
+          onChange={(e) => {
+            setSelectedReservationType(e.target.value as ReservationType);
+          }}
+        >
+          {['VIP', 'STANDING'].map((state) => (
+            <MenuItem key={state} value={state}>
+              {translateType(state as ReservationType)}
             </MenuItem>
           ))}
         </TextField>
@@ -217,7 +247,10 @@ export default function BackendRequestsPage({ session }: { session: Session }) {
                       {timeslot}
                       <span className="text-gray-500 ml-2">
                         ({acceptedPerSeating[reservations[0].seatingId] || 0}/
-                        {reservations[0].seating.available})
+                        {selectedReservationType == 'VIP'
+                          ? reservations[0].seating.availableVip
+                          : reservations[0].seating.availableStanding}
+                        )
                       </span>
                     </Typography>
                     {reservations.map((reservation) => (
@@ -227,6 +260,7 @@ export default function BackendRequestsPage({ session }: { session: Session }) {
                         onUpdateState={(state) =>
                           updateState(reservation.id, state)
                         }
+                        selectedType={selectedReservationType}
                         reservationsAccepted={
                           acceptedPerSeating[reservation.seatingId]
                         }
@@ -254,18 +288,24 @@ export default function BackendRequestsPage({ session }: { session: Session }) {
 function ReservationCard({
   reservation,
   onUpdateState,
+  selectedType,
   reservationsAccepted,
   variants,
 }: {
   reservation: ApiGetReservationsResponse[number];
   onUpdateState: (state: ConfirmationState) => void;
+  selectedType: ReservationType;
   reservationsAccepted: number;
   variants: any;
 }) {
   const [animating, setAnimating] = useState<null | 'left' | 'right'>(null);
 
   const seaitingFull =
-    reservation.seating.available - reservationsAccepted <= 0;
+    (selectedType == 'VIP'
+      ? reservation.seating.availableVip
+      : reservation.seating.availableStanding) -
+      reservationsAccepted <=
+    0;
 
   const handleAction = (state: ConfirmationState) => {
     setAnimating(state === 'ACCEPTED' ? 'left' : 'right');

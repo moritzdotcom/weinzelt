@@ -26,7 +26,8 @@ export type ApiPostSeatingResponse = {
   eventDateId: string;
   id: string;
   timeslot: string;
-  available: number;
+  availableVip: number;
+  availableStanding: number;
   foodRequired: boolean;
   availablePackageIds: number[];
 };
@@ -36,8 +37,10 @@ async function handlePOST(
   res: NextApiResponse,
   id: string
 ) {
-  const { available, foodRequired, timeslot } = req.body;
-  if (typeof available !== 'number')
+  const { availableVip, availableStanding, foodRequired, timeslot } = req.body;
+  if (typeof availableVip !== 'number')
+    return res.status(401).json('Availability Required');
+  if (typeof availableStanding !== 'number')
     return res.status(401).json('Availability Required');
   if (typeof foodRequired !== 'boolean')
     return res.status(401).json('FoodRequired Required');
@@ -45,7 +48,13 @@ async function handlePOST(
     return res.status(401).json('Timeslot Required');
 
   const seating = await prisma.seating.create({
-    data: { available, foodRequired, timeslot, eventDateId: id },
+    data: {
+      availableVip,
+      availableStanding,
+      foodRequired,
+      timeslot,
+      eventDateId: id,
+    },
   });
 
   return res.json(seating);

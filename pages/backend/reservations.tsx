@@ -1,7 +1,7 @@
 import { Session } from '@/hooks/useSession';
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ApiGetEventsResponse } from '../api/events';
 import { ApiGetReservationsResponse } from '../api/events/[eventId]/reservations';
 import {
@@ -32,6 +32,7 @@ export default function BackendReservationsPage({
   const [reservations, setReservations] =
     useState<ApiGetReservationsResponse>();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const selectedEvent = useMemo(
     () => events.filter((e) => e.id == selectedEventId)[0],
@@ -77,9 +78,14 @@ export default function BackendReservationsPage({
         ? res.map((r) => (r.id == reservationId ? { ...r, tableNumber } : r))
         : undefined
     );
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+
     if (tableNumber.length <= 0) return;
-    await axios.put(`/api/reservations/${reservationId}`, { tableNumber });
-    setSnackbarOpen(true);
+
+    debounceTimeout.current = setTimeout(async () => {
+      await axios.put(`/api/reservations/${reservationId}`, { tableNumber });
+      setSnackbarOpen(true);
+    }, 1000);
   };
 
   useEffect(() => {

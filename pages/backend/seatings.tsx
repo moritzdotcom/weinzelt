@@ -42,7 +42,8 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
   );
   const [seatingData, setSeatingData] = useState({
     timeslot: '',
-    available: '10',
+    availableVip: '10',
+    availableStanding: '10',
     foodRequired: false,
   });
 
@@ -108,10 +109,19 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
     if (!selectedEventDateId) return;
     const { data }: { data: ApiPostSeatingResponse } = await axios.post(
       `/api/eventDates/${selectedEventDateId}/seatings`,
-      { ...seatingData, available: Number(seatingData.available) }
+      {
+        ...seatingData,
+        availableVip: Number(seatingData.availableVip),
+        availableStanding: Number(seatingData.availableStanding),
+      }
     );
     setCreateSeatingDialogOpen(false);
-    setSeatingData({ timeslot: '', available: '10', foodRequired: false });
+    setSeatingData({
+      timeslot: '',
+      availableVip: '10',
+      availableStanding: '10',
+      foodRequired: false,
+    });
 
     setEventDates((prev) =>
       prev
@@ -319,11 +329,24 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
             label="Verfügbare Tische"
             type="number"
             fullWidth
-            value={seatingData.available}
+            value={seatingData.availableVip}
             onChange={(e) =>
               setSeatingData({
                 ...seatingData,
-                available: e.target.value,
+                availableVip: e.target.value,
+              })
+            }
+            margin="normal"
+          />
+          <TextField
+            label="Verfügbare Stehtische"
+            type="number"
+            fullWidth
+            value={seatingData.availableStanding}
+            onChange={(e) =>
+              setSeatingData({
+                ...seatingData,
+                availableStanding: e.target.value,
               })
             }
             margin="normal"
@@ -371,7 +394,8 @@ function SeatingCard({
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [seatingData, setSeatingData] = useState({
     timeslot: seating.timeslot,
-    available: `${seating.available}`,
+    availableVip: `${seating.availableVip}`,
+    availableStanding: `${seating.availableStanding}`,
     foodRequired: seating.foodRequired,
   });
 
@@ -390,7 +414,11 @@ function SeatingCard({
   const handleUpdate = async () => {
     const { data }: { data: ApiPutSeatingResponse } = await axios.put(
       `/api/seatings/${seating.id}`,
-      { ...seatingData, available: Number(seatingData.available) }
+      {
+        ...seatingData,
+        availableVip: Number(seatingData.availableVip),
+        availableStanding: Number(seatingData.availableStanding),
+      }
     );
     setUpdateDialogOpen(false);
     onUpdate(data);
@@ -410,7 +438,11 @@ function SeatingCard({
             <span className="hidden sm:inline mr-1">,</span>
           </p>
           <p>
-            Verfügbar: {seating.available}
+            Tische: {seating.availableVip}
+            <span className="hidden sm:inline mr-1">,</span>
+          </p>
+          <p>
+            Stehtische: {seating.availableStanding}
             <span className="hidden sm:inline mr-1">,</span>
           </p>
           <p>Essen: {seating.foodRequired ? 'Ja' : 'Nein'}</p>
@@ -471,11 +503,24 @@ function SeatingCard({
             label="Verfügbare Tische"
             type="number"
             fullWidth
-            value={seatingData.available}
+            value={seatingData.availableVip}
             onChange={(e) =>
               setSeatingData({
                 ...seatingData,
-                available: e.target.value,
+                availableVip: e.target.value,
+              })
+            }
+            margin="normal"
+          />
+          <TextField
+            label="Verfügbare Stehtische"
+            type="number"
+            fullWidth
+            value={seatingData.availableStanding}
+            onChange={(e) =>
+              setSeatingData({
+                ...seatingData,
+                availableStanding: e.target.value,
               })
             }
             margin="normal"

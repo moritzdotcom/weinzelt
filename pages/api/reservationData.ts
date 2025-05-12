@@ -27,7 +27,8 @@ export type ApiGetReservationDataResponse = Prisma.EventGetPayload<{
         seatings: {
           select: {
             id: true;
-            available: true;
+            availableVip: true;
+            availableStanding: true;
             timeslot: true;
             availablePackageIds: true;
             _count: {
@@ -43,6 +44,8 @@ export type ApiGetReservationDataResponse = Prisma.EventGetPayload<{
 }>;
 
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {
+  const reservationType = req.query.type == 'STANDING' ? 'STANDING' : 'VIP';
+
   const reservations = await prisma.event.findFirst({
     where: { current: true },
     select: {
@@ -53,12 +56,18 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
           seatings: {
             select: {
               id: true,
-              available: true,
+              availableVip: true,
+              availableStanding: true,
               timeslot: true,
               availablePackageIds: true,
               _count: {
                 select: {
-                  reservations: { where: { confirmationState: 'ACCEPTED' } },
+                  reservations: {
+                    where: {
+                      confirmationState: 'ACCEPTED',
+                      type: reservationType,
+                    },
+                  },
                 },
               },
             },
@@ -75,6 +84,7 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
 
 async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
   const {
+    type,
     name,
     email,
     packageName,
@@ -84,11 +94,15 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
     seatingId,
   } = req.body;
 
+  const reservationType = type == 'STANDING' ? 'STANDING' : 'VIP';
   if (typeof name !== 'string' || name.length == 0)
     return res.status(401).json('Ungültiger Name');
   if (typeof email !== 'string' || email.length == 0)
     return res.status(401).json('Ungültige Email');
-  if (!validatePackage(packageName, packageDescription, packagePrice))
+  if (
+    reservationType == 'VIP' &&
+    !validatePackage(packageName, packageDescription, packagePrice)
+  )
     return res.status(401).json('Ungültiges Package');
   if (typeof people !== 'number' || people < 1)
     return res.status(401).json('Ungültige Personenanzahl');
@@ -97,6 +111,7 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
 
   const reservation = await prisma.reservation.create({
     data: {
+      type: reservationType,
       name,
       email,
       packageName,

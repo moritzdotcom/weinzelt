@@ -50,7 +50,8 @@ model Seating {
   eventDate           EventDate     @relation(fields: [eventDateId], references: [id])
   eventDateId         String
   timeslot            String
-  available           Int
+  availableVip        Int           @default(10)
+  availableStanding   Int           @default(10)
   foodRequired        Boolean
   availablePackageIds Int[]
   reservations        Reservation[]
@@ -58,6 +59,7 @@ model Seating {
 
 model Reservation {
   id                 String            @id @default(uuid())
+  type               ReservationType   @default(VIP)
   name               String
   email              String
   people             Int
@@ -74,4 +76,9 @@ enum ConfirmationState {
   REQUESTED
   ACCEPTED
   DECLINED
+}
+
+enum ReservationType {
+  VIP
+  STANDING
 }
