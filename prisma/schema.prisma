@@ -70,6 +70,7 @@ model Reservation {
   packageDescription String
   packagePrice       Int
   tableNumber        String?
+  createdAt          DateTime          @default(now())
 }
 
 enum ConfirmationState {
