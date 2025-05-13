@@ -305,14 +305,14 @@ export default function Home({ session }: { session: Session }) {
             />
           </a>
           <a
-            href="https://derweindampfer.de/"
+            href="https://km-entertainment.de/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:scale-105 transition-transform duration-300"
           >
             <img
-              src="/partners/weindampfer-logo.png"
-              alt="Weindampfer"
+              src="/partners/km-logo.png"
+              alt="KM Entertainment"
               className="w-full max-h-20 object-contain mx-auto"
             />
           </a>
@@ -325,6 +325,18 @@ export default function Home({ session }: { session: Session }) {
             <img
               src="/partners/mrdus-logo.png"
               alt="Mr Düsseldorf"
+              className="w-full max-h-20 object-contain mx-auto"
+            />
+          </a>
+          <a
+            href="https://derweindampfer.de/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:scale-105 transition-transform duration-300"
+          >
+            <img
+              src="/partners/weindampfer-logo.png"
+              alt="Weindampfer"
               className="w-full max-h-20 object-contain mx-auto"
             />
           </a>
