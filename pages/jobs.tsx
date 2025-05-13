@@ -69,7 +69,7 @@ export default function JobsPage({ session }: { session: Session }) {
             </div>
 
             {/* Küchen-/Spülhilfe */}
-            <div className="border border-gray-200 rounded-2xl p-6 shadow hover:shadow-md transition">
+            <div className="border border-gray-200 rounded-2xl p-6 shadow hover:shadow-md hover:scale-105 transition">
               <h2 className="text-2xl font-semibold mb-4">
                 🍽️ Küchen- & Spülhilfe
               </h2>
@@ -83,7 +83,7 @@ export default function JobsPage({ session }: { session: Session }) {
             </div>
 
             {/* Runner */}
-            <div className="border border-gray-200 rounded-2xl p-6 shadow hover:shadow-md transition">
+            <div className="border border-gray-200 rounded-2xl p-6 shadow hover:shadow-md hover:scale-105 transition">
               <h2 className="text-2xl font-semibold mb-4">🏃‍♂️ Runner</h2>
               <p className="text-gray-700 text-base leading-relaxed">
                 Als Runner bist du das Rückgrat unseres Betriebs: Du sorgst

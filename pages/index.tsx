@@ -151,16 +151,6 @@ export default function Home({ session }: { session: Session }) {
               Schnickschnack, dafür mit allem, was den Abend unvergesslich
               macht.
             </p>
-            <p className="text-lg text-gray-300 mb-4">
-              Der perfekte Spot für spontane Partys: Musik, Drinks und jede
-              Menge Action. Kein Sitzen - dafür tanzen, feiern und das Leben
-              genießen. Direkt inmitten des Geschehens. Was brauchst du mehr?
-            </p>
-            <p className="text-lg text-gray-300 mb-4">
-              Stehtische sind die erschwingliche Alternative für alle, die
-              zusammen kommen wollen, ohne auf Spaß zu verzichten. Hol dir
-              deinen Platz für die nächste große Nacht!
-            </p>
             <p className="text-lg text-gray-300 mb-4 font-bold">
               Mach dich bereit für gute Musik, coole Leute und natürlich: den
               besten Platz auf der Tanzfläche!
