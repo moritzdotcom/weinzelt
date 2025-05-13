@@ -22,7 +22,7 @@ export default function JobsPage({ session }: { session: Session }) {
               alt="Weinzelt Team"
               width={800}
               height={400}
-              className="rounded-2xl shadow-lg object-cover w-full h-auto"
+              className="rounded-2xl shadow-lg object-cover w-full h-auto max-w-2xl mx-auto"
             />
           </div>
 
@@ -65,6 +65,32 @@ export default function JobsPage({ session }: { session: Session }) {
                 Tempo, Charme und Überblick. Du bist schnell, freundlich und
                 kannst auch unter Stress dein Team unterstützen - dann bist du
                 bei uns genau richtig.
+              </p>
+            </div>
+
+            {/* Küchen-/Spülhilfe */}
+            <div className="border border-gray-200 rounded-2xl p-6 shadow hover:shadow-md transition">
+              <h2 className="text-2xl font-semibold mb-4">
+                🍽️ Küchen- & Spülhilfe
+              </h2>
+              <p className="text-gray-700 text-base leading-relaxed">
+                Ordnung in der Küche ist für dich selbstverständlich? Dann
+                unterstütze unser Team im Hintergrund - beim Spülen, Vorbereiten
+                und Sauberhalten unseres Küchenbereichs. Auch ohne
+                Gastroerfahrung bist du willkommen, wenn du ordentlich, flink
+                und zuverlässig bist.
+              </p>
+            </div>
+
+            {/* Runner */}
+            <div className="border border-gray-200 rounded-2xl p-6 shadow hover:shadow-md transition">
+              <h2 className="text-2xl font-semibold mb-4">🏃‍♂️ Runner</h2>
+              <p className="text-gray-700 text-base leading-relaxed">
+                Als Runner bist du das Rückgrat unseres Betriebs: Du sorgst
+                dafür, dass Kühlschränke immer aufgefüllt sind, Materialien aus
+                dem Kühlcontainer kommen und das Team nie auf Nachschub warten
+                muss. Eine körperlich fitte, zuverlässige Person mit Überblick
+                ist hier gefragt.
               </p>
             </div>
           </div>
