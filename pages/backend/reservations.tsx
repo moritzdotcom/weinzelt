@@ -17,6 +17,7 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { motion } from 'framer-motion';
 import DownloadIcon from '@mui/icons-material/Download';
+import { translateType } from '@/lib/reservation';
 
 export default function BackendReservationsPage({
   session,
@@ -207,9 +208,7 @@ export default function BackendReservationsPage({
             >
               {sortedReservationsByTimeslot.map(([timeslot, reservations]) => (
                 <div key={timeslot}>
-                  <Typography variant="h6" className="mb-2">
-                    {timeslot}
-                  </Typography>
+                  <h6 className="text-2xl font-bold mb-4">{timeslot}</h6>
                   <div className="space-y-4">
                     {reservations.map((reservation) => {
                       const doubleBooking = reservations.find(
@@ -231,13 +230,18 @@ export default function BackendReservationsPage({
                           }}
                           className="p-4 border border-gray-200 rounded-xl shadow-sm"
                         >
-                          <Box className="flex flex-col sm:flex-row gap-2 justify-between items-start mb-2">
-                            <Typography variant="h6" className="font-medium">
-                              {reservation.name} ({reservation.people} Personen)
-                            </Typography>
-                            <Typography className="text-xs px-2 py-1 border rounded-full border-gray-300 text-gray-600">
-                              {reservation.seating.timeslot}
-                            </Typography>
+                          <Box className="flex flex-row gap-2 justify-between items-start mb-1 flex-wrap">
+                            <div className="flex flex-col sm:flex-row gap-1">
+                              <h6 className="text-xl font-medium">
+                                {reservation.name}
+                              </h6>
+                              <h6 className="text-xl font-medium">
+                                ({reservation.people} Personen)
+                              </h6>
+                            </div>
+                            <p className="text-sm px-2 py-1 border rounded-full border-gray-300 text-gray-600">
+                              {translateType(reservation.type)}
+                            </p>
                           </Box>
 
                           <Typography className="text-sm text-gray-500">

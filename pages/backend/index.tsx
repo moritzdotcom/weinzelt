@@ -1,12 +1,13 @@
 import { Session } from '@/hooks/useSession';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 import { Grid } from '@mui/material';
 import CelebrationRoundedIcon from '@mui/icons-material/CelebrationRounded';
 import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
-import { useEffect } from 'react';
+import Diversity1Icon from '@mui/icons-material/Diversity1';
 
 export default function Backend({ session }: { session: Session }) {
   const router = useRouter();
@@ -46,6 +47,11 @@ export default function Backend({ session }: { session: Session }) {
           href="/backend/requests"
           text="Reservierungsanfragen"
           Icon={QuestionAnswerIcon}
+        />
+        <LinkItem
+          href="/backend/friendsFamily"
+          text="Friends & Family Reservierung"
+          Icon={Diversity1Icon}
         />
       </Grid>
     </div>
