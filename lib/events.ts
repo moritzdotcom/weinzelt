@@ -15,8 +15,8 @@ export const events = [
   },
   {
     date: 'SO, 13.07.25',
-    image: 'https://placehold.co/500x300',
-    title: 'Sunset Chillout',
+    image: '/events/sunday-morning-pilates.png',
+    title: 'Weinzelt X egoiste - Sunday Morning Pilates',
     description:
       'Lässige Beats und entspannte Vibes bei Sonnenuntergang. Der perfekte Ausklang für das Wochenende.',
   },
@@ -64,8 +64,8 @@ export const events = [
   },
   {
     date: 'SO, 20.07.25',
-    image: 'https://placehold.co/500x300',
-    title: 'Closing Party',
+    image: '/events/sunday-morning-pilates.png',
+    title: 'Weinzelt X egoiste - Sunday Morning Pilates',
     description:
       'Das Finale der Weinzelt-Saison! Feiere mit uns das Ende eines großartigen Festivals.',
   },

@@ -7,7 +7,7 @@ export default function AboutPage({ session }: { session: Session }) {
   return (
     <div>
       <Navbar session={session} />
-      <section className="bg-white py-20 px-6 md:px-12">
+      <section className="bg-white pb-20 px-6 md:px-12">
         <div className="max-w-5xl mx-auto text-center mt-12">
           {/* Überschrift */}
           <h1 className="text-3xl md:text-4xl font-cocogoose mb-8">
