@@ -211,13 +211,14 @@ export default function Home({ session }: { session: Session }) {
             {events.map((e) => (
               <div
                 key={e.date}
-                className="flex-shrink-0 w-64 bg-stone-800 rounded-lg shadow-lg hover:bg-stone-700 hover:scale-105 transition overflow-hidden"
+                className="flex-shrink-0 w-64 bg-neutral-900 rounded-lg shadow-lg hover:bg-neutral-700 hover:scale-105 transition overflow-hidden"
               >
                 <img src={e.image} />
-                <div className="px-3 py-2 flex flex-col gap-2">
+                <div className="px-3 py-2 flex flex-col">
                   <p className="text-lg font-semibold text-white">{e.date}</p>
-                  <p className="text-gray-300 text-xl">{e.title}</p>
-                  <Divider className="bg-gray-400 w-2/3" />
+                  <p className="text-base font-light text-gray-300">{e.from}</p>
+                  <p className="text-gray-300 text-xl mt-2">{e.title}</p>
+                  <Divider sx={{ marginY: 2 }} className="bg-gray-400 w-2/3" />
                   <p className="text-gray-400 text-sm">{e.description}</p>
                 </div>
               </div>
