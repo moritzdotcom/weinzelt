@@ -35,7 +35,7 @@ export default function Home({ session }: { session: Session }) {
 
       {/* Konzept */}
       <section id="konzept" className="max-w-6xl mx-auto px-4 py-20">
-        <h2 className="text-4xl font-bold mb-6 text-center">
+        <h2 className="text-4xl mb-6 text-center font-cocogoose">
           Weinzelt - Wine meets Rheinkirmes
         </h2>
         <h3 className="text-2xl italic font-medium text-center text-gray-700 mb-10">
@@ -88,7 +88,7 @@ export default function Home({ session }: { session: Session }) {
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row-reverse gap-12 items-center">
           {/* Textbereich */}
           <div className="w-full sm:w-2/3">
-            <h2 className="text-4xl font-bold mb-6">VIP, Baby!</h2>
+            <h2 className="text-4xl font-cocogoose mb-6">VIP, Baby!</h2>
             <p className="text-lg text-gray-800 mb-4">
               Hier wird Wein zu deinem Erlebnis: an deinem exklusiven Tisch
               triffst du auf feine Tropfen mit Charakter - von{' '}
@@ -141,7 +141,7 @@ export default function Home({ session }: { session: Session }) {
         <div className="max-w-6xl mx-auto grid md:grid-cols-[2fr_1fr] gap-12 items-center">
           {/* Textbereich */}
           <div>
-            <h2 className="text-4xl font-bold text-white mb-6">
+            <h2 className="text-4xl font-cocogoose text-white mb-6">
               Stehtische für die Crew
             </h2>
             <p className="text-lg text-gray-300 mb-4">
@@ -179,7 +179,9 @@ export default function Home({ session }: { session: Session }) {
         <div className="px-4 max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           {/* Textbereich */}
           <div>
-            <h2 className="text-4xl font-bold mb-6">Sound on, Alltag off.</h2>
+            <h2 className="text-4xl font-cocogoose mb-6">
+              Sound on, Alltag off.
+            </h2>
             <p className="text-lg mb-4 text-gray-300">
               Sobald die Sonne untergeht, übernimmt der Beat:{' '}
               <b>Das Weinzelt wird zur Tanzfläche</b> - und zwar nicht
@@ -203,7 +205,7 @@ export default function Home({ session }: { session: Session }) {
 
         {/* Eventkalender */}
         <div className="mt-12">
-          <h3 className="text-2xl font-bold text-center text-white mb-6">
+          <h3 className="text-2xl font-cocogoose text-center text-white mb-6">
             Unsere Events im Weinzelt
           </h3>
           <div className="flex overflow-x-auto space-x-4 p-4">
@@ -230,7 +232,7 @@ export default function Home({ session }: { session: Session }) {
         <div className="max-w-6xl mx-auto grid md:grid-cols-[2fr_1fr] gap-12 items-center">
           {/* Textbereich */}
           <div>
-            <h2 className="text-4xl font-bold mb-6">
+            <h2 className="text-4xl font-cocogoose mb-6">
               Für Foodies & Feintrinker.
             </h2>
             <p className="text-lg text-gray-800 mb-4">
@@ -275,7 +277,7 @@ export default function Home({ session }: { session: Session }) {
         id="partner"
         className="max-w-5xl mx-auto px-4 py-16 text-center"
       >
-        <h2 className="text-3xl font-bold mb-4">Unsere Partner</h2>
+        <h2 className="text-3xl font-cocogoose mb-4">Unsere Partner</h2>
         <p className="text-gray-600 mb-10">
           Wir bedanken uns herzlich bei unseren Partnern für die wertvolle
           Unterstützung!

@@ -26,6 +26,8 @@ import AddIcon from '@mui/icons-material/Add';
 import { Session } from '@/hooks/useSession';
 import { ApiGetEventsResponse } from '../api/events';
 import { ApiPutSeatingResponse } from '../api/seatings/[seatingId]';
+import ConfirmDialog from '@/components/confirmDialog';
+import { ApiDeleteEventDateResponse } from '../api/eventDates/[eventDateId]';
 
 export default function BackendSeatingsPage({ session }: { session: Session }) {
   const router = useRouter();
@@ -36,6 +38,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
   const [newDow, setNewDow] = useState('');
   const [createDateDialogOpen, setCreateDateDialogOpen] = useState(false);
   const [duplicateDateDialogOpen, setDuplicateDateDialogOpen] = useState(false);
+  const [deleteDateDialogOpen, setDeleteDateDialogOpen] = useState(false);
   const [createSeatingDialogOpen, setCreateSeatingDialogOpen] = useState(false);
   const [selectedEventDateId, setSelectedEventDateId] = useState<string | null>(
     null
@@ -103,6 +106,15 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
     setNewDate('');
     setNewDow('');
     setEventDates((prev) => (prev ? [...prev, data] : [data]));
+  };
+
+  const handleDeleteDate = async () => {
+    if (!selectedEventDateId) return;
+    const { data }: { data: ApiDeleteEventDateResponse } = await axios.delete(
+      `/api/eventDates/${selectedEventDateId}/duplicate`
+    );
+    setDeleteDateDialogOpen(false);
+    setEventDates((prev) => (prev ? prev.filter((p) => p.id !== data.id) : []));
   };
 
   const handleCreateSeating = async () => {
@@ -217,7 +229,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
                     className="mb-4 rounded-full border border-red-600 text-red-600 px-3 py-1 text-sm flex items-center gap-1"
                     onClick={() => {
                       setSelectedEventDateId(date.id);
-                      setDuplicateDateDialogOpen(true);
+                      setDeleteDateDialogOpen(true);
                     }}
                   >
                     <DeleteOutlineIcon fontSize="inherit" />
@@ -301,7 +313,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCreateDateDialogOpen(false)}>
+          <Button onClick={() => setDuplicateDateDialogOpen(false)}>
             Abbrechen
           </Button>
           <Button onClick={handleDuplicateDate} variant="contained">
@@ -375,6 +387,14 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteDateDialogOpen}
+        title="Diesen Event Tag wirklich löschen?"
+        description="Alle Seatings und Reservierungen für diesen Tag werden ebenfalls gelöscht."
+        onCancel={() => setDeleteDateDialogOpen(false)}
+        onConfirm={() => handleDeleteDate()}
+      />
     </Box>
   );
 }
@@ -392,6 +412,7 @@ function SeatingCard({
     seating.availablePackageIds
   );
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [seatingData, setSeatingData] = useState({
     timeslot: seating.timeslot,
     availableVip: `${seating.availableVip}`,
@@ -459,7 +480,7 @@ function SeatingCard({
           <Tooltip title="Löschen">
             <button
               className="rounded border border-red-600 text-red-600 w-6 h-6 text-sm flex items-center justify-center"
-              onClick={handleDelete}
+              onClick={() => setDeleteDialogOpen(true)}
             >
               <DeleteOutlineIcon fontSize="inherit" />
             </button>
@@ -547,6 +568,14 @@ function SeatingCard({
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        title="Dieses Seating wirklich löschen?"
+        description="Alle Reservierungen für diesen Tag werden ebenfalls gelöscht."
+        onCancel={() => setDeleteDialogOpen(false)}
+        onConfirm={() => handleDelete()}
+      />
     </Box>
   );
 }

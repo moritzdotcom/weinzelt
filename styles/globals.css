@@ -1,4 +1,9 @@
 @import "tailwindcss";
+@import './fonts.css';
+
+@theme {
+  --font-cocogoose: "Cocogoose", "sans-serif";
+}
 
 button {
   @apply cursor-pointer disabled:cursor-not-allowed;

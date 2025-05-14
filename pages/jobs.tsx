@@ -11,7 +11,7 @@ export default function JobsPage({ session }: { session: Session }) {
       <section className="bg-white py-20 px-6 md:px-12">
         <div className="max-w-5xl mx-auto text-center mt-12">
           {/* Überschrift */}
-          <h1 className="text-3xl md:text-4xl font-bold mb-8">
+          <h1 className="text-3xl md:text-4xl font-cocogoose mb-8">
             Werde Teil des Weinzelt Teams
           </h1>
 
@@ -43,7 +43,9 @@ export default function JobsPage({ session }: { session: Session }) {
           <div className="grid md:grid-cols-2 gap-10 text-left">
             {/* VIP Kellner */}
             <div className="border border-gray-200 rounded-2xl p-6 shadow hover:shadow-md hover:scale-105 transition">
-              <h2 className="text-2xl font-semibold mb-4">✨ VIP-Kellner:in</h2>
+              <h2 className="text-2xl font-cocogoose mb-4">
+                ✨ VIP-Kellner:in
+              </h2>
               <p className="text-gray-700 text-base leading-relaxed">
                 Du hast jahrelange Erfahrung in der Gastronomie und verstehst
                 etwas von Wein - wirklich etwas? In unserem exklusiven
@@ -57,7 +59,7 @@ export default function JobsPage({ session }: { session: Session }) {
 
             {/* Barkraft */}
             <div className="border border-gray-200 rounded-2xl p-6 shadow hover:shadow-md hover:scale-105 transition">
-              <h2 className="text-2xl font-semibold mb-4">🍷 Barkraft</h2>
+              <h2 className="text-2xl font-cocogoose mb-4">🍷 Barkraft</h2>
               <p className="text-gray-700 text-base leading-relaxed">
                 Du hast bereits Erfahrung hinter der Bar und weißt, wie man mit
                 Gästen umgeht? Dann suchen wir dich! An unserer Panorama-Bar
@@ -70,7 +72,7 @@ export default function JobsPage({ session }: { session: Session }) {
 
             {/* Küchen-/Spülhilfe */}
             <div className="border border-gray-200 rounded-2xl p-6 shadow hover:shadow-md hover:scale-105 transition">
-              <h2 className="text-2xl font-semibold mb-4">
+              <h2 className="text-2xl font-cocogoose mb-4">
                 🍽️ Küchen- & Spülhilfe
               </h2>
               <p className="text-gray-700 text-base leading-relaxed">
@@ -84,7 +86,7 @@ export default function JobsPage({ session }: { session: Session }) {
 
             {/* Runner */}
             <div className="border border-gray-200 rounded-2xl p-6 shadow hover:shadow-md hover:scale-105 transition">
-              <h2 className="text-2xl font-semibold mb-4">🏃‍♂️ Runner</h2>
+              <h2 className="text-2xl font-cocogoose mb-4">🏃‍♂️ Runner</h2>
               <p className="text-gray-700 text-base leading-relaxed">
                 Als Runner bist du das Rückgrat unseres Betriebs: Du sorgst
                 dafür, dass Kühlschränke immer aufgefüllt sind, Materialien aus
