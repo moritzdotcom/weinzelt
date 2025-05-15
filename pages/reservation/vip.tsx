@@ -16,11 +16,13 @@ import ReservationHeader from '@/components/reservation/header';
 import PackageCard from '@/components/reservation/packageCard';
 import ReservationConfirmationDialog from '@/components/reservation/confirmationDialog';
 import ARGBConfirmation from '@/components/reservation/argbConfirmation';
+import { useRouter } from 'next/router';
 
 type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
 
 export default function VipReservationPage() {
+  const router = useRouter();
   const [data, setData] = useState<ApiGetReservationDataResponse | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<SeatingType | null>(null);
@@ -34,6 +36,12 @@ export default function VipReservationPage() {
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [fetchError, setFetchError] = useState<string>();
+
+  useEffect(() => {
+    if (!router.isReady || !data) return;
+    if (typeof router.query.date !== 'string') return;
+    selectDate(router.query.date);
+  }, [router.isReady, data]);
 
   useEffect(() => {
     axios

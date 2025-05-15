@@ -2,14 +2,31 @@ import { Box, Typography } from '@mui/material';
 import ReservationHeader from '@/components/reservation/header';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
 export default function ReservationPage() {
+  const router = useRouter();
+  const [dateParam, setDateParam] = useState<string>();
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    if (typeof router.query.date !== 'string') return;
+    setDateParam(router.query.date);
+  }, [router.isReady]);
+
   return (
     <Box className="max-w-4xl mx-auto px-4 py-16 font-sans text-gray-800">
       <ReservationHeader>Wähle deinen Tisch für das Weinzelt</ReservationHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
-        <Link href="/reservation/vip" className="no-underline">
+        <Link
+          href={{
+            query: dateParam ? { date: dateParam } : {},
+            pathname: '/reservation/vip',
+          }}
+          className="no-underline"
+        >
           <Box className="rounded-lg overflow-hidden shadow-lg border border-gray-400 hover:shadow-xl hover:scale-105 transition cursor-pointer">
             <Image
               src="/reservation/vip.png"
@@ -28,7 +45,13 @@ export default function ReservationPage() {
           </Box>
         </Link>
 
-        <Link href="/reservation/standing" className="no-underline">
+        <Link
+          href={{
+            query: dateParam ? { date: dateParam } : {},
+            pathname: '/reservation/standing',
+          }}
+          className="no-underline"
+        >
           <Box className="rounded-lg overflow-hidden shadow-lg border border-gray-400 hover:shadow-xl hover:scale-105 transition cursor-pointer">
             <Image
               src="/reservation/standing.png"
