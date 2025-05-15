@@ -35,9 +35,9 @@ export const events = [
     date: 'MO, 14.07.25',
     from: '19:00',
     image: '/events/kliff.jpg',
-    title: 'Weinzelt X Rotes Kliff - Kampen meets Düsseldorf',
+    title: 'Weinzelt X Club Rotes Kliff - Kampen meets DUS',
     description:
-      'Wenn friesische Meeresbrise auf rheinische Lebensfreude trifft: Kulinarische Duette & ausgewählte Weine im einzigartigen Crossover-Style.',
+      'Wenn friesische Meeresbrise auf rheinische Lebensfreude trifft: Kulinarische Duette, prickelnde Weine & Peter Kliem an den Decks, der mit seinen Kampen-Beats das Weinzelt zum Kochen bringt!',
   },
   {
     date: 'MI, 16.07.25',
@@ -61,7 +61,7 @@ export const events = [
     image: '/events/salva.jpg',
     title: 'Salvatore Mancuso @ Weinzelt',
     description:
-      "Dolce Vita unterm Zeltdach: Salvatore Mancuso, dessen Song „Baby, You're the One“ mit über 10 Millionen Streams zum ultimativen Sommerhit in Deutschland wurde, verwöhnt uns mit mediterranen Gitarrenklängen, während wir zu italienischen Weinen anstoßen.",
+      'House & Tech-House pur unterm Zeltdach: Salvatore Mancuso liefert knallharte Grooves, die das Weinzelt beben lassen!',
   },
   {
     date: 'SA, 19.07.25',
