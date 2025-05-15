@@ -86,7 +86,13 @@ async function handleGET(
 
       // Tabelle
       const tableTop = doc.y;
-      const colWidths = [230, 80, 100, 90];
+      // const colWidths = [230, 80, 100, 90];
+      const colWidths = [
+        ((doc.page.width - 80) / 100) * 55,
+        ((doc.page.width - 80) / 100) * 13,
+        ((doc.page.width - 80) / 100) * 17,
+        ((doc.page.width - 80) / 100) * 15,
+      ];
       const headers = ['Name', 'Personen', 'Tischnummer', 'Eingecheckt'];
 
       // Header-Zeile zeichnen
@@ -122,7 +128,7 @@ async function handleGET(
             .font('Helvetica')
             .fontSize(12)
             .fillColor('black')
-            .text(text, xPos + 4, rowTop + 2, {
+            .text(text, xPos + 6, rowTop + 3, {
               width: colWidths[i] - 8,
               align: 'left',
             });

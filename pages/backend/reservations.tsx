@@ -122,21 +122,35 @@ export default function BackendReservationsPage({
 
   return (
     <Box className="max-w-5xl mx-auto px-4 py-16 overflow-x-hidden">
-      <Box className="flex flex-col sm:flex-row gap-3 justify-between items-center mb-6">
+      <Box className="flex flex-col md:flex-row gap-3 justify-between items-center mb-6">
         <Typography variant="h4">Reservierungen</Typography>
         {selectedEventDate && (
-          <button
-            className="px-4 py-2 rounded-full bg-black text-white text-lg hover:bg-gray-800 flex items-center gap-1"
-            onClick={() => {
-              window.open(
-                `/api/eventDates/${selectedEventDate.id}/pdf`,
-                '_blank'
-              );
-            }}
-          >
-            <DownloadIcon fontSize="inherit" />
-            Gästeliste {selectedEventDate.date} (PDF)
-          </button>
+          <div className="flex flex-col md:flex-row gap-3 items-center">
+            <button
+              className="px-4 py-2 rounded-full bg-black text-white text-lg hover:bg-neutral-600 flex items-center gap-1"
+              onClick={() => {
+                window.open(
+                  `/api/eventDates/${selectedEventDate.id}/guestListPdf`,
+                  '_blank'
+                );
+              }}
+            >
+              <DownloadIcon fontSize="inherit" />
+              Gästeliste {selectedEventDate.date}
+            </button>
+            <button
+              className="px-4 py-2 rounded-full bg-black text-white text-lg hover:bg-neutral-600 flex items-center gap-1"
+              onClick={() => {
+                window.open(
+                  `/api/eventDates/${selectedEventDate.id}/tablesPdf`,
+                  '_blank'
+                );
+              }}
+            >
+              <DownloadIcon fontSize="inherit" />
+              Tischbelegung {selectedEventDate.date}
+            </button>
+          </div>
         )}
       </Box>
 
