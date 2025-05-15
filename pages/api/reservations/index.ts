@@ -1,4 +1,5 @@
 import prisma from '@/lib/prismadb';
+import { translateType } from '@/lib/reservation';
 import { getServerSession } from '@/lib/session';
 import { ReservationType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -56,7 +57,9 @@ async function handlePOST(
       name,
       email,
       packageName: 'Friends and Family',
-      packageDescription: `Eingeladen von ${userName}`,
+      packageDescription: `${translateType(
+        reservationType
+      )} - Eingeladen von ${userName}`,
       packagePrice,
       people,
       seatingId,

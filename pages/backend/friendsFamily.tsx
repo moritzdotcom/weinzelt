@@ -3,7 +3,6 @@ import axios, { isAxiosError } from 'axios';
 import { ApiGetReservationDataResponse } from '../api/reservationData';
 import ReservationError from '@/components/reservation/error';
 import ReservationHeader from '@/components/reservation/header';
-import ReservationConfirmationDialog from '@/components/reservation/confirmationDialog';
 import { Add, Remove } from '@mui/icons-material';
 import {
   Box,
@@ -13,6 +12,12 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
 import { styled, SwitchProps } from '@mui/material';
 
@@ -75,6 +80,7 @@ export default function FriendsFamilyReservationPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<SeatingType | null>(null);
   const [guestCount, setGuestCount] = useState<string>('1');
+  const [packagePrice, setPackagePrice] = useState<string>('0');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -89,6 +95,7 @@ export default function FriendsFamilyReservationPage() {
     setSelectedDate(null);
     setSelectedSlot(null);
     setGuestCount('1');
+    setPackagePrice('0');
 
     if (dataCache[type]) {
       setData(dataCache[type]);
@@ -129,6 +136,7 @@ export default function FriendsFamilyReservationPage() {
     setSelectedDate(date);
     setSelectedSlot(null);
     setGuestCount('1');
+    setPackagePrice('0');
     setTimeout(
       () =>
         document
@@ -153,26 +161,31 @@ export default function FriendsFamilyReservationPage() {
     if (!selectedSlot) return;
     setLoading(true);
     try {
-      await axios.post('/api/reservations/family', {
+      await axios.post('/api/reservations', {
         type,
         name,
         email,
         people: Number(guestCount),
         seatingId: selectedSlot.id,
-        packagePrice: 0,
+        packagePrice: Number(packagePrice),
       });
       setSuccess(true);
       setDialogOpen(true);
-      setSelectedDate(null);
-      setSelectedSlot(null);
-      setGuestCount('1');
-      setName('');
-      setEmail('');
     } catch {
       alert('Fehler beim Anlegen der Reservierung.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCloseDialog = () => {
+    setName('');
+    setEmail('');
+    setGuestCount('1');
+    setPackagePrice('0');
+    setSelectedDate(null);
+    setSelectedSlot(null);
+    setDialogOpen(false);
   };
 
   return (
@@ -330,20 +343,37 @@ export default function FriendsFamilyReservationPage() {
                 Kontaktdaten
               </Typography>
               <Box className="space-y-4">
-                <input
-                  className="w-full px-4 py-3 border rounded-lg"
-                  placeholder="Name"
+                <TextField
+                  fullWidth
+                  label="Name"
+                  autoComplete="name"
+                  required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  required
+                  margin="normal"
                 />
-                <input
-                  className="w-full px-4 py-3 border rounded-lg"
-                  type="email"
-                  placeholder="E-Mail"
+                <TextField
+                  fullWidth
+                  label="E-Mail"
+                  autoComplete="email"
+                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
+                  margin="normal"
+                />
+                <TextField
+                  fullWidth
+                  label="Mindestverzehr"
+                  value={packagePrice}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">€</InputAdornment>
+                      ),
+                    },
+                  }}
+                  onChange={(e) => setPackagePrice(e.target.value)}
+                  margin="normal"
                 />
               </Box>
 
@@ -370,13 +400,35 @@ export default function FriendsFamilyReservationPage() {
           severity="success"
           sx={{ width: '100%' }}
         >
-          Deine Friends-&-Family-Reservierung ist bestätigt!
+          Deine Friends & Family-Reservierung ist bestätigt!
         </Alert>
       </Snackbar>
-      <ReservationConfirmationDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-      />
+
+      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+        <DialogTitle>Friends & Family Reservierung bestätigt!</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Die Reservierung für <b className="italic">{name}</b> am{' '}
+            <b className="italic">
+              {selectedDate} / {selectedSlot?.timeslot}
+            </b>
+            <br />
+            mit <b className="italic">{guestCount} Gästen</b> wurde bestätigt.
+            <Typography sx={{ mt: 2 }}>
+              Eine Bestätigungs-Mail an{' '}
+              <b className="italic underline">{email}</b> wurde versandt.
+            </Typography>
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <button
+            className="rounded-full px-4 py-2 m-3 bg-gray-100 text-gray-800 hover:bg-gray-200 transition"
+            onClick={handleCloseDialog}
+          >
+            Weitere Reservierung
+          </button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
