@@ -100,8 +100,8 @@ export default function Home({ session }: { session: Session }) {
               Jeden Abend gibt's was Besonderes auf die Zunge:{' '}
               <b>Weincorner mit Sommelier-Begleitung</b>, charmant,
               kenntnisreich und garantiert nicht trocken. Wenn du auf den
-              Geschmack gekommen bist bekommst bietet dir die Weincorner über
-              100 Positionen feinster Raritäten.
+              Geschmack gekommen bist, bietet dir die Weincorner über 100
+              Positionen feinster Raritäten.
             </p>
             <p className="text-lg text-gray-800 mb-4">
               Dazu? Beats, Bass & gute Laune. Ein Live-DJ legt auf, die Stimmung
