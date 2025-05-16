@@ -1,17 +1,16 @@
 import { sendMail } from '@/lib/mailer';
 
-export default function sendReservationMail(
+export default function sendFriendsAndFamilyMail(
   email: string,
   name: string,
   people: string,
   date: string,
-  timeslot: string,
-  price: number
+  timeslot: string
 ) {
   return sendMail(
     email,
     'Deine Reservierung wurde bestätigt',
-    `Hallo ${name},\n\ndeine Reservierung für ${people} Pers. am ${date} für den Zeitraum ${timeslot} ist bestätigt!\nBitte überweise ${price} € im Voraus auf das unten stehende Konto. Bei Nichtzahlung innerhalb einer Woche verfällt die Reservierung.\n\nLiebe Grüße,\nDas Weinzelt-Team`,
+    `Hallo ${name},\n\ndeine Reservierung für ${people} Pers. am ${date} für den Zeitraum ${timeslot} ist bestätigt!\n\nWir freuen uns auf dich.\n\nLiebe Grüße,\nDas Weinzelt-Team`,
     `<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -35,29 +34,19 @@ export default function sendReservationMail(
               <h1 style="margin:0; font-size:24px; color:#333333; text-align:center;">Reservierung bestätigt</h1>
             </td>
           </tr>
-          <!-- Bestätigungs-Box mit Zahlungsdaten -->
+          <!-- Bestätigungs-Box -->
           <tr>
             <td style="padding:0 20px 20px;">
               <div style="background-color:#f0f0f0; padding:20px; border-radius:5px; color:#333333; font-size:16px; line-height:1.5;">
-                <p>Hallo <strong>${name}</strong>,</p>
-                <p>deine Reservierung für <strong>${people} Personen</strong> am <strong>${date}</strong> um <strong>${timeslot}</strong> Uhr ist bestätigt!</p>
-                <hr style="border:none; border-top:1px solid #cccccc; margin:16px 0;" />
-                <p><strong>Zahlungsdaten:</strong><br/>
-                  Bitte überweise <strong>${price} €</strong> im Voraus auf folgendes Konto:<br/>
-                  Name: Weinzelt GmbH<br/>
-                  IBAN: DEXXXXXXXXXXXXXXX<br/>
-                  BIC: XXXXXXX
-                </p>
-                <p style="color:#000000; font-weight:bold;">
-                  Zahlung innerhalb einer Woche erforderlich, sonst verfällt die Reservierung.
-                </p>
+                Hallo <strong>${name}</strong>,<br/>
+                deine Reservierung für <strong>${people} Personen</strong> am <strong>${date}</strong> für den Zeitraum <strong>${timeslot}</strong> Uhr ist hiermit bestätigt!
               </div>
             </td>
           </tr>
           <!-- Hinweis zur Pünktlichkeit -->
           <tr>
             <td style="padding:0 20px 20px; color:#333333; font-size:14px; line-height:1.4;">
-              Bitte erscheine pünktlich: Nach 30 Minuten ab deiner gebuchten Zeit können wir leider keinen Eintritt mehr gewähren.
+              Bitte erscheine pünktlich: Nach 15 Minuten ab deiner gebuchten Zeit können wir leider keinen Eintritt mehr gewähren.
             </td>
           </tr>
           <!-- Rechtlicher Hinweis -->

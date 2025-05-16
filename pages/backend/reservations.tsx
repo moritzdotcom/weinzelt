@@ -18,6 +18,8 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { motion } from 'framer-motion';
 import DownloadIcon from '@mui/icons-material/Download';
 import { translateType } from '@/lib/reservation';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import CheckIcon from '@mui/icons-material/Check';
 
 export default function BackendReservationsPage({
   session,
@@ -87,6 +89,14 @@ export default function BackendReservationsPage({
       await axios.put(`/api/reservations/${reservationId}`, { tableNumber });
       setSnackbarOpen(true);
     }, 1000);
+  };
+
+  const notifyReservation = (id: string) => {
+    setReservations((res) =>
+      res
+        ? res.map((r) => (r.id == id ? { ...r, notified: true } : r))
+        : undefined
+    );
   };
 
   useEffect(() => {
@@ -271,26 +281,44 @@ export default function BackendReservationsPage({
                             {reservation.packageDescription}
                           </Typography>
 
-                          <Box className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                            <TextField
-                              label="Tischnummer"
-                              variant="outlined"
-                              size="small"
-                              error={Boolean(doubleBooking)}
-                              value={reservation.tableNumber || ''}
-                              onChange={(e) =>
-                                updateTableNumber(
-                                  reservation.id,
-                                  e.target.value
-                                )
-                              }
-                            />
-                            {doubleBooking && (
-                              <p className="text-red-600">
-                                Tisch doppelt belegt!
-                              </p>
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-4">
+                            <Box className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                              <TextField
+                                label="Tischnummer"
+                                variant="outlined"
+                                size="small"
+                                error={Boolean(doubleBooking)}
+                                value={reservation.tableNumber || ''}
+                                onChange={(e) =>
+                                  updateTableNumber(
+                                    reservation.id,
+                                    e.target.value
+                                  )
+                                }
+                              />
+                              {doubleBooking && (
+                                <p className="text-red-600">
+                                  Tisch doppelt belegt!
+                                </p>
+                              )}
+                            </Box>
+                            {reservation.notified ? (
+                              <button className="border bg-neutral-400 text-white px-3 py-2 rounded-full flex items-center gap-1 text-base cursor-default!">
+                                <CheckIcon fontSize="inherit" />
+                                <span>Benachrichtigt</span>
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() =>
+                                  notifyReservation(reservation.id)
+                                }
+                                className="border border-sky-500 text-sky-500 px-3 py-2 rounded-full flex items-center gap-1 text-base"
+                              >
+                                <MailOutlineIcon fontSize="inherit" />
+                                <span>Benachrichtigen</span>
+                              </button>
                             )}
-                          </Box>
+                          </div>
                         </motion.div>
                       );
                     })}

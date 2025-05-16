@@ -70,6 +70,7 @@ model Reservation {
   packageDescription String
   packagePrice       Int
   tableNumber        String?
+  notified           Boolean           @default(false)
   createdAt          DateTime          @default(now())
 }
 

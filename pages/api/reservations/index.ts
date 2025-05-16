@@ -1,4 +1,4 @@
-import sendReservationMail from '@/lib/mailer/reservationMail';
+import sendFriendsAndFamilyMail from '@/lib/mailer/friendsAndFamilyMail';
 import prisma from '@/lib/prismadb';
 import { translateType } from '@/lib/reservation';
 import { getServerSession } from '@/lib/session';
@@ -81,7 +81,7 @@ async function handlePOST(
     },
   });
 
-  await sendReservationMail(
+  await sendFriendsAndFamilyMail(
     email,
     name,
     String(people),
