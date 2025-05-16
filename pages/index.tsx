@@ -210,11 +210,11 @@ export default function Home({ session }: { session: Session }) {
           <div className="flex overflow-x-auto space-x-4 p-4">
             {events.map((e) => (
               <div
-                key={e.date}
+                key={`${e.date}${e.title}`}
                 className="flex-shrink-0 w-72 bg-neutral-900 rounded-lg shadow-lg hover:bg-neutral-800 hover:scale-105 transition overflow-hidden flex flex-col justify-between"
               >
                 <div>
-                  <img src={e.image} />
+                  <img src={e.image} alt={e.title} />
                   <div className="px-3 py-2 flex flex-col">
                     <p className="text-lg font-semibold text-white">{e.date}</p>
                     <p className="text-base font-light text-gray-300">
