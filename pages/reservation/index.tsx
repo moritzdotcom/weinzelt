@@ -105,10 +105,10 @@ export default function ReservationPage() {
       <Typography variant="body2" className="mt-12 text-center text-gray-600">
         Für Firmenanfragen oder größere Gruppen kontaktiere uns bitte unter{' '}
         <a
-          href="mailto:reservierungen@dasweinzelt.de"
+          href="mailto:reservierung@dasweinzelt.de"
           className="text-black font-medium underline"
         >
-          reservierungen@dasweinzelt.de
+          reservierung@dasweinzelt.de
         </a>
         .
       </Typography>
