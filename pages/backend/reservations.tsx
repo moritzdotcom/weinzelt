@@ -35,6 +35,7 @@ export default function BackendReservationsPage({
   const [reservations, setReservations] =
     useState<ApiGetReservationsResponse>();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [notifying, setNotifying] = useState(false);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const selectedEvent = useMemo(
@@ -91,12 +92,16 @@ export default function BackendReservationsPage({
     }, 1000);
   };
 
-  const notifyReservation = (id: string) => {
+  const notifyReservation = async (id: string) => {
+    setNotifying(true);
+    await axios.post(`/api/reservations/${id}/notify`);
+
     setReservations((res) =>
       res
         ? res.map((r) => (r.id == id ? { ...r, notified: true } : r))
         : undefined
     );
+    setNotifying(false);
   };
 
   useEffect(() => {
@@ -312,6 +317,7 @@ export default function BackendReservationsPage({
                                 onClick={() =>
                                   notifyReservation(reservation.id)
                                 }
+                                disabled={notifying}
                                 className="border border-sky-500 text-sky-500 px-3 py-2 rounded-full flex items-center gap-1 text-base"
                               >
                                 <MailOutlineIcon fontSize="inherit" />
