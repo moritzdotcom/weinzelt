@@ -16,13 +16,12 @@ import ReservationConfirmationDialog from '@/components/reservation/confirmation
 import { Add, Remove } from '@mui/icons-material';
 import ARGBConfirmation from '@/components/reservation/argbConfirmation';
 import { useRouter } from 'next/router';
-import Countdown from '@/components/countdown';
+import ReservationCountdownSection from '@/components/reservation/countdown';
 
 type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
 
 export default function StandingReservationPage() {
-  const reservationStartDate = '05.23.2025 18:00';
   const router = useRouter();
   const [data, setData] = useState<ApiGetReservationDataResponse | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -34,17 +33,6 @@ export default function StandingReservationPage() {
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [fetchError, setFetchError] = useState<string>();
-  const [showCountdown, setShowCountdown] = useState(
-    new Date(reservationStartDate) > new Date()
-  );
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setShowCountdown(new Date(reservationStartDate) > new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     if (!router.isReady || !data) return;
@@ -114,25 +102,6 @@ export default function StandingReservationPage() {
     }, 300);
   };
 
-  if (showCountdown)
-    return (
-      <section
-        id="countdown"
-        className="h-screen flex items-center bg-gradient-to-tr from-gray-100 to-blue-100 text-black text-center px-4"
-      >
-        <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
-          <img src="/logo.png" alt="Logo" className="w-80 h-auto mb-4" />
-          <p className="text-xl md:text-2xl">
-            Reservierungsanfragen können ab dem <b>23.05.2025 um 18:00</b>{' '}
-            abgegeben werden.
-          </p>
-          <Countdown targetDate={reservationStartDate} />
-        </div>
-      </section>
-    );
-
-  if (fetchError) return <ReservationError text={fetchError} />;
-
   if (!data) return <ReservationLoading />;
 
   const allBooked =
@@ -156,170 +125,177 @@ export default function StandingReservationPage() {
     );
 
   return (
-    <Box className="max-w-4xl mx-auto px-4 py-16 font-sans text-gray-800">
-      <ReservationHeader>Stehtisch reservieren</ReservationHeader>
+    <ReservationCountdownSection startDate="2025-05-23T16:00:00Z">
+      {fetchError ? (
+        <ReservationError text={fetchError} />
+      ) : (
+        <Box className="max-w-4xl mx-auto px-4 py-16 font-sans text-gray-800">
+          <ReservationHeader>Stehtisch reservieren</ReservationHeader>
 
-      <Grid
-        id="date-selection"
-        container
-        spacing={2}
-        justifyContent="center"
-        mb={4}
-      >
-        {data.eventDates
-          .sort((a, b) => a.date.localeCompare(b.date))
-          .map(({ date, dow, seatings }) => (
-            <Grid key={date}>
-              <button
-                className={`rounded-full px-4 py-2 text-sm font-medium shadow-sm border disabled:opacity-50 transition-all duration-300 ${
-                  selectedDate === date
-                    ? 'bg-black text-white'
-                    : 'bg-white border-gray-300 text-gray-800'
-                }`}
-                disabled={
-                  seatings.reduce(
-                    (a, b) => a + (b.availableStanding - b._count.reservations),
-                    0
-                  ) === 0
-                }
-                onClick={() => selectDate(date)}
-              >
-                <span className="text-xs text-gray-500 mr-2">{dow}</span>
-                <span>{date}</span>
-              </button>
-            </Grid>
-          ))}
-      </Grid>
-
-      {selectedDate && selectedDateData && (
-        <Box id="timeslots" className="mb-8">
-          <Typography variant="h5" gutterBottom>
-            Wähle einen Timeslot
-          </Typography>
-          <Grid container spacing={2}>
-            {selectedDateData.seatings
-              .sort((a, b) => a.timeslot.localeCompare(b.timeslot))
-              .map((seat) => {
-                const tablesLeft =
-                  seat.availableStanding - seat._count.reservations;
-                return (
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={seat.timeslot}>
-                    <button
-                      className={`w-full rounded-full mb-2 px-4 py-2 text-sm font-medium disabled:opacity-50 shadow-sm border transition-all duration-300 ${
-                        selectedSlot?.timeslot === seat.timeslot
-                          ? 'bg-black text-white'
-                          : 'bg-white border-gray-300 text-gray-800'
-                      }`}
-                      onClick={() => selectTimeslot(seat)}
-                      disabled={tablesLeft === 0}
-                    >
-                      {seat.timeslot}
-                    </button>
-                    <Typography
-                      variant="body2"
-                      className="text-center"
-                      color={tablesLeft === 1 ? 'error' : 'textSecondary'}
-                    >
-                      {tablesLeft == 0
-                        ? 'Sold Out'
-                        : `Noch ${tablesLeft} Tisch${
-                            tablesLeft === 1 ? '' : 'e'
-                          } verfügbar`}
-                    </Typography>
-                  </Grid>
-                );
-              })}
-          </Grid>
-        </Box>
-      )}
-
-      {selectedSlot && (
-        <Box id="contact" mt={6} className="space-y-6">
-          <Typography variant="h5" gutterBottom>
-            Anzahl Personen
-          </Typography>
-          <Box className="flex items-center justify-center gap-4 mt-16 sm:mt-8">
-            <button
-              onClick={() =>
-                setPersonCount((prev) =>
-                  Math.max(5, Math.min(16, parseInt(prev) - 1)).toString()
-                )
-              }
-              disabled={Number(personCount) <= 5}
-              className="w-12 h-12 text-lg font-bold rounded-full border border-gray-400 hover:bg-gray-100 transition disabled:opacity-50 flex items-center justify-center"
-            >
-              <Remove />
-            </button>
-            <Typography variant="h4" className="w-16 text-center">
-              {personCount}
-            </Typography>
-            <button
-              onClick={() =>
-                setPersonCount((prev) =>
-                  Math.max(5, Math.min(16, parseInt(prev) + 1)).toString()
-                )
-              }
-              disabled={Number(personCount) >= 16}
-              className="w-12 h-12 text-lg font-bold rounded-full border border-gray-400 hover:bg-gray-100 transition disabled:opacity-50 flex items-center justify-center"
-            >
-              <Add />
-            </button>
-          </Box>
-
-          <p className="text-center text-gray-600 mb-16 sm:mb-8">
-            Mindestverzehr: <b>50€ pro Person</b>
-          </p>
-
-          <Typography variant="h5" gutterBottom>
-            Kontaktdaten
-          </Typography>
-          <TextField
-            fullWidth
-            label="Name"
-            autoComplete="name"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="E-Mail"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            margin="normal"
-          />
-          <ARGBConfirmation />
-          <button
-            className="w-full rounded-full bg-black text-white py-3 font-semibold text-center hover:bg-gray-800 transition disabled:bg-gray-600"
-            onClick={handleSubmit}
-            disabled={loading || !name.trim() || !email.trim()}
+          <Grid
+            id="date-selection"
+            container
+            spacing={2}
+            justifyContent="center"
+            mb={4}
           >
-            Reservierung anfragen
-          </button>
+            {data.eventDates
+              .sort((a, b) => a.date.localeCompare(b.date))
+              .map(({ date, dow, seatings }) => (
+                <Grid key={date}>
+                  <button
+                    className={`rounded-full px-4 py-2 text-sm font-medium shadow-sm border disabled:opacity-50 transition-all duration-300 ${
+                      selectedDate === date
+                        ? 'bg-black text-white'
+                        : 'bg-white border-gray-300 text-gray-800'
+                    }`}
+                    disabled={
+                      seatings.reduce(
+                        (a, b) =>
+                          a + (b.availableStanding - b._count.reservations),
+                        0
+                      ) === 0
+                    }
+                    onClick={() => selectDate(date)}
+                  >
+                    <span className="text-xs text-gray-500 mr-2">{dow}</span>
+                    <span>{date}</span>
+                  </button>
+                </Grid>
+              ))}
+          </Grid>
+
+          {selectedDate && selectedDateData && (
+            <Box id="timeslots" className="mb-8">
+              <Typography variant="h5" gutterBottom>
+                Wähle einen Timeslot
+              </Typography>
+              <Grid container spacing={2}>
+                {selectedDateData.seatings
+                  .sort((a, b) => a.timeslot.localeCompare(b.timeslot))
+                  .map((seat) => {
+                    const tablesLeft =
+                      seat.availableStanding - seat._count.reservations;
+                    return (
+                      <Grid size={{ xs: 12, sm: 6, md: 4 }} key={seat.timeslot}>
+                        <button
+                          className={`w-full rounded-full mb-2 px-4 py-2 text-sm font-medium disabled:opacity-50 shadow-sm border transition-all duration-300 ${
+                            selectedSlot?.timeslot === seat.timeslot
+                              ? 'bg-black text-white'
+                              : 'bg-white border-gray-300 text-gray-800'
+                          }`}
+                          onClick={() => selectTimeslot(seat)}
+                          disabled={tablesLeft === 0}
+                        >
+                          {seat.timeslot}
+                        </button>
+                        <Typography
+                          variant="body2"
+                          className="text-center"
+                          color={tablesLeft === 1 ? 'error' : 'textSecondary'}
+                        >
+                          {tablesLeft == 0
+                            ? 'Sold Out'
+                            : `Noch ${tablesLeft} Tisch${
+                                tablesLeft === 1 ? '' : 'e'
+                              } verfügbar`}
+                        </Typography>
+                      </Grid>
+                    );
+                  })}
+              </Grid>
+            </Box>
+          )}
+
+          {selectedSlot && (
+            <Box id="contact" mt={6} className="space-y-6">
+              <Typography variant="h5" gutterBottom>
+                Anzahl Personen
+              </Typography>
+              <Box className="flex items-center justify-center gap-4 mt-16 sm:mt-8">
+                <button
+                  onClick={() =>
+                    setPersonCount((prev) =>
+                      Math.max(5, Math.min(16, parseInt(prev) - 1)).toString()
+                    )
+                  }
+                  disabled={Number(personCount) <= 5}
+                  className="w-12 h-12 text-lg font-bold rounded-full border border-gray-400 hover:bg-gray-100 transition disabled:opacity-50 flex items-center justify-center"
+                >
+                  <Remove />
+                </button>
+                <Typography variant="h4" className="w-16 text-center">
+                  {personCount}
+                </Typography>
+                <button
+                  onClick={() =>
+                    setPersonCount((prev) =>
+                      Math.max(5, Math.min(16, parseInt(prev) + 1)).toString()
+                    )
+                  }
+                  disabled={Number(personCount) >= 16}
+                  className="w-12 h-12 text-lg font-bold rounded-full border border-gray-400 hover:bg-gray-100 transition disabled:opacity-50 flex items-center justify-center"
+                >
+                  <Add />
+                </button>
+              </Box>
+
+              <p className="text-center text-gray-600 mb-16 sm:mb-8">
+                Mindestverzehr: <b>50€ pro Person</b>
+              </p>
+
+              <Typography variant="h5" gutterBottom>
+                Kontaktdaten
+              </Typography>
+              <TextField
+                fullWidth
+                label="Name"
+                autoComplete="name"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                label="E-Mail"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                margin="normal"
+              />
+              <ARGBConfirmation />
+              <button
+                className="w-full rounded-full bg-black text-white py-3 font-semibold text-center hover:bg-gray-800 transition disabled:bg-gray-600"
+                onClick={handleSubmit}
+                disabled={loading || !name.trim() || !email.trim()}
+              >
+                Reservierung anfragen
+              </button>
+            </Box>
+          )}
+
+          <Snackbar
+            open={success}
+            autoHideDuration={5000}
+            onClose={() => setSuccess(false)}
+          >
+            <Alert
+              onClose={() => setSuccess(false)}
+              severity="success"
+              sx={{ width: '100%' }}
+            >
+              Reservierungsanfrage erfolgreich gesendet!
+            </Alert>
+          </Snackbar>
+
+          <ReservationConfirmationDialog
+            open={dialogOpen}
+            onClose={() => setDialogOpen(false)}
+          />
         </Box>
       )}
-
-      <Snackbar
-        open={success}
-        autoHideDuration={5000}
-        onClose={() => setSuccess(false)}
-      >
-        <Alert
-          onClose={() => setSuccess(false)}
-          severity="success"
-          sx={{ width: '100%' }}
-        >
-          Reservierungsanfrage erfolgreich gesendet!
-        </Alert>
-      </Snackbar>
-
-      <ReservationConfirmationDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-      />
-    </Box>
+    </ReservationCountdownSection>
   );
 }
