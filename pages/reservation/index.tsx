@@ -4,10 +4,41 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import Countdown from '@/components/countdown';
 
 export default function ReservationPage() {
   const router = useRouter();
   const [dateParam, setDateParam] = useState<string>();
+
+  const reservationStartDate = '05.23.2025 18:00';
+  const [showCountdown, setShowCountdown] = useState(
+    new Date(reservationStartDate) > new Date()
+  );
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setShowCountdown(new Date(reservationStartDate) > new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  if (showCountdown)
+    return (
+      <section
+        id="countdown"
+        className="h-screen flex items-center bg-gradient-to-tr from-gray-100 to-blue-100 text-black text-center px-4"
+      >
+        <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
+          <img src="/logo.png" alt="Logo" className="w-80 h-auto mb-4" />
+          <p className="text-xl md:text-2xl">
+            Reservierungsanfragen können ab dem <b>23.05.2025 um 18:00</b>{' '}
+            abgegeben werden.
+          </p>
+          <Countdown targetDate={reservationStartDate} />
+        </div>
+      </section>
+    );
 
   useEffect(() => {
     if (!router.isReady) return;

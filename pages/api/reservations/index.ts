@@ -1,3 +1,4 @@
+import sendReservationMail from '@/lib/mailer/reservationMail';
 import prisma from '@/lib/prismadb';
 import { translateType } from '@/lib/reservation';
 import { getServerSession } from '@/lib/session';
@@ -65,7 +66,27 @@ async function handlePOST(
       seatingId,
       confirmationState: 'ACCEPTED',
     },
+    include: {
+      seating: {
+        select: {
+          timeslot: true,
+          eventDate: {
+            select: {
+              date: true,
+            },
+          },
+        },
+      },
+    },
   });
+
+  await sendReservationMail(
+    email,
+    name,
+    String(people),
+    reservation.seating.eventDate.date,
+    reservation.seating.timeslot
+  );
 
   return res.json(reservation);
 }
