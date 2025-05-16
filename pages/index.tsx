@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Divider } from '@mui/material';
-import CountdownSection from '@/components/countdown';
+import Countdown from '@/components/countdown';
 import { Session } from '@/hooks/useSession';
 import { KeyboardArrowRight } from '@mui/icons-material';
 import { events } from '@/lib/events';
@@ -285,7 +285,25 @@ export default function Home({ session }: { session: Session }) {
         </div>
       </section>
 
-      <CountdownSection />
+      <section
+        id="countdown"
+        className="py-20 bg-gradient-to-tr from-gray-100 to-blue-100 text-black text-center px-4"
+      >
+        <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
+          <img src="/logo.png" alt="Logo" className="w-80 h-auto mb-4" />
+          <p className="text-xl md:text-2xl">
+            Ab <b>11.07.2025</b> wird wieder eingeschenkt! Wein, Beats & beste
+            Stimmung - <b>wir sehen uns im Weinzelt auf der Rheinkirmes!</b>
+          </p>
+          <p className="uppercase tracking-widest text-sm text-gray-700 mt-10">
+            Noch
+          </p>
+          <Countdown targetDate="2025-07-11T14:00:00" />
+          <p className="uppercase tracking-widest text-sm text-gray-700">
+            bis zum Opening
+          </p>
+        </div>
+      </section>
 
       {/* Partner */}
       <section
