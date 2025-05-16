@@ -210,7 +210,11 @@ export default function FriendsFamilyReservationPage() {
       )}
 
       {/* Fetch Error */}
-      {fetchError && <ReservationError text={fetchError} />}
+      {fetchError && (
+        <Typography variant="h6" gutterBottom>
+          {fetchError}
+        </Typography>
+      )}
 
       {/* All booked */}
       {!dataLoading && data && allBooked && (
