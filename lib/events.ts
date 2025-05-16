@@ -23,18 +23,18 @@ export const events = [
       link: '/reservation?date=12.07.25',
     },
   },
-  {
-    date: 'SO, 13.07.25',
-    from: '11:00',
-    image: '/events/sunday-morning-pilates.jpg',
-    title: 'Sunday Morning Pilates',
-    description:
-      'Sanfter Sonnengruß im Zelt: Starte deinen Sonntag mit fließenden Pilates-Moves vom gehypten egoiste Studio aus Düsseldorf, entspannendem Atem und einem belebenden Glas Weißwein on top.',
-    button: {
-      text: 'Jetzt reservieren',
-      link: '/reservation?date=13.07.25',
-    },
-  },
+  // {
+  //   date: 'SO, 13.07.25',
+  //   from: '11:00',
+  //   image: '/events/sunday-morning-pilates.jpg',
+  //   title: 'Sunday Morning Pilates',
+  //   description:
+  //     'Sanfter Sonnengruß im Zelt: Starte deinen Sonntag mit fließenden Pilates-Moves vom gehypten egoiste Studio aus Düsseldorf, entspannendem Atem und einem belebenden Glas Weißwein on top.',
+  //   button: {
+  //     text: 'Jetzt reservieren',
+  //     link: '/reservation?date=13.07.25',
+  //   },
+  // },
   {
     date: 'MO, 14.07.25',
     from: '15:00',
@@ -107,16 +107,16 @@ export const events = [
       link: '/reservation?date=19.07.25',
     },
   },
-  {
-    date: 'SO, 20.07.25',
-    from: '11:00',
-    image: '/events/sunday-morning-pilates.jpg',
-    title: 'Sunday Morning Pilates',
-    description:
-      'Entspannt ins Sonntagsglück: Pilates-Flow vom angesagten egoiste Studio Düsseldorf, frische Morgenluft und als krönender Abschluss ein glasperlendes Prickeln.',
-    button: {
-      text: 'Jetzt reservieren',
-      link: '/reservation?date=20.07.25',
-    },
-  },
+  // {
+  //   date: 'SO, 20.07.25',
+  //   from: '11:00',
+  //   image: '/events/sunday-morning-pilates.jpg',
+  //   title: 'Sunday Morning Pilates',
+  //   description:
+  //     'Entspannt ins Sonntagsglück: Pilates-Flow vom angesagten egoiste Studio Düsseldorf, frische Morgenluft und als krönender Abschluss ein glasperlendes Prickeln.',
+  //   button: {
+  //     text: 'Jetzt reservieren',
+  //     link: '/reservation?date=20.07.25',
+  //   },
+  // },
 ];
