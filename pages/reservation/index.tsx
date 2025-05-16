@@ -23,6 +23,12 @@ export default function ReservationPage() {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    if (!router.isReady) return;
+    if (typeof router.query.date !== 'string') return;
+    setDateParam(router.query.date);
+  }, [router.isReady]);
+
   if (showCountdown)
     return (
       <section
@@ -39,12 +45,6 @@ export default function ReservationPage() {
         </div>
       </section>
     );
-
-  useEffect(() => {
-    if (!router.isReady) return;
-    if (typeof router.query.date !== 'string') return;
-    setDateParam(router.query.date);
-  }, [router.isReady]);
 
   return (
     <Box className="max-w-4xl mx-auto px-4 py-16 font-sans text-gray-800">

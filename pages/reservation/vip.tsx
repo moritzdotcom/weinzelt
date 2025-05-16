@@ -23,7 +23,7 @@ type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
 
 export default function VipReservationPage() {
-  const reservationStartDate = '05.23.2025 18:00';
+  const reservationStartDate = '05.16.2025 08:30';
   const router = useRouter();
   const [data, setData] = useState<ApiGetReservationDataResponse | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -49,23 +49,6 @@ export default function VipReservationPage() {
 
     return () => clearInterval(timer);
   }, []);
-
-  if (showCountdown)
-    return (
-      <section
-        id="countdown"
-        className="h-screen flex items-center bg-gradient-to-tr from-gray-100 to-blue-100 text-black text-center px-4"
-      >
-        <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
-          <img src="/logo.png" alt="Logo" className="w-80 h-auto mb-4" />
-          <p className="text-xl md:text-2xl">
-            Reservierungsanfragen können ab dem <b>23.05.2025 um 18:00</b>{' '}
-            abgegeben werden.
-          </p>
-          <Countdown targetDate={reservationStartDate} />
-        </div>
-      </section>
-    );
 
   useEffect(() => {
     if (!router.isReady || !data) return;
@@ -145,6 +128,23 @@ export default function VipReservationPage() {
         ?.scrollIntoView({ behavior: 'smooth' });
     }, 300);
   };
+
+  if (showCountdown)
+    return (
+      <section
+        id="countdown"
+        className="h-screen flex items-center bg-gradient-to-tr from-gray-100 to-blue-100 text-black text-center px-4"
+      >
+        <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
+          <img src="/logo.png" alt="Logo" className="w-80 h-auto mb-4" />
+          <p className="text-xl md:text-2xl">
+            Reservierungsanfragen können ab dem <b>23.05.2025 um 18:00</b>{' '}
+            abgegeben werden.
+          </p>
+          <Countdown targetDate={reservationStartDate} />
+        </div>
+      </section>
+    );
 
   if (fetchError) return <ReservationError text={fetchError} />;
 
