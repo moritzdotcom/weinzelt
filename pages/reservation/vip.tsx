@@ -46,7 +46,7 @@ export default function VipReservationPage() {
 
   useEffect(() => {
     axios
-      .get('/api/reservationData?type=VIP')
+      .get('/api/reservationData')
       .then((res) => setData(res.data))
       .catch((e) => {
         if (isAxiosError(e)) {
@@ -124,7 +124,12 @@ export default function VipReservationPage() {
       (a, b) =>
         a +
         b.seatings.reduce(
-          (c, d) => c + (d.availableVip - d._count.reservations),
+          (c, d) =>
+            c +
+            (d.availableVip -
+              d.reservations
+                .filter(({ type }) => type == 'VIP')
+                .reduce((a, b) => a + b.tableCount, 0)),
           0
         ),
       0
@@ -166,7 +171,12 @@ export default function VipReservationPage() {
                     }`}
                     disabled={
                       seatings.reduce(
-                        (a, b) => a + (b.availableVip - b._count.reservations),
+                        (a, b) =>
+                          a +
+                          (b.availableVip -
+                            b.reservations
+                              .filter(({ type }) => type == 'VIP')
+                              .reduce((a, b) => a + b.tableCount, 0)),
                         0
                       ) === 0
                     }
@@ -189,7 +199,10 @@ export default function VipReservationPage() {
                   .sort((a, b) => a.timeslot.localeCompare(b.timeslot))
                   .map((seat) => {
                     const tablesLeft =
-                      seat.availableVip - seat._count.reservations;
+                      seat.availableVip -
+                      seat.reservations
+                        .filter(({ type }) => type == 'VIP')
+                        .reduce((a, b) => a + b.tableCount, 0);
                     return (
                       <Grid size={{ xs: 12, sm: 6, md: 4 }} key={seat.timeslot}>
                         <button

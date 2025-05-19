@@ -42,7 +42,7 @@ export default function StandingReservationPage() {
 
   useEffect(() => {
     axios
-      .get('/api/reservationData?type=STANDING')
+      .get('/api/reservationData')
       .then((res) => setData(res.data))
       .catch((e) => {
         if (isAxiosError(e)) {
@@ -109,7 +109,12 @@ export default function StandingReservationPage() {
       (a, b) =>
         a +
         b.seatings.reduce(
-          (c, d) => c + (d.availableStanding - d._count.reservations),
+          (c, d) =>
+            c +
+            (d.availableStanding -
+              d.reservations
+                .filter(({ type }) => type == 'STANDING')
+                .reduce((a, b) => a + b.tableCount, 0)),
           0
         ),
       0
@@ -152,7 +157,11 @@ export default function StandingReservationPage() {
                     disabled={
                       seatings.reduce(
                         (a, b) =>
-                          a + (b.availableStanding - b._count.reservations),
+                          a +
+                          (b.availableStanding -
+                            b.reservations
+                              .filter(({ type }) => type == 'STANDING')
+                              .reduce((a, b) => a + b.tableCount, 0)),
                         0
                       ) === 0
                     }
@@ -175,7 +184,10 @@ export default function StandingReservationPage() {
                   .sort((a, b) => a.timeslot.localeCompare(b.timeslot))
                   .map((seat) => {
                     const tablesLeft =
-                      seat.availableStanding - seat._count.reservations;
+                      seat.availableStanding -
+                      seat.reservations
+                        .filter(({ type }) => type == 'STANDING')
+                        .reduce((a, b) => a + b.tableCount, 0);
                     return (
                       <Grid size={{ xs: 12, sm: 6, md: 4 }} key={seat.timeslot}>
                         <button

@@ -65,7 +65,7 @@ async function handlePOST(
       people,
       seatingId,
       confirmationState: 'ACCEPTED',
-      notified: true,
+      notified: new Date(),
     },
     include: {
       seating: {

@@ -8,6 +8,7 @@ import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import Diversity1Icon from '@mui/icons-material/Diversity1';
+import ApartmentIcon from '@mui/icons-material/Apartment';
 
 export default function Backend({ session }: { session: Session }) {
   const router = useRouter();
@@ -47,6 +48,11 @@ export default function Backend({ session }: { session: Session }) {
           href="/backend/requests"
           text="Reservierungsanfragen"
           Icon={QuestionAnswerIcon}
+        />
+        <LinkItem
+          href="/backend/company"
+          text="Firmenbereich"
+          Icon={ApartmentIcon}
         />
         <LinkItem
           href="/backend/friendsFamily"

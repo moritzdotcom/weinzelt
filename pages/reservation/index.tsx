@@ -82,6 +82,13 @@ export default function ReservationPage() {
             className="text-black font-medium underline"
           >
             reservierung@dasweinzelt.de
+          </a>{' '}
+          oder nutze unser{' '}
+          <a
+            href="/reservation/company"
+            className="text-black font-medium underline"
+          >
+            Kontaktformular
           </a>
           .
         </Typography>

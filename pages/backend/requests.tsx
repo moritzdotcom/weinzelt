@@ -116,7 +116,7 @@ export default function BackendRequestsPage({ session }: { session: Session }) {
         r.type == selectedReservationType
       ) {
         const id = r.seatingId;
-        counts[id] = (counts[id] || 0) + 1;
+        counts[id] = (counts[id] || 0) + r.tableCount;
       }
     });
     return counts;
@@ -269,7 +269,7 @@ export default function BackendRequestsPage({ session }: { session: Session }) {
             </Typography>
           ) : (
             <motion.div
-              key={`${selectedConfirmationState}${selectedEventDate?.id}`}
+              key={`${selectedReservationType}${selectedConfirmationState}${selectedEventDate?.id}`}
               variants={{
                 hidden: {},
                 show: {
@@ -348,8 +348,8 @@ function ReservationCard({
     (selectedType == 'VIP'
       ? reservation.seating.availableVip
       : reservation.seating.availableStanding) -
-      reservationsAccepted <=
-    0;
+      reservationsAccepted <
+    reservation.tableCount;
 
   const handleAction = (state: ConfirmationState) => {
     setAnimating(state === 'ACCEPTED' ? 'left' : 'right');

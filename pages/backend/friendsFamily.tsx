@@ -67,11 +67,6 @@ export default function FriendsFamilyReservationPage() {
   // Reservation type state
   const [type, setType] = useState<'VIP' | 'STANDING'>('VIP');
 
-  // Cache fetched data by type
-  const [dataCache, setDataCache] = useState<{
-    [key: string]: ApiGetReservationDataResponse;
-  }>({});
-
   const [data, setData] = useState<ApiGetReservationDataResponse | null>(null);
   const [dataLoading, setDataLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string>();
@@ -97,17 +92,11 @@ export default function FriendsFamilyReservationPage() {
     setGuestCount('1');
     setPackagePrice('0');
 
-    if (dataCache[type]) {
-      setData(dataCache[type]);
-      return;
-    }
-
     setDataLoading(true);
     axios
-      .get<ApiGetReservationDataResponse>(`/api/reservationData?type=${type}`)
+      .get<ApiGetReservationDataResponse>(`/api/reservationData`)
       .then((res) => {
         setData(res.data);
-        setDataCache((prev) => ({ ...prev, [type]: res.data }));
       })
       .catch((e) => {
         if (isAxiosError(e) && e.response?.status === 404) {
@@ -117,7 +106,7 @@ export default function FriendsFamilyReservationPage() {
         }
       })
       .finally(() => setDataLoading(false));
-  }, [type]);
+  }, []);
 
   // Helper: determine if everything is booked
   const allBooked =
@@ -125,7 +114,13 @@ export default function FriendsFamilyReservationPage() {
       .flatMap((d) => d.seatings)
       .every((s) => {
         const free = type === 'VIP' ? s.availableVip : s.availableStanding;
-        return free - s._count.reservations <= 0;
+        return (
+          free -
+            s.reservations
+              .filter((r) => r.type == type)
+              .reduce((a, b) => a + b.tableCount, 0) <=
+          0
+        );
       }) ?? false;
 
   const selectedDateData = data?.eventDates.find(
@@ -161,7 +156,7 @@ export default function FriendsFamilyReservationPage() {
     if (!selectedSlot) return;
     setLoading(true);
     try {
-      await axios.post('/api/reservations', {
+      await axios.post('/api/reservations/friendsAndFamily', {
         type,
         name,
         email,
@@ -238,7 +233,9 @@ export default function FriendsFamilyReservationPage() {
                   (acc, s) =>
                     acc +
                     ((type === 'VIP' ? s.availableVip : s.availableStanding) -
-                      s._count.reservations),
+                      s.reservations
+                        .filter((r) => r.type == type)
+                        .reduce((a, b) => a + b.tableCount, 0)),
                   0
                 );
                 return (
@@ -275,7 +272,9 @@ export default function FriendsFamilyReservationPage() {
                   .map((s) => {
                     const free =
                       (type === 'VIP' ? s.availableVip : s.availableStanding) -
-                      s._count.reservations;
+                      s.reservations
+                        .filter((r) => r.type == type)
+                        .reduce((a, b) => a + b.tableCount, 0);
                     return (
                       <Grid size={{ xs: 12, sm: 6, md: 4 }} key={s.timeslot}>
                         <button

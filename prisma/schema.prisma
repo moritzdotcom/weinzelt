@@ -46,15 +46,16 @@ model EventDate {
 }
 
 model Seating {
-  id                  String        @id @default(uuid())
-  eventDate           EventDate     @relation(fields: [eventDateId], references: [id])
+  id                  String               @id @default(uuid())
+  eventDate           EventDate            @relation(fields: [eventDateId], references: [id])
   eventDateId         String
   timeslot            String
-  availableVip        Int           @default(10)
-  availableStanding   Int           @default(10)
+  availableVip        Int                  @default(10)
+  availableStanding   Int                  @default(10)
   foodRequired        Boolean
   availablePackageIds Int[]
   reservations        Reservation[]
+  companyReservations CompanyReservation[]
 }
 
 model Reservation {
@@ -69,9 +70,24 @@ model Reservation {
   packageName        String
   packageDescription String
   packagePrice       Int
+  tableCount         Int               @default(1)
   tableNumber        String?
-  notified           Boolean           @default(false)
+  notified           DateTime?
+  payed              Boolean           @default(false)
   createdAt          DateTime          @default(now())
+}
+
+model CompanyReservation {
+  id          String   @id @default(uuid())
+  seatingId   String
+  seating     Seating  @relation(fields: [seatingId], references: [id])
+  name        String
+  companyName String?
+  email       String
+  people      Int
+  budget      Int
+  text        String?
+  createdAt   DateTime @default(now())
 }
 
 enum ConfirmationState {

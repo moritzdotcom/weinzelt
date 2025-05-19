@@ -19,6 +19,7 @@ export function sendMail(
   return transporter.sendMail({
     from: process.env.MAIL_FROM,
     to,
+    bcc: process.env.MAIL_FROM,
     subject,
     text,
     html, // optional: hübsche HTML-Templates

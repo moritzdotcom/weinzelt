@@ -31,11 +31,7 @@ export type ApiGetReservationDataResponse = Prisma.EventGetPayload<{
             availableStanding: true;
             timeslot: true;
             availablePackageIds: true;
-            _count: {
-              select: {
-                reservations: { where: { confirmationState: 'ACCEPTED' } };
-              };
-            };
+            reservations: { select: { tableCount: true; type: true } };
           };
         };
       };
@@ -44,8 +40,6 @@ export type ApiGetReservationDataResponse = Prisma.EventGetPayload<{
 }>;
 
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {
-  const reservationType = req.query.type == 'STANDING' ? 'STANDING' : 'VIP';
-
   const reservations = await prisma.event.findFirst({
     where: { current: true },
     select: {
@@ -60,15 +54,11 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
               availableStanding: true,
               timeslot: true,
               availablePackageIds: true,
-              _count: {
-                select: {
-                  reservations: {
-                    where: {
-                      confirmationState: 'ACCEPTED',
-                      type: reservationType,
-                    },
-                  },
+              reservations: {
+                where: {
+                  confirmationState: 'ACCEPTED',
                 },
+                select: { tableCount: true, type: true },
               },
             },
           },

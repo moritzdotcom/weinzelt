@@ -35,17 +35,19 @@ export default function ConfirmDialog({
   return (
     <Dialog
       open={open}
-      TransitionComponent={Transition}
+      slots={{ transition: Transition }}
       keepMounted
       onClose={onCancel}
       aria-describedby="confirm-dialog-description"
-      PaperProps={{
-        sx: {
-          borderRadius: 4,
-          px: 2,
-          py: 1.5,
-          bgcolor: '#f9f9f9',
-          boxShadow: '0 4px 30px rgba(0,0,0,0.1)',
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: 4,
+            px: 2,
+            py: 1.5,
+            bgcolor: '#f9f9f9',
+            boxShadow: '0 4px 30px rgba(0,0,0,0.1)',
+          },
         },
       }}
     >

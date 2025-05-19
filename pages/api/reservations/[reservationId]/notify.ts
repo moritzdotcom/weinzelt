@@ -31,7 +31,7 @@ async function handlePOST(
   const reservation = await prisma.reservation.update({
     where: { id },
     data: {
-      notified: true,
+      notified: new Date(),
     },
     include: {
       seating: {
