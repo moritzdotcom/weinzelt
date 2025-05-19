@@ -110,6 +110,7 @@ export default function LocalBusiness() {
         name: e.title,
         startDate: e.startDate,
         endDate: e.endDate,
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
         location: {
           '@type': 'Place',
           name: 'Weinzelt',
