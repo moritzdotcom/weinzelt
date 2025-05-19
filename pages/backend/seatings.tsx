@@ -514,7 +514,7 @@ function SeatingCard({
           <TextField
             label="Timeslot (z. B. 11:00 - 15:00)"
             fullWidth
-            value={seating.timeslot}
+            value={seatingData.timeslot}
             onChange={(e) =>
               setSeatingData({ ...seatingData, timeslot: e.target.value })
             }
