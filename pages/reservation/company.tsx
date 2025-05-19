@@ -84,7 +84,12 @@ export default function CompanyReservationPage() {
     }
   };
 
-  if (!data) return <ReservationLoading />;
+  if (!data)
+    return fetchError ? (
+      <ReservationError text={fetchError} />
+    ) : (
+      <ReservationLoading />
+    );
 
   if (fetchError) return <ReservationError text={fetchError} />;
 

@@ -117,27 +117,26 @@ export default function VipReservationPage() {
     }, 300);
   };
 
-  if (!data) return <ReservationLoading />;
+  const allBooked = data
+    ? [...data.eventDates].reduce(
+        (a, b) =>
+          a +
+          b.seatings.reduce(
+            (c, d) =>
+              c +
+              (d.availableVip -
+                d.reservations
+                  .filter(({ type }) => type == 'VIP')
+                  .reduce((a, b) => a + b.tableCount, 0)),
+            0
+          ),
+        0
+      ) === 0
+    : false;
 
-  const allBooked =
-    [...data.eventDates].reduce(
-      (a, b) =>
-        a +
-        b.seatings.reduce(
-          (c, d) =>
-            c +
-            (d.availableVip -
-              d.reservations
-                .filter(({ type }) => type == 'VIP')
-                .reduce((a, b) => a + b.tableCount, 0)),
-          0
-        ),
-      0
-    ) === 0;
-
-  const selectedDateData = [...data.eventDates].find(
-    (d) => d.date === selectedDate
-  );
+  const selectedDateData = data
+    ? [...data.eventDates].find((d) => d.date === selectedDate)
+    : undefined;
 
   if (allBooked)
     return (
@@ -146,8 +145,12 @@ export default function VipReservationPage() {
 
   return (
     <ReservationCountdownSection startDate="2025-05-23T16:00:00Z">
-      {fetchError ? (
-        <ReservationError text={fetchError} />
+      {!data ? (
+        fetchError ? (
+          <ReservationError text={fetchError} />
+        ) : (
+          <ReservationLoading />
+        )
       ) : (
         <Box className="max-w-4xl mx-auto px-4 py-16 font-sans text-gray-800">
           <ReservationHeader>Tisch reservieren</ReservationHeader>

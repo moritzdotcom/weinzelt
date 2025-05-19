@@ -102,27 +102,26 @@ export default function StandingReservationPage() {
     }, 300);
   };
 
-  if (!data) return <ReservationLoading />;
+  const allBooked = data
+    ? [...data.eventDates].reduce(
+        (a, b) =>
+          a +
+          b.seatings.reduce(
+            (c, d) =>
+              c +
+              (d.availableStanding -
+                d.reservations
+                  .filter(({ type }) => type == 'STANDING')
+                  .reduce((a, b) => a + b.tableCount, 0)),
+            0
+          ),
+        0
+      ) === 0
+    : false;
 
-  const allBooked =
-    [...data.eventDates].reduce(
-      (a, b) =>
-        a +
-        b.seatings.reduce(
-          (c, d) =>
-            c +
-            (d.availableStanding -
-              d.reservations
-                .filter(({ type }) => type == 'STANDING')
-                .reduce((a, b) => a + b.tableCount, 0)),
-          0
-        ),
-      0
-    ) === 0;
-
-  const selectedDateData = [...data.eventDates].find(
-    (d) => d.date === selectedDate
-  );
+  const selectedDateData = data
+    ? [...data.eventDates].find((d) => d.date === selectedDate)
+    : undefined;
 
   if (allBooked)
     return (
@@ -131,8 +130,12 @@ export default function StandingReservationPage() {
 
   return (
     <ReservationCountdownSection startDate="2025-05-23T16:00:00Z">
-      {fetchError ? (
-        <ReservationError text={fetchError} />
+      {!data ? (
+        fetchError ? (
+          <ReservationError text={fetchError} />
+        ) : (
+          <ReservationLoading />
+        )
       ) : (
         <Box className="max-w-4xl mx-auto px-4 py-16 font-sans text-gray-800">
           <ReservationHeader>Stehtisch reservieren</ReservationHeader>
