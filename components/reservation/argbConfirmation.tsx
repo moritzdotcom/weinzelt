@@ -1,22 +1,60 @@
-import { Typography } from '@mui/material';
+import { Checkbox, FormControlLabel, Typography } from '@mui/material';
 import Link from 'next/link';
+import { ChangeEvent, useState } from 'react';
 
-export default function ARGBConfirmation() {
+export default function ARGBConfirmation({
+  onChecked,
+}: {
+  onChecked: (checked: boolean) => void;
+}) {
+  const [checked, setChecked] = useState(false);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setChecked(e.target.checked);
+    onChecked(e.target.checked);
+  };
+
   return (
-    <Typography
-      variant="body2"
-      className="text-sm text-gray-600 text-center py-3"
-    >
-      Mit dem Absenden akzeptierst du die{' '}
-      <Link
-        href="/argb"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="underline text-black hover:text-gray-800"
-      >
-        Allgemeinen Reservierungs- und Geschäftsbedingungen
-      </Link>
-      .
-    </Typography>
+    <FormControlLabel
+      control={
+        <Checkbox
+          checked={checked}
+          onChange={handleChange}
+          sx={{
+            color: 'black',
+            '&.Mui-checked': { color: 'black' },
+          }}
+        />
+      }
+      label={
+        <Typography
+          variant="body2"
+          sx={{
+            fontSize: '0.875rem',
+            color: '#333333',
+            display: 'inline',
+          }}
+        >
+          Mit dem Absenden akzeptierst du die{' '}
+          <Link
+            href="/argb"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              textDecoration: 'underline',
+              color: 'black',
+            }}
+          >
+            Allgemeinen Reservierungs- und Geschäftsbedingungen
+          </Link>
+          .*
+        </Typography>
+      }
+      sx={{
+        width: '100%',
+        justifyContent: 'start',
+        mt: 2,
+      }}
+    />
   );
 }
