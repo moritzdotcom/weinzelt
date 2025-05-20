@@ -1,3 +1,4 @@
+import sendReservationConfirmationMail from '@/lib/mailer/reservationConfirmationMail';
 import prisma from '@/lib/prismadb';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -31,7 +32,27 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
 
   const companyReservation = await prisma.companyReservation.create({
     data: { companyName, name, email, people, budget, text, seatingId },
+    include: {
+      seating: {
+        select: {
+          timeslot: true,
+          eventDate: {
+            select: {
+              date: true,
+            },
+          },
+        },
+      },
+    },
   });
+
+  sendReservationConfirmationMail(
+    email,
+    name,
+    people,
+    companyReservation.seating.eventDate.date,
+    companyReservation.seating.timeslot
+  );
 
   return res.json(companyReservation);
 }

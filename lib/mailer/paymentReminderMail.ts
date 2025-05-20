@@ -8,11 +8,12 @@ export default function sendPaymentReminderMail(
   timeslot: string,
   price: number
 ) {
-  return sendMail(
-    email,
-    'Zahlungserinnerung für deine Weinzelt-Reservierung',
-    `Hallo ${name},\n\nmanchmal schmeckt der Wein so gut, dass wir die wichtigen Dinge aus den Augen verlieren - uns ist aufgefallen, dass die Zahlung von ${price} € für deine Reservierung (${people} Pers. am ${date} um ${timeslot}) noch aussteht.\n\nBitte überweise den Betrag innerhalb der nächsten 3 Tage, sonst müssen wir deine Reservierung leider stornieren.\n\nLiebe Grüße,\nDein Weinzelt-Team`,
-    `<!DOCTYPE html>
+  return sendMail({
+    to: email,
+    sendCopy: true,
+    subject: 'Zahlungserinnerung für deine Weinzelt-Reservierung',
+    text: `Hallo ${name},\n\nmanchmal schmeckt der Wein so gut, dass wir die wichtigen Dinge aus den Augen verlieren - uns ist aufgefallen, dass die Zahlung von ${price} € für deine Reservierung (${people} Pers. am ${date} um ${timeslot}) noch aussteht.\n\nBitte überweise den Betrag innerhalb der nächsten 3 Tage, sonst müssen wir deine Reservierung leider stornieren.\n\nLiebe Grüße,\nDein Weinzelt-Team`,
+    html: `<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
@@ -95,6 +96,6 @@ export default function sendPaymentReminderMail(
     </tr>
   </table>
 </body>
-</html>`
-  );
+</html>`,
+  });
 }

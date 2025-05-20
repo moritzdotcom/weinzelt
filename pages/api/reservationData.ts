@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prismadb';
 import { Prisma } from '@prisma/client';
 import { validatePackage } from '@/lib/packages';
+import sendReservationConfirmationMail from '@/lib/mailer/reservationConfirmationMail';
 
 export default async function handle(
   req: NextApiRequest,
@@ -118,7 +119,27 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
       foodOptionDescription,
       foodOptionPrice,
     },
+    include: {
+      seating: {
+        select: {
+          timeslot: true,
+          eventDate: {
+            select: {
+              date: true,
+            },
+          },
+        },
+      },
+    },
   });
+
+  sendReservationConfirmationMail(
+    email,
+    name,
+    people,
+    reservation.seating.eventDate.date,
+    reservation.seating.timeslot
+  );
 
   return res.json(reservation);
 }

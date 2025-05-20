@@ -7,11 +7,12 @@ export default function sendFriendsAndFamilyMail(
   date: string,
   timeslot: string
 ) {
-  return sendMail(
-    email,
-    'Deine Reservierung wurde bestätigt',
-    `Hallo ${name},\n\ndeine Reservierung für ${people} Pers. am ${date} für den Zeitraum ${timeslot} ist bestätigt!\n\nWir freuen uns auf dich.\n\nLiebe Grüße,\nDas Weinzelt-Team`,
-    `<!DOCTYPE html>
+  return sendMail({
+    to: email,
+    sendCopy: true,
+    subject: 'Deine Reservierung wurde bestätigt',
+    text: `Hallo ${name},\n\ndeine Reservierung für ${people} Pers. am ${date} für den Zeitraum ${timeslot} ist bestätigt!\n\nWir freuen uns auf dich.\n\nLiebe Grüße,\nDas Weinzelt-Team`,
+    html: `<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
@@ -77,6 +78,6 @@ export default function sendFriendsAndFamilyMail(
     </tr>
   </table>
 </body>
-</html>`
-  );
+</html>`,
+  });
 }

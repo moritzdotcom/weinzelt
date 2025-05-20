@@ -10,11 +10,12 @@ export default function sendReservationMail(
   packageName: string,
   packageDescription: string
 ) {
-  return sendMail(
-    email,
-    'Deine Reservierung wurde bestätigt',
-    `Hallo ${name},\n\ndeine Reservierung für ${people} Pers. am ${date} für den Zeitraum ${timeslot} ist bestätigt!\nBitte überweise ${price} € im Voraus auf das unten stehende Konto. Bei Nichtzahlung innerhalb einer Woche verfällt die Reservierung.\n\nLiebe Grüße,\nDas Weinzelt-Team`,
-    `<!DOCTYPE html>
+  return sendMail({
+    to: email,
+    sendCopy: true,
+    subject: 'Deine Reservierung wurde bestätigt',
+    text: `Hallo ${name},\n\ndeine Reservierung für ${people} Pers. am ${date} für den Zeitraum ${timeslot} ist bestätigt!\nBitte überweise ${price} € im Voraus auf das unten stehende Konto. Bei Nichtzahlung innerhalb einer Woche verfällt die Reservierung.\n\nLiebe Grüße,\nDas Weinzelt-Team`,
+    html: `<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
@@ -96,6 +97,6 @@ export default function sendReservationMail(
     </tr>
   </table>
 </body>
-</html>`
-  );
+</html>`,
+  });
 }

@@ -10,16 +10,23 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export function sendMail(
-  to: string,
-  subject: string,
-  text: string,
-  html?: string
-) {
+export function sendMail({
+  to,
+  subject,
+  text,
+  html,
+  sendCopy,
+}: {
+  to: string;
+  subject: string;
+  text: string;
+  html?: string;
+  sendCopy?: boolean;
+}) {
   return transporter.sendMail({
     from: process.env.MAIL_FROM,
     to,
-    bcc: process.env.MAIL_FROM,
+    bcc: sendCopy ? process.env.MAIL_FROM : undefined,
     subject,
     text,
     html,
