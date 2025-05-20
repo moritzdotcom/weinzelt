@@ -1,24 +1,22 @@
 import { sendMail } from '@/lib/mailer';
 
-export default function sendReservationMail(
+export default function sendPaymentReminderMail(
   email: string,
   name: string,
-  people: string,
+  people: number,
   date: string,
   timeslot: string,
-  price: number,
-  packageName: string,
-  packageDescription: string
+  price: number
 ) {
   return sendMail(
     email,
-    'Deine Reservierung wurde bestätigt',
-    `Hallo ${name},\n\ndeine Reservierung für ${people} Pers. am ${date} für den Zeitraum ${timeslot} ist bestätigt!\nBitte überweise ${price} € im Voraus auf das unten stehende Konto. Bei Nichtzahlung innerhalb einer Woche verfällt die Reservierung.\n\nLiebe Grüße,\nDas Weinzelt-Team`,
+    'Zahlungserinnerung für deine Weinzelt-Reservierung',
+    `Hallo ${name},\n\nmanchmal schmeckt der Wein so gut, dass wir die wichtigen Dinge aus den Augen verlieren - uns ist aufgefallen, dass die Zahlung von ${price} € für deine Reservierung (${people} Pers. am ${date} um ${timeslot}) noch aussteht.\n\nBitte überweise den Betrag innerhalb der nächsten 3 Tage, sonst müssen wir deine Reservierung leider stornieren.\n\nLiebe Grüße,\nDein Weinzelt-Team`,
     `<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Reservierung bestätigt</title>
+  <meta charset="UTF-8" />
+  <title>Zahlungserinnerung</title>
 </head>
 <body style="margin:0; padding:0; font-family:Arial,sans-serif; background-color:#f9f9f9;">
   <table width="100%" cellpadding="0" cellspacing="0">
@@ -34,51 +32,52 @@ export default function sendReservationMail(
           <!-- Überschrift -->
           <tr>
             <td style="padding:0 20px 10px;">
-              <h1 style="margin:0; font-size:24px; color:#333333; text-align:center;">Reservierung bestätigt</h1>
+              <h1 style="margin:0; font-size:24px; color:#333333; text-align:center;">
+                Zahlungserinnerung
+              </h1>
             </td>
           </tr>
-          <!-- Bestätigungs-Box mit Zahlungsdaten -->
+          <!-- Erinnerungs-Box mit Zahlungsdaten -->
           <tr>
             <td style="padding:0 20px 20px;">
               <div style="background-color:#f0f0f0; padding:20px; border-radius:5px; color:#333333; font-size:16px; line-height:1.5;">
                 <p>Hallo <strong>${name}</strong>,</p>
-                <p>deine Reservierung für <strong>${people} Personen</strong> am <strong>${date}</strong> um <strong>${timeslot}</strong> Uhr ist bestätigt!</p>
+                <p>manchmal schmeckt der Wein so gut, dass die wichtigen Dinge in Vergessenheit geraten - uns ist aufgefallen, dass die Zahlung für deine Reservierung noch nicht eingegangen ist.</p>
                 <hr style="border:none; border-top:1px solid #cccccc; margin:16px 0;" />
-                <p><strong>Dein gebuchtes Package:</strong><br/>
-                  <strong>${packageName}</strong><br/>
-                  ${packageDescription}
+                <p>
+                  <strong>Reservierung:</strong><br/>
+                  ${people} Personen am ${date} um ${timeslot} Uhr
+                </p>
+                <p>
+                  <strong>Betrag:</strong> ${price} €
                 </p>
                 <hr style="border:none; border-top:1px solid #cccccc; margin:16px 0;" />
                 <p><strong>Zahlungsdaten:</strong><br/>
-                  Bitte überweise <strong>${price} €</strong> im Voraus auf folgendes Konto:<br/>
                   Name: Weinzelt GmbH<br/>
                   IBAN: DEXXXXXXXXXXXXXXX<br/>
                   BIC: XXXXXXX<br/>
                   Verwendungszweck: Tischreservierung ${name} / ${date} ${timeslot}
                 </p>
-                <p style="color:#000000; font-weight:bold;">
-                  Zahlung innerhalb einer Woche erforderlich, sonst verfällt die Reservierung.
+                <p style="color:#cc0000; font-weight:bold;">
+                  Bitte überweise innerhalb der nächsten <strong>3 Tage</strong>. Ansonsten stornieren wir deine Reservierung.
                 </p>
               </div>
-            </td>
-          </tr>
-          <!-- Hinweis zur Pünktlichkeit -->
-          <tr>
-            <td style="padding:0 20px 20px; color:#333333; font-size:14px; line-height:1.4;">
-              Bitte erscheine pünktlich: Nach 15 Minuten ab deiner gebuchten Zeit können wir leider keinen Eintritt mehr gewähren.
             </td>
           </tr>
           <!-- Rechtlicher Hinweis -->
           <tr>
             <td style="padding:0 20px 20px; font-size:12px; font-style:italic; color:#666666; line-height:1.4;">
               Weitere Details findest du in unseren 
-              <a href="https://dasweinzelt.de/argb" style="color:#666666; text-decoration:underline;">Allgemeinen Reservierungs- und Geschäftsbedingungen</a>.
+              <a href="https://dasweinzelt.de/argb"
+                 style="color:#666666; text-decoration:underline;">
+                Allgemeinen Reservierungs- und Geschäftsbedingungen
+              </a>.
             </td>
           </tr>
           <!-- Abschiedsfloskel -->
           <tr>
             <td style="padding:0 20px 20px; color:#333333; font-size:14px; line-height:1.5;">
-              Wir freuen uns auf deinen Besuch!<br/><br/>
+              Wir freuen uns darauf, dich bald im Weinzelt zu begrüßen!<br/><br/>
               Liebe Grüße<br/>
               Dein Weinzelt-Team
             </td>
