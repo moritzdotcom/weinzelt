@@ -52,8 +52,8 @@ export default function sendReservationMail(
                 <p><strong>Zahlungsdaten:</strong><br/>
                   Bitte überweise <strong>${price} €</strong> im Voraus auf folgendes Konto:<br/>
                   Name: Weinzelt GmbH<br/>
-                  IBAN: DEXXXXXXXXXXXXXXX<br/>
-                  BIC: XXXXXXX<br/>
+                  IBAN: DE48 3004 0000 0155 5085 00<br/>
+                  BIC: COBADEFFXXX<br/>
                   Verwendungszweck: Tischreservierung ${name} / ${date} ${timeslot}
                 </p>
                 <p style="color:#000000; font-weight:bold;">

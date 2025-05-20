@@ -54,8 +54,8 @@ export default function sendPaymentReminderMail(
                 <hr style="border:none; border-top:1px solid #cccccc; margin:16px 0;" />
                 <p><strong>Zahlungsdaten:</strong><br/>
                   Name: Weinzelt GmbH<br/>
-                  IBAN: DEXXXXXXXXXXXXXXX<br/>
-                  BIC: XXXXXXX<br/>
+                  IBAN: DE48 3004 0000 0155 5085 00<br/>
+                  BIC: COBADEFFXXX<br/>
                   Verwendungszweck: Tischreservierung ${name} / ${date} ${timeslot}
                 </p>
                 <p style="color:#cc0000; font-weight:bold;">
