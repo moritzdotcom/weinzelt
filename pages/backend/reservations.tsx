@@ -1,34 +1,22 @@
 import { Session } from '@/hooks/useSession';
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ApiGetEventsResponse } from '../api/events';
 import { ApiGetReservationsResponse } from '../api/events/[eventId]/reservations';
 import {
   Box,
-  Button,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Fade,
-  IconButton,
   MenuItem,
-  Snackbar,
   TextField,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { motion } from 'framer-motion';
 import DownloadIcon from '@mui/icons-material/Download';
-import { translateType } from '@/lib/reservation';
-import MailOutlineIcon from '@mui/icons-material/MailOutline';
-import CheckIcon from '@mui/icons-material/Check';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import ReservationCard from '@/components/reservation/card';
 
 export default function BackendReservationsPage({
   session,
@@ -43,9 +31,6 @@ export default function BackendReservationsPage({
   >(null);
   const [reservations, setReservations] =
     useState<ApiGetReservationsResponse>();
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [notifying, setNotifying] = useState(false);
-  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const selectedEvent = useMemo(
     () => events.filter((e) => e.id == selectedEventId)[0],
@@ -82,40 +67,13 @@ export default function BackendReservationsPage({
     return Object.entries(grouped).sort((a, b) => a[0].localeCompare(b[0]));
   }, [filteredReservations]);
 
-  const updateTableNumber = async (
-    reservationId: string,
-    tableNumber: string
+  const updateReservation = (
+    reservation: ApiGetReservationsResponse[number]
   ) => {
     setReservations((res) =>
       res
-        ? res.map((r) => (r.id == reservationId ? { ...r, tableNumber } : r))
+        ? res.map((r) => (r.id == reservation.id ? reservation : r))
         : undefined
-    );
-    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-
-    if (tableNumber.length <= 0) return;
-
-    debounceTimeout.current = setTimeout(async () => {
-      await axios.put(`/api/reservations/${reservationId}`, { tableNumber });
-      setSnackbarOpen(true);
-    }, 1000);
-  };
-
-  const notifyReservation = async (id: string) => {
-    setNotifying(true);
-    await axios.post(`/api/reservations/${id}/notify`);
-
-    setReservations((res) =>
-      res
-        ? res.map((r) => (r.id == id ? { ...r, notified: new Date() } : r))
-        : undefined
-    );
-    setNotifying(false);
-  };
-
-  const onPaymentConfirmed = (id: string) => {
-    setReservations((res) =>
-      res ? res.map((r) => (r.id == id ? { ...r, payed: true } : r)) : undefined
     );
   };
 
@@ -272,10 +230,7 @@ export default function BackendReservationsPage({
                             key={reservation.id}
                             doubleBooking={doubleBooking}
                             reservation={reservation}
-                            updateTableNumber={updateTableNumber}
-                            notifyReservation={notifyReservation}
-                            notifying={notifying}
-                            onPaymentConfirmed={onPaymentConfirmed}
+                            onUpdate={updateReservation}
                           />
                         );
                       })}
@@ -286,151 +241,6 @@ export default function BackendReservationsPage({
           )}
         </div>
       </Fade>
-
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={() => setSnackbarOpen(false)}
-        message="Tischnummer gespeichert"
-      />
     </Box>
-  );
-}
-
-function ReservationCard({
-  reservation,
-  doubleBooking,
-  updateTableNumber,
-  notifyReservation,
-  notifying,
-  onPaymentConfirmed,
-}: {
-  reservation: ApiGetReservationsResponse[number];
-  doubleBooking?: ApiGetReservationsResponse[number];
-  updateTableNumber: (id: string, value: string) => void;
-  notifyReservation: (id: string) => void;
-  notifying: boolean;
-  onPaymentConfirmed: (id: string) => void;
-}) {
-  const [dialogOpen, setDialogOpen] = useState(false);
-
-  const handleConfirm = async () => {
-    await axios.put(`/api/reservations/${reservation.id}`, { payed: true });
-    onPaymentConfirmed(reservation.id);
-    setDialogOpen(false);
-  };
-
-  return (
-    <motion.div
-      key={reservation.id}
-      variants={{
-        hidden: { opacity: 0, x: -30 },
-        show: {
-          opacity: 1,
-          x: 0,
-          transition: { duration: 0.4 },
-        },
-      }}
-      className="p-4 border border-gray-200 rounded-xl shadow-sm"
-    >
-      <Box className="flex flex-row gap-2 justify-between items-start mb-1 flex-wrap">
-        <div className="flex flex-col sm:flex-row gap-1">
-          <h6 className="text-xl font-medium">{reservation.name}</h6>
-          <h6 className="text-xl font-medium">
-            ({reservation.people} Personen)
-          </h6>
-        </div>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1">
-          <Tooltip
-            title={
-              reservation.payed ? 'Zahlung erhalten' : 'Zahlung ausstehend'
-            }
-          >
-            <IconButton size="small" onClick={() => setDialogOpen(true)}>
-              {reservation.payed ? (
-                <CheckCircleIcon color="success" />
-              ) : (
-                <HourglassEmptyIcon color="warning" />
-              )}
-            </IconButton>
-          </Tooltip>
-          <p className="text-sm px-2 py-1 border rounded-full border-gray-300 text-gray-600">
-            {translateType(reservation.type)}
-          </p>
-        </div>
-      </Box>
-
-      <Typography className="text-sm text-gray-500">
-        {reservation.email}
-      </Typography>
-
-      <Typography className="text-sm mt-1 font-medium">
-        {reservation.packageName} - {reservation.packagePrice} €
-      </Typography>
-
-      <Typography className="text-sm text-gray-600">
-        {reservation.packageDescription}
-      </Typography>
-
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-4">
-        <Box className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-          <TextField
-            label="Tischnummer"
-            variant="outlined"
-            size="small"
-            error={Boolean(doubleBooking)}
-            value={reservation.tableNumber || ''}
-            onChange={(e) => updateTableNumber(reservation.id, e.target.value)}
-          />
-          {doubleBooking && (
-            <p className="text-red-600">Tisch doppelt belegt!</p>
-          )}
-        </Box>
-        {reservation.notified ? (
-          <Tooltip
-            title={`Benachrichtigt am: ${new Date(
-              reservation.notified
-            ).toLocaleDateString('de')}`}
-          >
-            <button className="border bg-neutral-400 text-white px-3 py-2 rounded-full flex items-center gap-1 text-base cursor-default!">
-              <CheckIcon fontSize="inherit" />
-              <span>Benachrichtigt</span>
-            </button>
-          </Tooltip>
-        ) : (
-          <button
-            onClick={() => notifyReservation(reservation.id)}
-            disabled={notifying}
-            className="border border-sky-500 text-sky-500 px-3 py-2 rounded-full flex items-center gap-1 text-base"
-          >
-            <MailOutlineIcon fontSize="inherit" />
-            <span>Benachrichtigen</span>
-          </button>
-        )}
-      </div>
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>Zahlungseingang bestätigen</DialogTitle>
-        <DialogContent dividers>
-          <Typography>
-            Möchtest du den Zahlungseingang für{' '}
-            <strong>{reservation.name}</strong> bestätigen?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <button
-            className="border rounded px-3 py-2"
-            onClick={() => setDialogOpen(false)}
-          >
-            Abbrechen
-          </button>
-          <button
-            className="bg-black text-white rounded border border-black px-3 py-2"
-            onClick={handleConfirm}
-          >
-            Bestätigen
-          </button>
-        </DialogActions>
-      </Dialog>
-    </motion.div>
   );
 }
