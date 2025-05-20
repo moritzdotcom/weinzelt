@@ -76,6 +76,7 @@ export default function CompanyReservationPage() {
       setEmail('');
       setBudget('');
       setText('');
+      setArgbChecked(false);
     } catch (error) {
       console.error(error);
       alert('Beim Senden deiner Anfrage ist ein Fehler aufgetreten.');
@@ -103,7 +104,7 @@ export default function CompanyReservationPage() {
     !selectedSlot ||
     !name.trim() ||
     !email.trim() ||
-    !personCount ||
+    Number(personCount) < 8 ||
     !budget ||
     !argbChecked;
 
@@ -185,6 +186,8 @@ export default function CompanyReservationPage() {
           <TextField
             fullWidth
             label="Anzahl Personen"
+            helperText="Mindestens 8 Personen"
+            error={Boolean(personCount) && Number(personCount) < 8}
             type="number"
             required
             value={personCount}
