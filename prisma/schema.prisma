@@ -59,22 +59,26 @@ model Seating {
 }
 
 model Reservation {
-  id                 String            @id @default(uuid())
-  type               ReservationType   @default(VIP)
-  name               String
-  email              String
-  people             Int
-  seatingId          String
-  seating            Seating           @relation(fields: [seatingId], references: [id])
-  confirmationState  ConfirmationState @default(REQUESTED)
-  packageName        String
-  packageDescription String
-  packagePrice       Int
-  tableCount         Int               @default(1)
-  tableNumber        String?
-  notified           DateTime?
-  payed              Boolean           @default(false)
-  createdAt          DateTime          @default(now())
+  id                    String            @id @default(uuid())
+  type                  ReservationType   @default(VIP)
+  name                  String
+  email                 String
+  people                Int
+  seatingId             String
+  seating               Seating           @relation(fields: [seatingId], references: [id])
+  confirmationState     ConfirmationState @default(REQUESTED)
+  packageName           String
+  packageDescription    String
+  packagePrice          Int
+  foodOptionName        String?
+  foodOptionDescription String?
+  foodOptionPrice       Int?
+  tableCount            Int               @default(1)
+  tableNumber           String?
+  notified              DateTime?
+  paymentReminderSent   DateTime?
+  payed                 Boolean           @default(false)
+  createdAt             DateTime          @default(now())
 }
 
 model CompanyReservation {
