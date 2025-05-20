@@ -59,6 +59,7 @@ export default function ReservationCard({
 
   const handlePaymentReminder = async () => {
     await axios.post(`/api/reservations/${reservation.id}/sendPaymentReminder`);
+    onUpdate({ ...reservation, paymentReminderSent: new Date() });
     setAnchorEl(null);
   };
 
@@ -173,7 +174,13 @@ export default function ReservationCard({
           <Tooltip
             title={`Benachrichtigt am: ${new Date(
               reservation.notified
-            ).toLocaleDateString('de')}`}
+            ).toLocaleDateString('de')} ${
+              reservation.paymentReminderSent
+                ? ` - Erinnert am: ${new Date(
+                    reservation.paymentReminderSent
+                  ).toLocaleDateString('de')}`
+                : ''
+            }`}
           >
             <button className="border bg-neutral-400 text-white px-3 py-2 rounded-full flex items-center gap-1 text-base cursor-default!">
               <CheckIcon fontSize="inherit" />
@@ -202,6 +209,7 @@ export default function ReservationCard({
         <Divider />
         <MenuItem
           disabled={
+            Boolean(reservation.paymentReminderSent) ||
             reservation.payed ||
             !reservation.notified ||
             new Date(reservation.notified).getTime() - new Date().getTime() <

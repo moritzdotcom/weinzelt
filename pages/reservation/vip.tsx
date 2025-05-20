@@ -96,6 +96,8 @@ export default function VipReservationPage() {
     setPersonCount('8');
     setName('');
     setEmail('');
+    setSelectedFoodOption(null);
+    setArgbChecked(false);
   };
 
   const selectDate = (date: string) => {
