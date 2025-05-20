@@ -33,6 +33,7 @@ export default function StandingReservationPage() {
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [fetchError, setFetchError] = useState<string>();
+  const [argbChecked, setArgbChecked] = useState(false);
 
   useEffect(() => {
     if (!router.isReady || !data) return;
@@ -280,11 +281,13 @@ export default function StandingReservationPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 margin="normal"
               />
-              <ARGBConfirmation />
+              <ARGBConfirmation onChecked={setArgbChecked} />
               <button
                 className="w-full rounded-full bg-black text-white py-3 font-semibold text-center hover:bg-gray-800 transition disabled:bg-gray-600"
                 onClick={handleSubmit}
-                disabled={loading || !name.trim() || !email.trim()}
+                disabled={
+                  loading || !name.trim() || !email.trim() || !argbChecked
+                }
               >
                 Reservierung anfragen
               </button>

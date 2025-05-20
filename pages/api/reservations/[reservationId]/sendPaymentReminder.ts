@@ -1,6 +1,7 @@
 import sendPaymentReminderMail from '@/lib/mailer/paymentReminderMail';
 import sendReservationMail from '@/lib/mailer/reservationMail';
 import prisma from '@/lib/prismadb';
+import { fullPrice } from '@/lib/reservation';
 import { getServerSession } from '@/lib/session';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -54,7 +55,7 @@ async function handlePOST(
     reservation.people,
     reservation.seating.eventDate.date,
     reservation.seating.timeslot,
-    reservation.packagePrice
+    fullPrice(reservation)
   );
 
   return res.json(reservation);

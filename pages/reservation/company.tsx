@@ -33,6 +33,7 @@ export default function CompanyReservationPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [argbChecked, setArgbChecked] = useState(false);
 
   // Lade verfügbare Termine
   useEffect(() => {
@@ -103,7 +104,8 @@ export default function CompanyReservationPage() {
     !name.trim() ||
     !email.trim() ||
     !personCount ||
-    !budget;
+    !budget ||
+    !argbChecked;
 
   return (
     <Box className="max-w-4xl mx-auto px-4 py-16 font-sans text-gray-800">
@@ -215,7 +217,7 @@ export default function CompanyReservationPage() {
           />
         </div>
 
-        <ARGBConfirmation />
+        <ARGBConfirmation onChecked={setArgbChecked} />
 
         <button
           className="w-full rounded-full bg-black text-white py-3 font-semibold text-center hover:bg-gray-800 transition disabled:bg-gray-600"

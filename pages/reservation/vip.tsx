@@ -18,6 +18,10 @@ import ReservationConfirmationDialog from '@/components/reservation/confirmation
 import ARGBConfirmation from '@/components/reservation/argbConfirmation';
 import { useRouter } from 'next/router';
 import ReservationCountdownSection from '@/components/reservation/countdown';
+import RestaurantIcon from '@mui/icons-material/Restaurant';
+import { foodOptions, FoodOptionType } from '@/lib/foodOptions';
+import FoodOptionCard from '@/components/reservation/foodOptionCard';
+import OrderSummary from '@/components/reservation/orderSummary';
 
 type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
@@ -30,6 +34,8 @@ export default function VipReservationPage() {
   const [selectedPackage, setSelectedPackage] = useState<PackageType | null>(
     null
   );
+  const [selectedFoodOption, setSelectedFoodOption] =
+    useState<FoodOptionType | null>(null);
   const [personCount, setPersonCount] = useState<string>('8');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -37,6 +43,7 @@ export default function VipReservationPage() {
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [fetchError, setFetchError] = useState<string>();
+  const [argbChecked, setArgbChecked] = useState(false);
 
   useEffect(() => {
     if (!router.isReady || !data) return;
@@ -74,6 +81,9 @@ export default function VipReservationPage() {
       packagePrice: selectedPackage?.price,
       people: Number(personCount),
       seatingId: selectedSlot?.id,
+      foodOptionName: selectedFoodOption?.name,
+      foodOptionDescription: selectedFoodOption?.description,
+      foodOptionPrice: selectedFoodOption?.price,
     });
 
     setSuccess(true);
@@ -92,6 +102,7 @@ export default function VipReservationPage() {
     setSelectedDate(date);
     setSelectedSlot(null);
     setSelectedPackage(null);
+    setSelectedFoodOption(null);
     setTimeout(() => {
       document
         .querySelector('#timeslots')
@@ -101,6 +112,8 @@ export default function VipReservationPage() {
 
   const selectTimeslot = (slot: SeatingType) => {
     setSelectedSlot(slot);
+    setSelectedPackage(null);
+    setSelectedFoodOption(null);
     setTimeout(() => {
       document
         .querySelector('#packages')
@@ -110,6 +123,15 @@ export default function VipReservationPage() {
 
   const selectPackage = (pkg: PackageType) => {
     setSelectedPackage(pkg);
+    setTimeout(() => {
+      document
+        .querySelector('#foodSelection')
+        ?.scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+  };
+
+  const selectFoodOption = (opt: FoodOptionType) => {
+    setSelectedFoodOption(opt);
     setTimeout(() => {
       document
         .querySelector('#contact')
@@ -209,7 +231,7 @@ export default function VipReservationPage() {
                     return (
                       <Grid size={{ xs: 12, sm: 6, md: 4 }} key={seat.timeslot}>
                         <button
-                          className={`w-full rounded-full mb-2 px-4 py-2 text-sm font-medium disabled:opacity-50 shadow-sm border transition-all duration-300 ${
+                          className={`w-full flex items-center justify-center gap-2 rounded-full mb-2 px-4 py-2 text-sm font-medium disabled:opacity-50 shadow-sm border transition-all duration-300 ${
                             selectedSlot?.timeslot === seat.timeslot
                               ? 'bg-black text-white'
                               : 'bg-white border-gray-300 text-gray-800'
@@ -217,7 +239,10 @@ export default function VipReservationPage() {
                           onClick={() => selectTimeslot(seat)}
                           disabled={tablesLeft === 0}
                         >
-                          {seat.timeslot}
+                          <p>{seat.timeslot}</p>
+                          {seat.foodRequired && (
+                            <RestaurantIcon fontSize="inherit" />
+                          )}
                         </button>
                         <Typography
                           variant="body2"
@@ -261,6 +286,30 @@ export default function VipReservationPage() {
           )}
 
           {selectedPackage && (
+            <Box id="foodSelection" mt={6} className="space-y-4">
+              <div className="flex flex-col gap-1">
+                <h5 className="text-2xl">Wähle dein Essen</h5>
+                {selectedSlot?.foodRequired && (
+                  <h5 className="text-lg text-neutral-500">
+                    (Essen im ausgewählten Timeslot verpflichtend)
+                  </h5>
+                )}
+              </div>
+              <div className="flex flex-col gap-5">
+                {foodOptions.map((opt) => (
+                  <FoodOptionCard
+                    key={opt.name}
+                    food={opt}
+                    selected={selectedFoodOption?.id === opt.id}
+                    onSelect={() => selectFoodOption(opt)}
+                    disabled={selectedSlot?.foodRequired && !opt.price}
+                  />
+                ))}
+              </div>
+            </Box>
+          )}
+
+          {selectedFoodOption && (
             <Box id="contact" mt={6} className="space-y-4">
               <Typography variant="h5" gutterBottom>
                 Kontaktdaten
@@ -292,11 +341,20 @@ export default function VipReservationPage() {
                 fullWidth
                 margin="normal"
               />
-              <ARGBConfirmation />
+
+              <OrderSummary
+                people={Number(personCount)}
+                foodOption={selectedFoodOption}
+                pkg={selectedPackage}
+              />
+
+              <ARGBConfirmation onChecked={setArgbChecked} />
               <button
                 className="w-full rounded-full bg-black text-white py-3 font-semibold text-center hover:bg-gray-800 transition disabled:bg-gray-600"
                 onClick={handleSubmit}
-                disabled={loading || !name.trim() || !email.trim()}
+                disabled={
+                  loading || !name.trim() || !email.trim() || !argbChecked
+                }
               >
                 Reservierung anfragen
               </button>

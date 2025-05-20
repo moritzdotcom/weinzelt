@@ -17,6 +17,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { ConfirmationState, ReservationType } from '@prisma/client';
 import { motion } from 'framer-motion';
 import {
+  fullPrice,
   translateState,
   translateStateAdj,
   translateType,
@@ -46,9 +47,9 @@ export default function BackendRequestsPage({ session }: { session: Session }) {
     return [...reservations].sort((a, b) => {
       switch (sortBy) {
         case 'Preis absteigend':
-          return b.packagePrice - a.packagePrice;
+          return fullPrice(b) - fullPrice(a);
         case 'Preis aufsteigend':
-          return a.packagePrice - b.packagePrice;
+          return fullPrice(a) - fullPrice(b);
         case 'Neuste zuerst':
           return (
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
