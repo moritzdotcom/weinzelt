@@ -1,3 +1,4 @@
+import sendPaymentReminderMail from '@/lib/mailer/paymentReminderMail';
 import sendReservationMail from '@/lib/mailer/reservationMail';
 import prisma from '@/lib/prismadb';
 import { getServerSession } from '@/lib/session';
@@ -47,15 +48,13 @@ async function handlePOST(
     },
   });
 
-  await sendReservationMail(
+  await sendPaymentReminderMail(
     reservation.email,
     reservation.name,
-    String(reservation.people),
+    reservation.people,
     reservation.seating.eventDate.date,
     reservation.seating.timeslot,
-    reservation.packagePrice,
-    reservation.packageName,
-    reservation.packageDescription
+    reservation.packagePrice
   );
 
   return res.json(reservation);

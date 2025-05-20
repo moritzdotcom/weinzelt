@@ -1,3 +1,4 @@
+import sendReservationCancelMail from '@/lib/mailer/reservationCancelMail';
 import sendReservationMail from '@/lib/mailer/reservationMail';
 import prisma from '@/lib/prismadb';
 import { getServerSession } from '@/lib/session';
@@ -28,10 +29,12 @@ async function handlePOST(
   res: NextApiResponse,
   id: string
 ) {
+  const { reason } = req.body;
+
   const reservation = await prisma.reservation.update({
     where: { id },
     data: {
-      notified: new Date(),
+      confirmationState: 'DECLINED',
     },
     include: {
       seating: {
@@ -47,15 +50,13 @@ async function handlePOST(
     },
   });
 
-  await sendReservationMail(
+  await sendReservationCancelMail(
     reservation.email,
     reservation.name,
-    String(reservation.people),
+    reservation.people,
     reservation.seating.eventDate.date,
     reservation.seating.timeslot,
-    reservation.packagePrice,
-    reservation.packageName,
-    reservation.packageDescription
+    reason
   );
 
   return res.json(reservation);

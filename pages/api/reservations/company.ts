@@ -101,7 +101,9 @@ async function handlePOST(
     String(people),
     reservation.seating.eventDate.date,
     reservation.seating.timeslot,
-    packagePrice
+    packagePrice,
+    reservation.packageName,
+    reservation.packageDescription
   );
 
   return res.json(reservation);
