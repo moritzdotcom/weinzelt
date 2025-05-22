@@ -31,11 +31,6 @@ export default function PackageCard({
           ))}
         </ul>
         <div className="flex gap-3 items-center">
-          {pkg.strikePrice && (
-            <s className="text-gray-500">
-              {pkg.strikePrice.toLocaleString('de-DE')} €
-            </s>
-          )}
           <p className="font-bold">{price.toLocaleString('de-DE')} €</p>
         </div>
       </div>

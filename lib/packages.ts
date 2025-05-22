@@ -1,28 +1,15 @@
 export type PriceType = 'FLAT' | 'PERPERSON' | 'MVZEXCLFOOD';
 
-export type PackageType =
-  | {
-      id: number;
-      sortId: number;
-      name: string;
-      description: string;
-      offering: string[];
-      strikePrice: number;
-      price: number;
-      priceType: PriceType;
-      image: string;
-    }
-  | {
-      id: number;
-      sortId: number;
-      name: string;
-      description: string;
-      offering: string[];
-      price: number;
-      priceType: PriceType;
-      image: string;
-      strikePrice?: undefined;
-    };
+export type PackageType = {
+  id: number;
+  sortId: number;
+  name: string;
+  description: string;
+  offering: string[];
+  price: number;
+  priceType: PriceType;
+  image: string;
+};
 
 export const packages: PackageType[] = [
   {
@@ -30,16 +17,15 @@ export const packages: PackageType[] = [
     sortId: 1,
     name: 'Party Package',
     description:
-      '1 x Weindampfer Rosé 3l, 1 x Champagner Remy Massin 1,5l, 1 x Belvedere 0,7l mit 6 Mischgetränken, 3 x Wein aus dem offenen Ausschank, 4 x Gerolsteiner Mineralwasser',
+      '1 x Weindampfer Rosé 3l, 1 x Champagner Remy Massin 1,5l, 1 x Belvedere 0,7l mit 6 Mischgetränken, 3 x Wein aus dem offenen Ausschank, 4 x Gerolsteiner Mineralwasser 0,75l',
     offering: [
       '1 x Weindampfer Rosé 3l',
       '1 x Champagner Remy Massin 1,5l',
       '1 x Belvedere 0,7l',
       '6 x Mischgetränke',
       '3 x Wein aus dem offenen Ausschank',
-      '4 x Gerolsteiner Mineralwasser',
+      '4 x Gerolsteiner Mineralwasser 0,75l',
     ],
-    strikePrice: 689,
     price: 680,
     priceType: 'FLAT',
     image: '/packages/party.jpg',
@@ -49,16 +35,15 @@ export const packages: PackageType[] = [
     sortId: 2,
     name: 'PINK BABY Package',
     description:
-      '2 x Weindampfer Rosé 1,5l, 2 x Ruinart Rosé 0,75l, 1 x Belvedere 0,7l mit 6 Goldberg Wild Berry, 4 x Gerolsteiner Mineralwasser',
+      '2 x Weindampfer Rosé 1,5l, 2 x Ruinart Rosé 0,75l, 1 x Belvedere 0,7l mit 6 Goldberg Wild Berry, 4 x Gerolsteiner Mineralwasser 0,75l',
     offering: [
       '2 x Weindampfer Rosé 1,5l',
       '2 x Ruinart Rosé 0,75l',
       '1 x Belvedere 0,7l',
       '6 x Goldberg Wild Berry',
-      '4 x Gerolsteiner Mineralwasser',
+      '4 x Gerolsteiner Mineralwasser 0,75l',
     ],
-    strikePrice: 717,
-    price: 705,
+    price: 699,
     priceType: 'FLAT',
     image: '/packages/pinkBaby.jpg',
   },
@@ -67,14 +52,13 @@ export const packages: PackageType[] = [
     sortId: 3,
     name: 'Champagner Package',
     description:
-      '1 x Dom Perignon Luminous 1,5l, 3 x Ruinart Blanc/Rosé 0,75l, 4 x Gerolsteiner Mineralwasser',
+      '1 x Dom Perignon Luminous 1,5l, 3 x Ruinart Blanc/Rosé 0,75l, 4 x Gerolsteiner Mineralwasser 0,75l',
     offering: [
       '1 x Dom Perignon Luminous 1,5l',
       '3 x Ruinart Blanc/Rosé 0,75l',
-      '4 x Gerolsteiner Mineralwasser',
+      '4 x Gerolsteiner Mineralwasser 0,75l',
     ],
-    strikePrice: 1472,
-    price: 1430,
+    price: 1399,
     priceType: 'FLAT',
     image: '/packages/champagner.jpg',
   },
@@ -83,10 +67,10 @@ export const packages: PackageType[] = [
     sortId: 4,
     name: 'Die Keller Kiste',
     description:
-      '1 x Keller Kiste (12 Flaschen Wein 0,75l), 4 x Gerolsteiner Mineralwasser',
+      '1 x Keller Kiste (12 Flaschen Wein 0,75l), 4 x Gerolsteiner Mineralwasser 0,75l',
     offering: [
       '1 x Keller Kiste (12 Flaschen Wein 0,75l)',
-      '4 x Gerolsteiner Mineralwasser',
+      '4 x Gerolsteiner Mineralwasser 0,75l',
     ],
     price: 9479,
     priceType: 'FLAT',
@@ -111,14 +95,13 @@ export const packages: PackageType[] = [
     sortId: 6,
     name: 'ICE ICE BABY',
     description:
-      '6 x Moêt Ice 0,75l, 1 x Belvedere 0,7l mit 6 Mischgetränken, 4 x Gerolsteiner Mineralwasser',
+      '6 x Moêt Ice 0,75l, 1 x Belvedere 0,7l mit 6 Mischgetränken, 4 x Gerolsteiner Mineralwasser 0,75l',
     offering: [
       '6 x Moêt Ice 0,75l',
       '1 x Belvedere 0,7l',
       '6 x Mischgetränke',
-      '4 x Gerolsteiner Mineralwasser',
+      '4 x Gerolsteiner Mineralwasser 0,75l',
     ],
-    strikePrice: 1785,
     price: 1750,
     priceType: 'FLAT',
     image: '/packages/ice.jpg',
@@ -128,15 +111,14 @@ export const packages: PackageType[] = [
     sortId: 7,
     name: 'CRASH ROYAL',
     description:
-      '2 x Louis Roederer Cristal 1,5l, 2 x Dom Perignon Luminous 1,5l, 1 x Belvedere 0,7l mit 6 Mischgetränken, 4 x Gerolsteiner Mineralwasser',
+      '2 x Louis Roederer Cristal 1,5l, 2 x Dom Perignon Luminous 1,5l, 1 x Belvedere 0,7l mit 6 Mischgetränken, 4 x Gerolsteiner Mineralwasser 0,75l',
     offering: [
       '2 x Louis Roederer Cristal 1,5l',
       '2 x Dom Perignon Luminous 1,5l',
       '1 x Belvedere 0,7l',
       '6 x Mischgetränke',
-      '4 x Gerolsteiner Mineralwasser',
+      '4 x Gerolsteiner Mineralwasser 0,75l',
     ],
-    strikePrice: 4661,
     price: 4580,
     priceType: 'FLAT',
     image: '/packages/royal.jpg',
@@ -146,13 +128,13 @@ export const packages: PackageType[] = [
     sortId: 8,
     name: 'Captains Table Pakage',
     description:
-      '1 x Champagner Remy Massin 1,5l, 2 x Weindampfer Rosé 1,5l, 2 x Knut Hansen Dry Gin 0,5l mit 12 Mischgetränken, 4 x Gerolsteiner Mineralwasser',
+      '1 x Champagner Remy Massin 1,5l, 2 x Weindampfer Rosé 1,5l, 2 x Knut Hansen Dry Gin 0,5l mit 12 Mischgetränken, 4 x Gerolsteiner Mineralwasser 0,75l',
     offering: [
       '1 x Champagner Remy Massin 1,5l',
       '2 x Weindampfer Rosé 1,5l',
       '2 x Knut Hansen Dry Gin 0,5l',
       '12 x Mischgetränke',
-      '4 x Gerolsteiner Mineralwasser',
+      '4 x Gerolsteiner Mineralwasser 0,75l',
     ],
     price: 780,
     priceType: 'FLAT',
@@ -163,14 +145,13 @@ export const packages: PackageType[] = [
     sortId: 9,
     name: 'One Night with Cristal',
     description:
-      '1 x Louis Roederer Cristal 1,5l, 3 x Louis Roederer Cristal 0,75l, 4 x Gerolsteiner Mineralwasser',
+      '1 x Louis Roederer Cristal 1,5l, 3 x Louis Roederer Cristal 0,75l, 4 x Gerolsteiner Mineralwasser 0,75l',
     offering: [
       '1 x Louis Roederer Cristal 1,5l',
       '3 x Louis Roederer Cristal 0,75l',
-      '4 x Gerolsteiner Mineralwasser',
+      '4 x Gerolsteiner Mineralwasser 0,75l',
     ],
-    strikePrice: 2432,
-    price: 2430,
+    price: 2399,
     priceType: 'FLAT',
     image: '/packages/cristal.jpg',
   },
