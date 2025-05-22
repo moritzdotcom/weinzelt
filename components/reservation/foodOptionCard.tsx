@@ -1,39 +1,50 @@
-import { FoodOptionType } from '@/lib/foodOptions';
+import { Add, Remove } from '@mui/icons-material';
 
 export default function FoodOptionCard({
-  food,
-  selected,
-  onSelect,
-  disabled,
+  title,
+  value,
+  menuPrice,
+  onChange,
+  maxValue,
 }: {
-  food: FoodOptionType;
-  selected: boolean;
-  onSelect: (food: FoodOptionType) => void;
-  disabled?: boolean;
+  title: string;
+  value: number;
+  menuPrice: number;
+  onChange: (value: number) => void;
+  maxValue: number;
 }) {
   return (
-    <div
-      className={`p-4 rounded-xl overflow-hidden border-2 shadow-sm transition-all duration-300 ${
-        selected
-          ? 'border-black bg-gray-100'
-          : disabled
-          ? 'bg-gray-100 border-gray-200 opacity-50 cursor-not-allowed'
-          : 'cursor-pointer border-white'
-      }`}
-      onClick={() => (disabled ? {} : onSelect(food))}
-    >
+    <div className="p-4 rounded-xl overflow-hidden border border-neutral-300 shadow-sm">
       <div className="flex items-center justify-between gap-3">
-        <div className="">
-          <h3 className="text-lg font-semibold">{food.name}</h3>
-          {food.description && (
-            <p className="text-sm text-gray-600">{food.description}</p>
-          )}
+        <h3 className="text-lg font-semibold mb-1">{title}</h3>
+        <div className="flex items-center gap-2">
+          <button
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-300 disabled:opacity-30"
+            disabled={value <= 0}
+            onClick={() => {
+              if (value > 0) {
+                onChange(value - 1);
+              }
+            }}
+          >
+            <Remove />
+          </button>
+          <span className="text-lg font-semibold">{value}</span>
+          <button
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-300 disabled:opacity-30"
+            disabled={value >= maxValue}
+            onClick={() => {
+              if (value < maxValue) {
+                onChange(value + 1);
+              }
+            }}
+          >
+            <Add />
+          </button>
+          <p className="min-w-16 text-right">
+            + {(value * menuPrice).toLocaleString('de-DE')} €
+          </p>
         </div>
-        {food.price && (
-          <div className="">
-            <p className="font-bold whitespace-nowrap">+ {food.price} € p.P.</p>
-          </div>
-        )}
       </div>
     </div>
   );

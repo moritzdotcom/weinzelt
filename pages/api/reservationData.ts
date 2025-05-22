@@ -87,9 +87,9 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
     packagePrice,
     people,
     seatingId,
-    foodOptionName,
-    foodOptionDescription,
-    foodOptionPrice,
+    foodCountMeat,
+    foodCountFish,
+    foodCountVegetarian,
   } = req.body;
 
   const reservationType = type == 'STANDING' ? 'STANDING' : 'VIP';
@@ -117,9 +117,9 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
       packagePrice,
       people,
       seatingId,
-      foodOptionName,
-      foodOptionDescription,
-      foodOptionPrice,
+      foodCountMeat,
+      foodCountFish,
+      foodCountVegetarian,
     },
     include: {
       seating: {

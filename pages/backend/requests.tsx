@@ -372,9 +372,7 @@ function ReservationCard({
     }
   };
 
-  const foodTotal = reservation.foodOptionPrice
-    ? reservation.foodOptionPrice * reservation.people
-    : 0;
+  const foodTotal = reservation.totalFoodPrice;
   const drinksTotal = reservation.packagePrice;
   const grandTotal = foodTotal + drinksTotal;
 

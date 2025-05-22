@@ -1,19 +1,20 @@
-import { FoodOptionType } from '@/lib/foodOptions';
 import { PackageType } from '@/lib/packages';
 import { Box, Typography, Divider } from '@mui/material';
 
 export default function OrderSummary({
   people,
-  foodOption,
   pkg,
   drinksTotal,
+  foodCount,
+  menuPrice,
 }: {
   people: number;
-  foodOption: FoodOptionType | null;
   pkg: PackageType | null;
   drinksTotal: number;
+  foodCount: number;
+  menuPrice: number;
 }) {
-  const foodTotal = foodOption ? (foodOption.price || 0) * people : 0;
+  const foodTotal = foodCount * menuPrice;
   const grandTotal = drinksTotal + foodTotal;
 
   return (
@@ -39,10 +40,10 @@ export default function OrderSummary({
         </Box>
       )}
 
-      {foodTotal > 0 && foodOption && (
+      {foodTotal > 0 && (
         <Box display="flex" justifyContent="space-between" gap={2} mb={1}>
           <Typography>
-            {foodOption.name} ({people} × {foodOption.price} €)
+            Menu ({people} × {menuPrice} €)
           </Typography>
           <Typography className="whitespace-nowrap">
             {foodTotal.toLocaleString('de-DE')} €

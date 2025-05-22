@@ -19,7 +19,6 @@ import ARGBConfirmation from '@/components/reservation/argbConfirmation';
 import { useRouter } from 'next/router';
 import ReservationCountdownSection from '@/components/reservation/countdown';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
-import { foodOptions, FoodOptionType } from '@/lib/foodOptions';
 import FoodOptionCard from '@/components/reservation/foodOptionCard';
 import OrderSummary from '@/components/reservation/orderSummary';
 import { isValidEmail } from '@/lib/validator';
@@ -28,6 +27,7 @@ type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
 
 export default function VipReservationPage() {
+  const pricePerMenu = 65;
   const router = useRouter();
   const [data, setData] = useState<ApiGetReservationDataResponse | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -35,8 +35,6 @@ export default function VipReservationPage() {
   const [selectedPackage, setSelectedPackage] = useState<PackageType | null>(
     null
   );
-  const [selectedFoodOption, setSelectedFoodOption] =
-    useState<FoodOptionType | null>(null);
   const [personCount, setPersonCount] = useState<string>('8');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -45,6 +43,10 @@ export default function VipReservationPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [fetchError, setFetchError] = useState<string>();
   const [argbChecked, setArgbChecked] = useState(false);
+  const [foodData, setFoodData] = useState({
+    meat: 8,
+    vegetarian: 0,
+  });
 
   const [submitted, setSubmitted] = useState(false);
   const [mailError, setMailError] = useState('');
@@ -90,18 +92,15 @@ export default function VipReservationPage() {
         calculatePackagePrice(
           selectedPackage,
           Number(personCount),
-          selectedFoodOption?.price
-            ? selectedFoodOption.price * Number(personCount)
-            : 0,
+          foodData.meat * pricePerMenu + foodData.vegetarian * pricePerMenu,
           selectedSlot.minimumSpend
         ),
         0
       ),
       people: Math.min(Number(personCount), 80),
       seatingId: selectedSlot.id,
-      foodOptionName: selectedFoodOption?.name,
-      foodOptionDescription: selectedFoodOption?.description,
-      foodOptionPrice: selectedFoodOption?.price,
+      foodCountMeat: foodData.meat,
+      foodCountVegetarian: foodData.vegetarian,
     });
 
     setSuccess(true);
@@ -114,7 +113,8 @@ export default function VipReservationPage() {
     setPersonCount('8');
     setName('');
     setEmail('');
-    setSelectedFoodOption(null);
+    setFoodData({ meat: 8, vegetarian: 0 });
+    setSubmitted(false);
     setArgbChecked(false);
   };
 
@@ -122,7 +122,7 @@ export default function VipReservationPage() {
     setSelectedDate(date);
     setSelectedSlot(null);
     setSelectedPackage(null);
-    setSelectedFoodOption(null);
+    setFoodData({ meat: Number(personCount), vegetarian: 0 });
     setTimeout(() => {
       document
         .querySelector('#timeslots')
@@ -133,7 +133,10 @@ export default function VipReservationPage() {
   const selectTimeslot = (slot: SeatingType) => {
     setSelectedSlot(slot);
     setSelectedPackage(null);
-    setSelectedFoodOption(null);
+    setFoodData({
+      meat: slot.foodRequired ? Number(personCount) : 0,
+      vegetarian: 0,
+    });
     setTimeout(() => {
       document
         .querySelector('#packages')
@@ -145,16 +148,9 @@ export default function VipReservationPage() {
     setSelectedPackage(pkg);
     setTimeout(() => {
       document
-        .querySelector('#foodSelection')
-        ?.scrollIntoView({ behavior: 'smooth' });
-    }, 300);
-  };
-
-  const selectFoodOption = (opt: FoodOptionType) => {
-    setSelectedFoodOption(opt);
-    setTimeout(() => {
-      document
-        .querySelector('#contact')
+        .querySelector(
+          selectedSlot?.foodRequired ? '#foodSelection' : '#contact'
+        )
         ?.scrollIntoView({ behavior: 'smooth' });
     }, 300);
   };
@@ -167,6 +163,15 @@ export default function VipReservationPage() {
     }
     return true;
   };
+
+  useEffect(() => {
+    if (personCount.length > 0) {
+      setFoodData({
+        meat: Number(personCount),
+        vegetarian: 0,
+      });
+    }
+  }, [personCount]);
 
   useEffect(() => {
     if (!submitted) return;
@@ -315,9 +320,8 @@ export default function VipReservationPage() {
                           calculatePackagePrice(
                             pkg,
                             Number(personCount),
-                            selectedFoodOption?.price
-                              ? selectedFoodOption.price * Number(personCount)
-                              : 0,
+                            foodData.meat * pricePerMenu +
+                              foodData.vegetarian * pricePerMenu,
                             selectedSlot.minimumSpend
                           ),
                           0
@@ -331,31 +335,44 @@ export default function VipReservationPage() {
             </Box>
           )}
 
-          {selectedPackage && (
+          {selectedPackage && selectedSlot?.foodRequired && (
             <Box id="foodSelection" mt={6} className="space-y-4">
               <div className="flex flex-col gap-1">
                 <h5 className="text-2xl">Wähle dein Essen</h5>
-                {selectedSlot?.foodRequired && (
-                  <h5 className="text-lg text-neutral-500">
-                    (Essen im ausgewählten Timeslot verpflichtend)
-                  </h5>
-                )}
+                <h5 className="text-lg text-neutral-500">
+                  (Essen im ausgewählten Timeslot verpflichtend)
+                </h5>
               </div>
               <div className="flex flex-col gap-5">
-                {foodOptions.map((opt) => (
-                  <FoodOptionCard
-                    key={opt.name}
-                    food={opt}
-                    selected={selectedFoodOption?.id === opt.id}
-                    onSelect={() => selectFoodOption(opt)}
-                    disabled={selectedSlot?.foodRequired && !opt.price}
-                  />
-                ))}
+                <FoodOptionCard
+                  title="3 Gänge Menu - Fleisch"
+                  value={foodData.meat}
+                  menuPrice={pricePerMenu}
+                  onChange={(count) =>
+                    setFoodData({
+                      vegetarian: Number(personCount) - count,
+                      meat: count,
+                    })
+                  }
+                  maxValue={Number(personCount)}
+                />
+                <FoodOptionCard
+                  title="3 Gänge Menu - Vegetarisch"
+                  value={foodData.vegetarian}
+                  menuPrice={pricePerMenu}
+                  onChange={(count) =>
+                    setFoodData({
+                      meat: Number(personCount) - count,
+                      vegetarian: count,
+                    })
+                  }
+                  maxValue={Number(personCount)}
+                />
               </div>
             </Box>
           )}
 
-          {selectedFoodOption && (
+          {selectedPackage && (
             <Box id="contact" mt={6} className="space-y-4">
               <Typography variant="h5" gutterBottom>
                 Kontaktdaten
@@ -397,19 +414,19 @@ export default function VipReservationPage() {
               {selectedPackage && selectedSlot && (
                 <OrderSummary
                   people={Number(personCount)}
-                  foodOption={selectedFoodOption}
                   pkg={selectedPackage}
                   drinksTotal={Math.max(
                     calculatePackagePrice(
                       selectedPackage,
                       Number(personCount),
-                      selectedFoodOption?.price
-                        ? selectedFoodOption.price * Number(personCount)
-                        : 0,
+                      foodData.meat * pricePerMenu +
+                        foodData.vegetarian * pricePerMenu,
                       selectedSlot.minimumSpend
                     ),
                     0
                   )}
+                  foodCount={foodData.meat + foodData.vegetarian}
+                  menuPrice={pricePerMenu}
                 />
               )}
 
