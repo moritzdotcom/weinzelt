@@ -22,12 +22,12 @@ export default async function handle(
 }
 
 export type ApiGetEventsResponse = Prisma.EventGetPayload<{
-  include: { eventDates: { select: { id: true; date: true } } };
+  include: { eventDates: { select: { id: true; date: true; dow: true } } };
 }>[];
 
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {
   const events = await prisma.event.findMany({
-    include: { eventDates: { select: { id: true, date: true } } },
+    include: { eventDates: { select: { id: true, date: true, dow: true } } },
   });
   return res.json(events);
 }

@@ -173,7 +173,7 @@ export default function BackendReservationsPage({
             >
               <ArrowBackIosIcon fontSize="inherit" />
             </button>
-            {selectedEventDate?.date}
+            {selectedEventDate?.dow}, {selectedEventDate?.date}
             <button
               onClick={() =>
                 setSelectedEventDateIndex((i) => (i == null ? null : i + 1))
