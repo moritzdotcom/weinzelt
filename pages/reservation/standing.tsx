@@ -17,6 +17,7 @@ import { Add, Remove } from '@mui/icons-material';
 import ARGBConfirmation from '@/components/reservation/argbConfirmation';
 import { useRouter } from 'next/router';
 import ReservationCountdownSection from '@/components/reservation/countdown';
+import { isValidEmail } from '@/lib/validator';
 
 type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
@@ -34,6 +35,9 @@ export default function StandingReservationPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [fetchError, setFetchError] = useState<string>();
   const [argbChecked, setArgbChecked] = useState(false);
+
+  const [submitted, setSubmitted] = useState(false);
+  const [mailError, setMailError] = useState('');
 
   useEffect(() => {
     if (!router.isReady || !data) return;
@@ -61,6 +65,9 @@ export default function StandingReservationPage() {
   }, []);
 
   const handleSubmit = async () => {
+    setSubmitted(true);
+    if (!validateInputs()) return;
+
     setLoading(true);
     await axios.post('/api/reservationData', {
       type: 'STANDING',
@@ -103,6 +110,20 @@ export default function StandingReservationPage() {
     }, 300);
   };
 
+  const validateInputs = () => {
+    setMailError('');
+    if (!isValidEmail(email)) {
+      setMailError('Ungültige Email');
+      return false;
+    }
+    return true;
+  };
+
+  useEffect(() => {
+    if (!submitted) return;
+    validateInputs();
+  }, [email, submitted]);
+
   const allBooked = data
     ? [...data.eventDates].reduce(
         (a, b) =>
@@ -130,7 +151,7 @@ export default function StandingReservationPage() {
     );
 
   return (
-    <ReservationCountdownSection startDate="2025-05-23T16:00:00Z">
+    <ReservationCountdownSection startDate="2025-05-13T16:00:00Z">
       {!data ? (
         fetchError ? (
           <ReservationError text={fetchError} />
@@ -278,6 +299,8 @@ export default function StandingReservationPage() {
                 autoComplete="email"
                 required
                 value={email}
+                error={Boolean(mailError)}
+                helperText={mailError}
                 onChange={(e) => setEmail(e.target.value)}
                 margin="normal"
               />

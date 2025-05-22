@@ -30,6 +30,7 @@ export type ApiPostSeatingResponse = {
   availableStanding: number;
   foodRequired: boolean;
   availablePackageIds: number[];
+  minimumSpend: number;
 };
 
 async function handlePOST(
@@ -37,7 +38,13 @@ async function handlePOST(
   res: NextApiResponse,
   id: string
 ) {
-  const { availableVip, availableStanding, foodRequired, timeslot } = req.body;
+  const {
+    availableVip,
+    availableStanding,
+    foodRequired,
+    timeslot,
+    minimumSpend,
+  } = req.body;
   if (typeof availableVip !== 'number')
     return res.status(401).json('Availability Required');
   if (typeof availableStanding !== 'number')
@@ -54,6 +61,7 @@ async function handlePOST(
       foodRequired,
       timeslot,
       eventDateId: id,
+      minimumSpend,
     },
   });
 

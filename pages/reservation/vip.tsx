@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import axios, { isAxiosError } from 'axios';
 import { ApiGetReservationDataResponse } from '../api/reservationData';
-import { packages, PackageType } from '@/lib/packages';
+import { calculatePackagePrice, packages, PackageType } from '@/lib/packages';
 import ReservationError from '@/components/reservation/error';
 import ReservationLoading from '@/components/reservation/loading';
 import ReservationHeader from '@/components/reservation/header';
@@ -22,6 +22,7 @@ import RestaurantIcon from '@mui/icons-material/Restaurant';
 import { foodOptions, FoodOptionType } from '@/lib/foodOptions';
 import FoodOptionCard from '@/components/reservation/foodOptionCard';
 import OrderSummary from '@/components/reservation/orderSummary';
+import { isValidEmail } from '@/lib/validator';
 
 type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
@@ -44,6 +45,9 @@ export default function VipReservationPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [fetchError, setFetchError] = useState<string>();
   const [argbChecked, setArgbChecked] = useState(false);
+
+  const [submitted, setSubmitted] = useState(false);
+  const [mailError, setMailError] = useState('');
 
   useEffect(() => {
     if (!router.isReady || !data) return;
@@ -71,16 +75,30 @@ export default function VipReservationPage() {
   }, []);
 
   const handleSubmit = async () => {
+    setSubmitted(true);
+    if (!validateInputs()) return;
+    if (!selectedPackage || !selectedSlot) return;
+
     setLoading(true);
     await axios.post('/api/reservationData', {
       type: 'VIP',
       name,
       email,
-      packageName: selectedPackage?.name,
-      packageDescription: selectedPackage?.description,
-      packagePrice: selectedPackage?.price,
-      people: Number(personCount),
-      seatingId: selectedSlot?.id,
+      packageName: selectedPackage.name,
+      packageDescription: selectedPackage.description,
+      packagePrice: Math.max(
+        calculatePackagePrice(
+          selectedPackage,
+          Number(personCount),
+          selectedFoodOption?.price
+            ? selectedFoodOption.price * Number(personCount)
+            : 0,
+          selectedSlot.minimumSpend
+        ),
+        0
+      ),
+      people: Math.min(Number(personCount), 80),
+      seatingId: selectedSlot.id,
       foodOptionName: selectedFoodOption?.name,
       foodOptionDescription: selectedFoodOption?.description,
       foodOptionPrice: selectedFoodOption?.price,
@@ -140,6 +158,20 @@ export default function VipReservationPage() {
         ?.scrollIntoView({ behavior: 'smooth' });
     }, 300);
   };
+
+  const validateInputs = () => {
+    setMailError('');
+    if (!isValidEmail(email)) {
+      setMailError('Ungültige Email');
+      return false;
+    }
+    return true;
+  };
+
+  useEffect(() => {
+    if (!submitted) return;
+    validateInputs();
+  }, [email, submitted]);
 
   const allBooked = data
     ? [...data.eventDates].reduce(
@@ -278,6 +310,17 @@ export default function VipReservationPage() {
                     <Grid size={{ xs: 12, sm: 6 }} key={pkg.name}>
                       <PackageCard
                         pkg={pkg}
+                        price={Math.max(
+                          calculatePackagePrice(
+                            pkg,
+                            Number(personCount),
+                            selectedFoodOption?.price
+                              ? selectedFoodOption.price * Number(personCount)
+                              : 0,
+                            selectedSlot.minimumSpend
+                          ),
+                          0
+                        )}
                         selected={selectedPackage?.id === pkg.id}
                         onSelect={() => selectPackage(pkg)}
                       />
@@ -331,6 +374,8 @@ export default function VipReservationPage() {
                 autoComplete="email"
                 required
                 value={email}
+                error={Boolean(mailError)}
+                helperText={mailError}
                 onChange={(e) => setEmail(e.target.value)}
                 margin="normal"
               />
@@ -338,17 +383,34 @@ export default function VipReservationPage() {
                 label="Anzahl Personen"
                 type="number"
                 required
+                error={Number(personCount) > 80}
+                helperText={
+                  Number(personCount) > 80 ? 'max. 80 Personen' : undefined
+                }
                 value={personCount}
                 onChange={(e) => setPersonCount(e.target.value)}
                 fullWidth
                 margin="normal"
               />
 
-              <OrderSummary
-                people={Number(personCount)}
-                foodOption={selectedFoodOption}
-                pkg={selectedPackage}
-              />
+              {selectedPackage && selectedSlot && (
+                <OrderSummary
+                  people={Number(personCount)}
+                  foodOption={selectedFoodOption}
+                  pkg={selectedPackage}
+                  drinksTotal={Math.max(
+                    calculatePackagePrice(
+                      selectedPackage,
+                      Number(personCount),
+                      selectedFoodOption?.price
+                        ? selectedFoodOption.price * Number(personCount)
+                        : 0,
+                      selectedSlot.minimumSpend
+                    ),
+                    0
+                  )}
+                />
+              )}
 
               <ARGBConfirmation onChecked={setArgbChecked} />
               <button

@@ -46,7 +46,7 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
     },
   });
 
-  sendReservationConfirmationMail(
+  await sendReservationConfirmationMail(
     email,
     name,
     people,

@@ -48,6 +48,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
     availableVip: '10',
     availableStanding: '10',
     foodRequired: false,
+    minimumSpend: '800',
   });
 
   useEffect(() => {
@@ -123,6 +124,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
       `/api/eventDates/${selectedEventDateId}/seatings`,
       {
         ...seatingData,
+        minimumSpend: Number(seatingData.minimumSpend),
         availableVip: Number(seatingData.availableVip),
         availableStanding: Number(seatingData.availableStanding),
       }
@@ -133,6 +135,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
       availableVip: '10',
       availableStanding: '10',
       foodRequired: false,
+      minimumSpend: '800',
     });
 
     setEventDates((prev) =>
@@ -363,6 +366,19 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
             }
             margin="normal"
           />
+          <TextField
+            label="Reservierungs Schwelle"
+            type="number"
+            fullWidth
+            value={seatingData.minimumSpend}
+            onChange={(e) =>
+              setSeatingData({
+                ...seatingData,
+                minimumSpend: e.target.value,
+              })
+            }
+            margin="normal"
+          />
           <FormControlLabel
             control={
               <Checkbox
@@ -417,6 +433,7 @@ function SeatingCard({
     timeslot: seating.timeslot,
     availableVip: `${seating.availableVip}`,
     availableStanding: `${seating.availableStanding}`,
+    minimumSpend: `${seating.minimumSpend}`,
     foodRequired: seating.foodRequired,
   });
 
@@ -438,6 +455,7 @@ function SeatingCard({
       {
         ...seatingData,
         availableVip: Number(seatingData.availableVip),
+        minimumSpend: Number(seatingData.minimumSpend),
         availableStanding: Number(seatingData.availableStanding),
       }
     );
@@ -453,18 +471,22 @@ function SeatingCard({
   return (
     <Box className="mb-4 p-3 border rounded-md bg-gray-50">
       <div className="flex flex-row justify-between">
-        <div className="flex flex-col sm:flex-row font-semibold text-lg">
+        <div className="flex flex-col md:flex-row font-semibold text-lg">
           <p>
             Timeslot: {seating.timeslot}
-            <span className="hidden sm:inline mr-1">,</span>
+            <span className="hidden md:inline mr-1">,</span>
           </p>
           <p>
             Tische: {seating.availableVip}
-            <span className="hidden sm:inline mr-1">,</span>
+            <span className="hidden md:inline mr-1">,</span>
           </p>
           <p>
             Stehtische: {seating.availableStanding}
-            <span className="hidden sm:inline mr-1">,</span>
+            <span className="hidden md:inline mr-1">,</span>
+          </p>
+          <p>
+            Schwelle: {seating.minimumSpend} €
+            <span className="hidden md:inline mr-1">,</span>
           </p>
           <p>Essen: {seating.foodRequired ? 'Ja' : 'Nein'}</p>
         </div>
@@ -542,6 +564,19 @@ function SeatingCard({
               setSeatingData({
                 ...seatingData,
                 availableStanding: e.target.value,
+              })
+            }
+            margin="normal"
+          />
+          <TextField
+            label="Reservierungs Schwelle"
+            type="number"
+            fullWidth
+            value={seatingData.minimumSpend}
+            onChange={(e) =>
+              setSeatingData({
+                ...seatingData,
+                minimumSpend: e.target.value,
               })
             }
             margin="normal"

@@ -15,6 +15,7 @@ import ReservationHeader from '@/components/reservation/header';
 import ReservationConfirmationDialog from '@/components/reservation/confirmationDialog';
 import ARGBConfirmation from '@/components/reservation/argbConfirmation';
 import { ApiGetReservationDatesResponse } from '../api/reservationDates';
+import { isValidEmail } from '@/lib/validator';
 
 type SeatingType =
   ApiGetReservationDatesResponse['eventDates'][number]['seatings'][number];
@@ -35,6 +36,9 @@ export default function CompanyReservationPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [argbChecked, setArgbChecked] = useState(false);
 
+  const [submitted, setSubmitted] = useState(false);
+  const [mailError, setMailError] = useState('');
+
   // Lade verfügbare Termine
   useEffect(() => {
     axios
@@ -54,7 +58,10 @@ export default function CompanyReservationPage() {
   }, []);
 
   const handleSubmit = async () => {
+    setSubmitted(true);
+    if (!validateInputs()) return;
     if (!selectedDate || !selectedSlot) return;
+
     setLoading(true);
     try {
       await axios.post(`/api/seatings/${selectedSlot.id}/companyReservation`, {
@@ -84,6 +91,20 @@ export default function CompanyReservationPage() {
       setLoading(false);
     }
   };
+
+  const validateInputs = () => {
+    setMailError('');
+    if (!isValidEmail(email)) {
+      setMailError('Ungültige Email');
+      return false;
+    }
+    return true;
+  };
+
+  useEffect(() => {
+    if (!submitted) return;
+    validateInputs();
+  }, [email, submitted]);
 
   if (!data)
     return fetchError ? (
@@ -181,6 +202,8 @@ export default function CompanyReservationPage() {
             autoComplete="email"
             required
             value={email}
+            error={Boolean(mailError)}
+            helperText={mailError}
             onChange={(e) => setEmail(e.target.value)}
           />
           <TextField

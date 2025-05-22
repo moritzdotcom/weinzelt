@@ -33,6 +33,7 @@ export type ApiGetReservationDataResponse = Prisma.EventGetPayload<{
             timeslot: true;
             availablePackageIds: true;
             foodRequired: true;
+            minimumSpend: true;
             reservations: { select: { tableCount: true; type: true } };
           };
         };
@@ -57,6 +58,7 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
               timeslot: true,
               availablePackageIds: true,
               foodRequired: true,
+              minimumSpend: true,
               reservations: {
                 where: {
                   confirmationState: 'ACCEPTED',
@@ -133,7 +135,7 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
     },
   });
 
-  sendReservationConfirmationMail(
+  await sendReservationConfirmationMail(
     email,
     name,
     people,

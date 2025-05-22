@@ -53,6 +53,7 @@ model Seating {
   availableVip        Int                  @default(10)
   availableStanding   Int                  @default(10)
   foodRequired        Boolean
+  minimumSpend        Int                  @default(0)
   availablePackageIds Int[]
   reservations        Reservation[]
   companyReservations CompanyReservation[]

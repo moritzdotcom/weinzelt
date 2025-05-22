@@ -6,13 +6,15 @@ export default function OrderSummary({
   people,
   foodOption,
   pkg,
+  drinksTotal,
 }: {
   people: number;
   foodOption: FoodOptionType | null;
   pkg: PackageType | null;
+  drinksTotal: number;
 }) {
   const foodTotal = foodOption ? (foodOption.price || 0) * people : 0;
-  const grandTotal = (pkg?.price || 0) + foodTotal;
+  const grandTotal = drinksTotal + foodTotal;
 
   return (
     <Box
@@ -31,7 +33,9 @@ export default function OrderSummary({
       {pkg && (
         <Box display="flex" justifyContent="space-between" gap={2} mb={1}>
           <Typography>{pkg.name} (Pauschal pro Tisch)</Typography>
-          <Typography className="whitespace-nowrap">{pkg.price} €</Typography>
+          <Typography className="whitespace-nowrap">
+            {drinksTotal.toLocaleString('de-DE')} €
+          </Typography>
         </Box>
       )}
 
@@ -40,7 +44,9 @@ export default function OrderSummary({
           <Typography>
             {foodOption.name} ({people} × {foodOption.price} €)
           </Typography>
-          <Typography className="whitespace-nowrap">{foodTotal} €</Typography>
+          <Typography className="whitespace-nowrap">
+            {foodTotal.toLocaleString('de-DE')} €
+          </Typography>
         </Box>
       )}
 
@@ -51,7 +57,7 @@ export default function OrderSummary({
           Gesamt
         </Typography>
         <Typography variant="subtitle1" fontWeight={600}>
-          {grandTotal} €
+          {grandTotal.toLocaleString('de-DE')} €
         </Typography>
       </Box>
     </Box>

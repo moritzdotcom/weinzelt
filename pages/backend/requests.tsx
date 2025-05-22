@@ -372,6 +372,12 @@ function ReservationCard({
     }
   };
 
+  const foodTotal = reservation.foodOptionPrice
+    ? reservation.foodOptionPrice * reservation.people
+    : 0;
+  const drinksTotal = reservation.packagePrice;
+  const grandTotal = foodTotal + drinksTotal;
+
   return (
     <motion.div
       variants={variants}
@@ -398,7 +404,9 @@ function ReservationCard({
 
           <p className="text-sm text-gray-500">{reservation.email}</p>
           <p className="text-sm mt-1 font-medium">
-            {reservation.packageName} ({reservation.packagePrice} €)
+            {reservation.packageName} ({drinksTotal}
+            {foodTotal ? ` + ${foodTotal} = ${grandTotal} ` : ' '}
+            €)
           </p>
           <p className="text-sm text-gray-600">
             {reservation.packageDescription}

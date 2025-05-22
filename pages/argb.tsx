@@ -192,7 +192,7 @@ export default function ARGBPage() {
             Das Weinzelt trägt hierbei dafür Sorge, den Charakter der ersetzten
             Lebensmittel bze. Produkte möglichst aufrechtzuerhalten. Eine solche
             Anpassung bewirktauf Kundenseite kein Kündigungs- oder
-            Rücktrittsrecht und ebenso keinen Entschädigungsanspruch,.
+            Rücktrittsrecht und ebenso keinen Entschädigungsanspruch.
           </p>
         </div>
         <div>
