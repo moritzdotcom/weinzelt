@@ -66,7 +66,7 @@ export default function ReservationCountdownSection({
               className="text-black font-medium underline"
             >
               reservierung@dasweinzelt.de
-            </a>
+            </a>{' '}
             gestellt werden.
           </p>
           <Link href="/" className="underline text-lg">
