@@ -299,13 +299,14 @@ export default function VipReservationPage() {
           {selectedSlot && (
             <Box id="packages" className="mb-8">
               <Typography variant="h5" gutterBottom>
-                Wähle ein Package
+                Wähle ein Getränke-Package
               </Typography>
-              <Grid container spacing={3}>
+              <Grid container spacing={3} alignItems="stretch">
                 {packages
                   .filter(({ id }) =>
                     selectedSlot.availablePackageIds.includes(id)
                   )
+                  .sort((a, b) => a.sortId - b.sortId)
                   .map((pkg) => (
                     <Grid size={{ xs: 12, sm: 6 }} key={pkg.name}>
                       <PackageCard

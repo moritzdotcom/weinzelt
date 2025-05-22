@@ -13,7 +13,7 @@ export default function PackageCard({
 }) {
   return (
     <div
-      className={`rounded-xl overflow-hidden border-2 shadow-sm cursor-pointer transition-all duration-300 ${
+      className={`rounded-xl overflow-hidden border-2 shadow-sm cursor-pointer transition-all duration-300 h-full flex flex-col ${
         selected ? 'border-black bg-gray-100' : 'border-white'
       }`}
       onClick={() => onSelect(pkg)}
@@ -23,9 +23,13 @@ export default function PackageCard({
         alt={pkg.name}
         className="w-full h-60 object-cover"
       />
-      <div className="p-4">
+      <div className="p-4 grow flex flex-col">
         <h3 className="text-lg font-semibold mb-1">{pkg.name}</h3>
-        <p className="text-sm mb-2 text-gray-600">{pkg.description}</p>
+        <ul className="text-sm mb-2 text-gray-600 grow">
+          {pkg.offering.map((str) => (
+            <li key={`${pkg.name}-${str}`}>{str}</li>
+          ))}
+        </ul>
         <div className="flex gap-3 items-center">
           {pkg.strikePrice && (
             <s className="text-gray-500">

@@ -510,22 +510,24 @@ function SeatingCard({
         </div>
       </div>
       <Box className="flex flex-col sm:flex-row gap-2 mt-2 flex-wrap">
-        {packages.map((pkg) => {
-          const isAssigned = selectedPackages.includes(pkg.id);
-          return (
-            <button
-              key={pkg.name}
-              onClick={() => togglePackage(pkg.id)}
-              className={`px-3 py-1 text-sm rounded-full border ${
-                isAssigned ? 'bg-black text-white' : 'bg-white text-gray-700'
-              }`}
-            >
-              <Tooltip title={pkg.description}>
-                <p>{pkg.name}</p>
-              </Tooltip>
-            </button>
-          );
-        })}
+        {packages
+          .sort((a, b) => a.sortId - b.sortId)
+          .map((pkg) => {
+            const isAssigned = selectedPackages.includes(pkg.id);
+            return (
+              <button
+                key={pkg.name}
+                onClick={() => togglePackage(pkg.id)}
+                className={`px-3 py-1 text-sm rounded-full border ${
+                  isAssigned ? 'bg-black text-white' : 'bg-white text-gray-700'
+                }`}
+              >
+                <Tooltip title={pkg.description}>
+                  <p>{pkg.name}</p>
+                </Tooltip>
+              </button>
+            );
+          })}
       </Box>
       <Dialog
         open={updateDialogOpen}
