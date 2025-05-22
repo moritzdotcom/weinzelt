@@ -74,7 +74,8 @@ export const packages: PackageType[] = [
     name: 'ICE ICE BABY',
     description:
       '6 x Moêt Ice 0,75l, 1 x Belvedere 0,7l mit 6 Mischgetränken, 4 x Gerolsteiner Mineralwasser',
-    price: 0,
+    strikePrice: 1785,
+    price: 1750,
     priceType: 'FLAT',
     image: '/packages/ice2.jpg',
   },
