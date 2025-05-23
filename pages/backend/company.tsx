@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { ApiGetEventsResponse } from '../api/events';
 import {
+  Alert,
   Box,
   CircularProgress,
   Dialog,
@@ -11,9 +12,11 @@ import {
   DialogContent,
   DialogTitle,
   Fade,
+  IconButton,
   InputAdornment,
   MenuItem,
   Slide,
+  Snackbar,
   TextField,
   Typography,
 } from '@mui/material';
@@ -26,6 +29,7 @@ import { TransitionProps } from '@mui/material/transitions';
 import { ReservationType } from '@prisma/client';
 import { ApiGetReservationDataResponse } from '../api/reservationData';
 import { translateType } from '@/lib/reservation';
+import { Close } from '@mui/icons-material';
 
 export default function BackendCompanyPage({ session }: { session: Session }) {
   const router = useRouter();
@@ -248,6 +252,16 @@ export default function BackendCompanyPage({ session }: { session: Session }) {
                             setNewDialogOpen(true);
                           }}
                           onDelete={handleDelete}
+                          onUpdate={(updatedReservation) => {
+                            setReservations((res) =>
+                              res?.map((r) =>
+                                r.id === updatedReservation.id
+                                  ? updatedReservation
+                                  : r
+                              )
+                            );
+                          }}
+                          session={session}
                           variants={{
                             hidden: { opacity: 0, x: -50 },
                             show: {
@@ -284,15 +298,57 @@ function ReservationCard({
   reservation,
   variants,
   onSelect,
+  onUpdate,
   onDelete,
+  session,
 }: {
   reservation: ApiGetCompanyReservationsResponse[number];
   variants: any;
   onSelect: () => void;
+  onUpdate: (reservation: ApiGetCompanyReservationsResponse[number]) => void;
   onDelete: (id: string) => void;
+  session: Session;
 }) {
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    type: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    type: 'success',
+  });
+  const [loading, setLoading] = useState(false);
+
   const handleDelete = () => {
     onDelete(reservation.id);
+  };
+
+  const handleBecomeAccountable = () => {
+    setLoading(true);
+    axios
+      .put(`/api/companyReservations/${reservation.id}`, {
+        responsibleId: session.user.id,
+      })
+      .then(() => {
+        setSnackbar({
+          open: true,
+          message:
+            'Du bist jetzt Ansprechpartner für diese Reservierung. Bitte kontaktiere den Gast per Mail.',
+          type: 'success',
+        });
+        onUpdate({ ...reservation, responsible: session.user });
+      })
+      .catch(() => {
+        setSnackbar({
+          open: true,
+          message: 'Fehler beim Übernehmen der Reservierung.',
+          type: 'error',
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (
@@ -308,6 +364,20 @@ function ReservationCard({
             Budget pro Kopf:{' '}
             <span className="font-bold">{reservation.budget} €</span> (
             {reservation.budget * reservation.people} € gesamt)
+          </p>
+          <p className="text-sm text-gray-500">
+            Ansprechpartner:{' '}
+            {reservation.responsible ? (
+              reservation.responsible.name
+            ) : (
+              <button
+                disabled={loading}
+                onClick={handleBecomeAccountable}
+                className="text-blue-500 underline disabled:text-blue-300"
+              >
+                Ansprechpartner werden
+              </button>
+            )}
           </p>
           <p className="text-sm text-gray-600">{reservation.text}</p>
           <div className="flex justify-between items-center mt-3">
@@ -326,6 +396,37 @@ function ReservationCard({
           </div>
         </div>
       </div>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={10000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        message={snackbar.message}
+        action={
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={() => setSnackbar({ ...snackbar, open: false })}
+          >
+            <Close fontSize="small" />
+          </IconButton>
+        }
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        sx={{
+          position: 'fixed',
+          bottom: 16,
+          left: 16,
+          zIndex: 1000,
+        }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.type}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </motion.div>
   );
 }

@@ -32,6 +32,9 @@ export type ApiGetCompanyReservationsResponse =
           reservations: { select: { type: true; tableCount: true } };
         };
       };
+      responsible: {
+        select: { name: true; email: true; id: true };
+      };
     };
   }>[];
 
@@ -52,6 +55,9 @@ async function handleGET(
             },
           },
         },
+      },
+      responsible: {
+        select: { name: true, email: true, id: true },
       },
     },
     where: { seating: { eventDate: { eventId: id } } },

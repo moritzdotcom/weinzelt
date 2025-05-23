@@ -12,13 +12,35 @@ export default async function handle(
   if (typeof companyReservationId !== 'string')
     return res.status(401).json('Event required');
 
-  if (req.method === 'DELETE') {
+  if (req.method === 'PUT') {
+    await handlePUT(req, res, companyReservationId);
+  } else if (req.method === 'DELETE') {
     await handleDELETE(req, res, companyReservationId);
   } else {
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`
     );
   }
+}
+
+async function handlePUT(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  id: string
+) {
+  const { responsibleId } = req.body;
+
+  if (typeof responsibleId !== 'string')
+    return res.status(401).json('Responsible required');
+
+  const companyReservation = await prisma.companyReservation.update({
+    where: { id },
+    data: {
+      userId: responsibleId,
+    },
+  });
+
+  return res.json(companyReservation);
 }
 
 async function handleDELETE(
