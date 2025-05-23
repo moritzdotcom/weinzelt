@@ -42,7 +42,7 @@ export default function ReservationPage() {
               <Box className="p-5">
                 <h6 className="text-lg font-cocogoose mb-2">VIP Tisch</h6>
                 <Typography variant="body2" color="textSecondary">
-                  Unser exklusives Erlebnis für bis zu 10 Personen - perfekt für
+                  Unser exklusives Erlebnis für bis zu 8 Personen - perfekt für
                   Genießer und besondere Abende.
                 </Typography>
               </Box>
