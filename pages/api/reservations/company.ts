@@ -48,6 +48,8 @@ async function handlePOST(
     packageName,
     packageDescription,
     packagePrice,
+    foodCountMeat,
+    foodCountVegetarian,
     people,
     tableCount,
     seatingId,
@@ -75,6 +77,8 @@ async function handlePOST(
           tableCount == 1 ? '' : 'e'
         } - Eingeladen von ${userName}`,
       packagePrice,
+      foodCountMeat,
+      foodCountVegetarian,
       people,
       tableCount,
       seatingId,

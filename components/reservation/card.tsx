@@ -144,6 +144,23 @@ export default function ReservationCard({
         {reservation.packageDescription}
       </Typography>
 
+      {reservation.foodCountMeat +
+        reservation.foodCountFish +
+        reservation.foodCountVegetarian >
+        0 && (
+        <ul className="text-sm text-gray-600 ml-2">
+          {reservation.foodCountMeat > 0 && (
+            <li>{reservation.foodCountMeat} x Fleisch</li>
+          )}
+          {reservation.foodCountFish > 0 && (
+            <li>{reservation.foodCountFish} x Fisch</li>
+          )}
+          {reservation.foodCountVegetarian > 0 && (
+            <li>{reservation.foodCountVegetarian} x Vegetarisch</li>
+          )}
+        </ul>
+      )}
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-4">
         <Box className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
           <TextField

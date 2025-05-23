@@ -356,6 +356,8 @@ function NewReservationDialog({
   const [packageName, setPackageName] = useState('');
   const [packageDescription, setPackageDescription] = useState('');
   const [packagePrice, setPackagePrice] = useState('1000');
+  const [foodCountMeat, setFoodCountMeat] = useState('0');
+  const [foodCountVegetarian, setFoodCountVegetarian] = useState('0');
 
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedSlot, setSelectedSlot] = useState<
@@ -433,6 +435,8 @@ function NewReservationDialog({
         packageName,
         packageDescription,
         packagePrice: Number(packagePrice),
+        foodCountMeat: Number(foodCountMeat),
+        foodCountVegetarian: Number(foodCountVegetarian),
       });
       setSuccess(true);
       reservation && onDelete(reservation.id);
@@ -454,6 +458,8 @@ function NewReservationDialog({
     setPackageName('');
     setPackageDescription('');
     setPackagePrice('1000');
+    setFoodCountMeat('0');
+    setFoodCountVegetarian('0');
     setSelectedDate('');
     setSelectedSlot(null);
     onClose();
@@ -638,6 +644,18 @@ function NewReservationDialog({
                   ),
                 },
               }}
+            />
+            <TextField
+              label="Menu Fleisch"
+              type="number"
+              value={foodCountMeat}
+              onChange={(e) => setFoodCountMeat(e.target.value)}
+            />
+            <TextField
+              label="Menu Vegetarisch"
+              type="number"
+              value={foodCountVegetarian}
+              onChange={(e) => setFoodCountVegetarian(e.target.value)}
             />
           </Box>
         )}
