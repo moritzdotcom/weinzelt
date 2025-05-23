@@ -264,7 +264,9 @@ export default function Home({ session }: { session: Session }) {
               einen Abend, der stilvoll knallt!
             </p>
             <Link
-              href="/getraenkekarte"
+              href="/weinzelt-karte.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-block bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-300 hover:text-black transition"
             >
               Jetzt Karte checken{' '}
