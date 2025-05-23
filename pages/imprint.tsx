@@ -17,7 +17,7 @@ export default function Imprint() {
         <p>Heesenstraße 74</p>
         <p>40549 Düsseldorf</p>
         <br />
-        <p>Telefon: TODO</p>
+        <p>Telefon: 0211-87979721</p>
         <p>E-Mail: info@dasweinzelt.de</p>
         <br />
         <p>Geschäftsführung:</p>
