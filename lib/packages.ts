@@ -111,11 +111,11 @@ export const packages: PackageType[] = [
     sortId: 7,
     name: 'CRASH ROYAL',
     description:
-      '2 x Louis Roederer Cristal 1,5l, 2 x Dom Perignon Luminous 1,5l, 1 x Belvedere 0,7l mit 6 Mischgetränken, 4 x Gerolsteiner Mineralwasser 0,75l',
+      '2 x Louis Roederer Cristal 1,5l, 2 x Dom Perignon Luminous 1,5l, 1 x Belvedere 10 0,7l mit 6 Mischgetränken, 4 x Gerolsteiner Mineralwasser 0,75l',
     offering: [
       '2 x Louis Roederer Cristal 1,5l',
       '2 x Dom Perignon Luminous 1,5l',
-      '1 x Belvedere 0,7l',
+      '1 x Belvedere 10 0,7l',
       '6 x Mischgetränke',
       '4 x Gerolsteiner Mineralwasser 0,75l',
     ],
