@@ -73,19 +73,29 @@ export const LineChartCard: React.FC<{
   data: LineData[];
   yLabel?: string;
 }> = ({ title, data, yLabel }) => (
-  <div className="col-span-12 lg:col-span-6 rounded-lg bg-white shadow-md p-6 flex flex-col gap-3">
-    <h6 className="text-gray-600 text-center">{title}</h6>
-    <ResponsiveContainer width="95%" height={250}>
-      <LineChart data={data}>
+  <div className="col-span-12 lg:col-span-6 rounded-lg bg-white pt-6 shadow-md">
+    <h6 className="text-gray-600 text-center mb-5">{title}</h6>
+    <ResponsiveContainer width="90%" height={300}>
+      <LineChart
+        data={data}
+        margin={{ top: 10, right: 10, left: 10, bottom: 30 }}
+      >
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="x" />
+        <XAxis
+          dataKey="x"
+          angle={-30}
+          textAnchor="end"
+          height={60}
+          interval={0}
+          tick={{ fontSize: 10 }}
+        />
         <YAxis />
         <ReTooltip />
         <Line
           type="monotone"
           name={yLabel || 'Anzahl'}
           dataKey="y"
-          stroke="#8884d8"
+          stroke="#000000"
           strokeWidth={2}
         />
       </LineChart>
@@ -137,7 +147,7 @@ export const TableChartCard: React.FC<{ title: string; data: TableData[] }> = ({
         </Box>
         <Box component="tbody">
           {data.map((row, i) => (
-            <Box component="tr" key={i} className="hover:bg-gray-200">
+            <Box component="tr" key={i} className="hover:bg-gray-100">
               {Object.values(row).map((val, j) => (
                 <Box component="td" key={j} className="px-4 py-2 border-b">
                   {val}
