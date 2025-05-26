@@ -1,6 +1,5 @@
 import { GetServerSideProps } from 'next';
 import prisma from '@/lib/prismadb';
-import geoip from 'geoip-lite';
 
 export const trackPageVisit: GetServerSideProps = async ({
   req,
@@ -19,12 +18,6 @@ export const trackPageVisit: GetServerSideProps = async ({
     const ip = ipFromHeader ?? req.socket.remoteAddress ?? 'unknown';
 
     if (source) {
-      // Geo-Lookup
-      const geo = geoip.lookup(ip || '');
-      const { country, region, city } = geo || {};
-      const latitude = geo?.ll?.[0];
-      const longitude = geo?.ll?.[1];
-
       // Dedupe nach IP+Quelle für den Tag…
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
@@ -40,11 +33,6 @@ export const trackPageVisit: GetServerSideProps = async ({
             campaign: (query.utm_campaign as string) || null,
             path: req.url || '/',
             ip,
-            country,
-            region,
-            city,
-            latitude,
-            longitude,
           },
         });
 
