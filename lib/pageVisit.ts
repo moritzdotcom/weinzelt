@@ -18,11 +18,18 @@ export const trackPageVisit: GetServerSideProps = async ({
     const ip = ipFromHeader ?? req.socket.remoteAddress ?? 'unknown';
 
     if (source) {
-      const country = req.headers['x-vercel-ip-country'] as string | undefined;
-      const region = req.headers['x-vercel-ip-country-region'] as
+      const rawCity = req.headers['x-vercel-ip-city'] as string | undefined;
+      const rawRegion = req.headers['x-vercel-ip-country-region'] as
         | string
         | undefined;
-      const city = req.headers['x-vercel-ip-city'] as string | undefined;
+      const rawCountry = req.headers['x-vercel-ip-country'] as
+        | string
+        | undefined;
+
+      const city = rawCity ? decodeURIComponent(rawCity) : undefined;
+      const region = rawRegion ? decodeURIComponent(rawRegion) : undefined;
+      const country = rawCountry ? decodeURIComponent(rawCountry) : undefined;
+
       // Dedupe nach IP+Quelle für den Tag…
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
