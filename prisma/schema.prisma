@@ -81,6 +81,8 @@ model Reservation {
   notified            DateTime?
   paymentReminderSent DateTime?
   payed               Boolean           @default(false)
+  pageVisitId         String?
+  pageVisit           PageVisit?        @relation(fields: [pageVisitId], references: [id])
   createdAt           DateTime          @default(now())
 }
 
@@ -97,6 +99,22 @@ model CompanyReservation {
   createdAt   DateTime @default(now())
   userId      String?
   responsible User?    @relation(fields: [userId], references: [id])
+}
+
+model PageVisit {
+  id           String        @id @default(uuid())
+  source       String
+  medium       String?
+  campaign     String?
+  path         String
+  ip           String
+  country      String?
+  region       String?
+  city         String?
+  latitude     Float?
+  longitude    Float?
+  createdAt    DateTime      @default(now())
+  reservations Reservation[]
 }
 
 enum ConfirmationState {

@@ -50,6 +50,7 @@ async function handlePOST(
     packagePrice,
     foodCountMeat,
     foodCountVegetarian,
+    totalFoodPrice,
     people,
     tableCount,
     seatingId,
@@ -84,6 +85,7 @@ async function handlePOST(
       seatingId,
       confirmationState: 'ACCEPTED',
       notified: new Date(),
+      totalFoodPrice,
     },
     include: {
       seating: {

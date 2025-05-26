@@ -9,6 +9,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import Diversity1Icon from '@mui/icons-material/Diversity1';
 import ApartmentIcon from '@mui/icons-material/Apartment';
+import LineAxisIcon from '@mui/icons-material/LineAxis';
 
 export default function Backend({ session }: { session: Session }) {
   const router = useRouter();
@@ -58,6 +59,11 @@ export default function Backend({ session }: { session: Session }) {
           href="/backend/friendsFamily"
           text="Friends & Family Reservierung"
           Icon={Diversity1Icon}
+        />
+        <LinkItem
+          href="/backend/dashboard"
+          text="Statistiken"
+          Icon={LineAxisIcon}
         />
       </Grid>
     </div>

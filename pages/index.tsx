@@ -7,6 +7,8 @@ import { KeyboardArrowRight } from '@mui/icons-material';
 import { events } from '@/lib/events';
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
+import { trackPageVisit } from '@/lib/pageVisit';
+import { GetServerSideProps } from 'next';
 
 export default function Home({ session }: { session: Session }) {
   return (
@@ -380,9 +382,24 @@ export default function Home({ session }: { session: Session }) {
             />
           </a>
         </div>
+        <h6 className="text-xl text-gray-600 mt-10">
+          Du möchtest Teil vom Weinzelt werden? Dann kontaktiere uns unter{' '}
+          <a
+            className="underline text-black"
+            href="mailto:partner@dasweinzelt.de"
+          >
+            partner@dasweinzelt.de
+          </a>
+          .
+        </h6>
       </section>
 
       <Footer />
     </div>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (props) => {
+  await trackPageVisit(props);
+  return { props: {} };
+};

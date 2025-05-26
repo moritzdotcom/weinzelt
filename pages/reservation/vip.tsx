@@ -101,6 +101,7 @@ export default function VipReservationPage() {
       seatingId: selectedSlot.id,
       foodCountMeat: foodData.meat,
       foodCountVegetarian: foodData.vegetarian,
+      totalFoodPrice: pricePerMenu * (foodData.meat + foodData.vegetarian),
     });
 
     setSuccess(true);

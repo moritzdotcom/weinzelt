@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import ReservationCountdownSection from '@/components/reservation/countdown';
+import { GetServerSideProps } from 'next';
+import { trackPageVisit } from '@/lib/pageVisit';
 
 export default function ReservationPage() {
   const router = useRouter();
@@ -96,3 +98,8 @@ export default function ReservationPage() {
     </ReservationCountdownSection>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (props) => {
+  await trackPageVisit(props);
+  return { props: {} };
+};

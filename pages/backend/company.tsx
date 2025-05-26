@@ -538,6 +538,8 @@ function NewReservationDialog({
         packagePrice: Number(packagePrice),
         foodCountMeat: Number(foodCountMeat),
         foodCountVegetarian: Number(foodCountVegetarian),
+        totalFoodPrice:
+          65 * (Number(foodCountMeat) + Number(foodCountVegetarian)),
       });
       setSuccess(true);
       reservation && onDelete(reservation.id);

@@ -90,6 +90,7 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
     foodCountMeat,
     foodCountFish,
     foodCountVegetarian,
+    totalFoodPrice,
   } = req.body;
 
   const reservationType = type == 'STANDING' ? 'STANDING' : 'VIP';
@@ -107,6 +108,8 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
   if (typeof seatingId !== 'string')
     return res.status(401).json('Ungültiger Timeslot');
 
+  const pageVisitId = req.cookies.pageVisitId;
+
   const reservation = await prisma.reservation.create({
     data: {
       type: reservationType,
@@ -120,6 +123,8 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
       foodCountMeat,
       foodCountFish,
       foodCountVegetarian,
+      totalFoodPrice,
+      pageVisitId,
     },
     include: {
       seating: {
