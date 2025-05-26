@@ -14,14 +14,18 @@ export const trackPageVisit: GetServerSideProps = async ({
   const botPattern =
     /(WhatsApp|facebookexternalhit|LinkedInBot|Slackbot|TelegramBot|Twitterbot)/i;
 
-  if (!botPattern.test(ua) && !req.cookies['pageVisitId']) {
-    const forwarded = req.headers['x-forwarded-for'];
-    const ipFromHeader =
-      typeof forwarded === 'string'
-        ? forwarded.split(',')[0].trim()
-        : undefined;
-    const ip = ipFromHeader ?? req.socket.remoteAddress ?? 'unknown';
+  const accept = (req.headers.accept ?? '').toString();
 
+  const forwarded = req.headers['x-forwarded-for'];
+  const ip =
+    typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : undefined;
+
+  if (
+    !botPattern.test(ua) &&
+    !req.cookies['pageVisitId'] &&
+    accept.includes('text/html') &&
+    ip
+  ) {
     const rawCity = req.headers['x-vercel-ip-city'] as string | undefined;
     const rawRegion = req.headers['x-vercel-ip-country-region'] as
       | string
