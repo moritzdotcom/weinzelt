@@ -73,8 +73,8 @@ export const LineChartCard: React.FC<{
   data: LineData[];
   yLabel?: string;
 }> = ({ title, data, yLabel }) => (
-  <div className="col-span-12 lg:col-span-6 rounded-lg bg-neutral-50 shadow-md p-6 flex flex-col gap-3">
-    <h6 className="text-gray-600">{title}</h6>
+  <div className="col-span-12 lg:col-span-6 rounded-lg bg-white shadow-md p-6 flex flex-col gap-3">
+    <h6 className="text-gray-600 text-center">{title}</h6>
     <ResponsiveContainer width="95%" height={250}>
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
@@ -100,7 +100,7 @@ export const NumberChartCard: React.FC<{
   percentage?: number;
   type?: 'CURRENCY' | 'NUMBER';
 }> = ({ title, number, type, percentage }) => (
-  <div className="col-span-12 sm:col-span-6 lg:col-span-3 rounded-lg bg-neutral-50 shadow-md p-6 flex flex-col items-center justify-center gap-4">
+  <div className="col-span-12 sm:col-span-6 lg:col-span-3 rounded-lg bg-white shadow-md p-6 flex flex-col items-center justify-center gap-4">
     <h4 className="text-black text-3xl font-bold">
       {type == 'CURRENCY' ? `${number.toLocaleString('de-DE')} €` : number}
       {percentage !== undefined && (
@@ -118,9 +118,9 @@ export const TableChartCard: React.FC<{ title: string; data: TableData[] }> = ({
   title,
   data,
 }) => (
-  <Card className="col-span-3 md:col-span-2">
-    <CardHeader title={title} />
-    <CardContent>
+  <div className="col-span-12 rounded-lg bg-white shadow-md p-6">
+    <h6 className="text-gray-600 text-center">{title}</h6>
+    <div className="overflow-x-auto mt-4">
       <Box component="table" className="w-full text-left border-collapse">
         <Box component="thead">
           <Box component="tr">
@@ -137,7 +137,7 @@ export const TableChartCard: React.FC<{ title: string; data: TableData[] }> = ({
         </Box>
         <Box component="tbody">
           {data.map((row, i) => (
-            <Box component="tr" key={i} className="hover:bg-gray-50">
+            <Box component="tr" key={i} className="hover:bg-gray-200">
               {Object.values(row).map((val, j) => (
                 <Box component="td" key={j} className="px-4 py-2 border-b">
                   {val}
@@ -147,8 +147,8 @@ export const TableChartCard: React.FC<{ title: string; data: TableData[] }> = ({
           ))}
         </Box>
       </Box>
-    </CardContent>
-  </Card>
+    </div>
+  </div>
 );
 
 // Dashboard Layout
@@ -211,17 +211,17 @@ export default function EventDashboard({ session }: { session: Session }) {
   }, [eventData, pageVisitData]);
 
   return (
-    <div className="px-4 py-16">
+    <div className="px-6 py-16 bg-gray-50">
       <Typography variant="h4" gutterBottom>
         Dashboard
       </Typography>
 
-      <div className="my-7 flex items-center flex-col sm:flex-row justify-between gap-5">
+      <div className="mt-6 flex items-center flex-col sm:flex-row justify-between gap-5">
         <TextField
           select
           label="Veranstaltung wählen"
           fullWidth
-          sx={{ maxWidth: 'var(--container-md)' }}
+          sx={{ maxWidth: 'var(--container-md)', backgroundColor: 'white' }}
           value={selectedEventId || ''}
           onChange={(e) => setSelectedEventId(e.target.value)}
         >
@@ -241,7 +241,7 @@ export default function EventDashboard({ session }: { session: Session }) {
         </button>
       </div>
       {metrics && eventData && pageVisitData && (
-        <div className="grid grid-cols-12 gap-6 p-6">
+        <div className="grid grid-cols-12 gap-6 py-6">
           {/* Kennzahlen */}
           <NumberChartCard
             title="Reservierungsanfragen"
@@ -294,6 +294,10 @@ export default function EventDashboard({ session }: { session: Session }) {
             title="Seitenaufrufe nach REF"
             data={metrics.pageVisitsBySource}
             yLabel="Seitenaufrufe"
+          />
+          <TableChartCard
+            title="Neuste Reservierungen"
+            data={metrics.lastTenReservations}
           />
         </div>
       )}

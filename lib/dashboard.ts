@@ -1,5 +1,6 @@
 import { ApiGetEventDataResponse } from '@/pages/api/events/[eventId]/data';
 import { ApiGetPageVisitsResponse } from '@/pages/api/pageVisits';
+import { translateState, translateType } from './reservation';
 
 // types.ts
 export interface Metrics {
@@ -15,6 +16,15 @@ export interface Metrics {
   packageCounts: { x: string; y: number }[];
   dailyPageVisitData: { x: string; y: number }[];
   pageVisitsBySource: { x: string; y: number }[];
+  lastTenReservations: {
+    Name: string;
+    Typ: string;
+    Status: string;
+    Personen: number;
+    Datum: string;
+    Timeslot: string;
+    Eingegangen: string;
+  }[];
 }
 
 export function calculateMetrics(
@@ -23,7 +33,9 @@ export function calculateMetrics(
 ): Metrics {
   // flatten alle Reservierungen
   const allReservations = eventData.eventDates.flatMap((d) =>
-    d.seatings.flatMap((s) => s.reservations)
+    d.seatings.flatMap((s) =>
+      s.reservations.map((r) => ({ ...r, timeslot: s.timeslot, date: d.date }))
+    )
   );
 
   const totalCount = allReservations.length;
@@ -84,6 +96,25 @@ export function calculateMetrics(
       y: count,
     }));
 
+  const lastTenReservations = allReservations
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
+    .slice(0, 10)
+    .map((reservation) => ({
+      Name: reservation.name,
+      Typ: translateType(reservation.type) || 'Unbekannt',
+      Status: translateState(reservation.confirmationState) || 'Unbekannt',
+      Personen: reservation.people,
+      Datum: reservation.date,
+      Timeslot: reservation.timeslot,
+      Eingegangen: new Date(reservation.createdAt).toLocaleString('de-DE', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+      }),
+    }));
+
   return {
     totalCount,
     vipCount,
@@ -97,5 +128,6 @@ export function calculateMetrics(
     packageCounts: sortedPackageCounts,
     dailyPageVisitData,
     pageVisitsBySource: sortedPageVisitsBySource,
+    lastTenReservations,
   };
 }
