@@ -304,6 +304,16 @@ export default function StandingReservationPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 margin="normal"
               />
+              <div className="rounded-md bg-emerald-50 border border-gray-300 p-4 my-4">
+                <Typography variant="body1" className="text-emerald-800">
+                  Bitte hab Verständnis, dass die Tische pünktlich geräumt
+                  werden müssen. Selbstverständlich kannst du{' '}
+                  <b>
+                    nach der Reservierung mit deiner Gruppe im Weinzelt bleiben
+                  </b>
+                  .
+                </Typography>
+              </div>
               <ARGBConfirmation onChecked={setArgbChecked} />
               <button
                 className="w-full rounded-full bg-black text-white py-3 font-semibold text-center hover:bg-gray-800 transition disabled:bg-gray-600"

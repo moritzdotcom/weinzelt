@@ -25,6 +25,13 @@ export default function ReservationPage() {
           Wähle deinen Tisch für das Weinzelt
         </ReservationHeader>
 
+        <div className="rounded-md bg-emerald-50 border border-gray-300 p-4">
+          <Typography variant="body1" className="text-emerald-800">
+            Das Weinzelt ist für alle geöffnet. Eine Tischreservierung ist für
+            den Besuch des Weinzelt <b>nicht erforderlich</b>.
+          </Typography>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
           <Link
             href={{

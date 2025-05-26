@@ -24,7 +24,7 @@ export default function Imprint() {
         <p>Sebastian Kreimeyer & Nico von der Ohe</p>
         <br />
         <p>Umsatzsteuer. Ident-Nr.: TODO</p>
-        <p>Handelsregister: Amtsgericht Düsseldorf HRB TODO</p>
+        <p>Handelsregister: Amtsgericht Düsseldorf HRB 109096</p>
       </main>
     </>
   );
