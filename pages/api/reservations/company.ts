@@ -1,7 +1,6 @@
-import sendFriendsAndFamilyMail from '@/lib/mailer/friendsAndFamilyMail';
 import sendReservationMail from '@/lib/mailer/reservationMail';
 import prisma from '@/lib/prismadb';
-import { translateType } from '@/lib/reservation';
+import { fullPrice, translateType } from '@/lib/reservation';
 import { getServerSession } from '@/lib/session';
 import { ReservationType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -107,7 +106,7 @@ async function handlePOST(
     String(people),
     reservation.seating.eventDate.date,
     reservation.seating.timeslot,
-    packagePrice,
+    fullPrice(reservation),
     reservation.packageName,
     reservation.packageDescription
   );

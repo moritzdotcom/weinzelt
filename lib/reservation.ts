@@ -18,13 +18,11 @@ export function translateType(type: ReservationType) {
 }
 
 export function fullPrice({
-  people,
   packagePrice,
-  foodOptionPrice,
+  totalFoodPrice,
 }: {
-  people: number;
   packagePrice: number;
-  foodOptionPrice?: number | null;
+  totalFoodPrice: number | null;
 }) {
-  return packagePrice + people * (foodOptionPrice || 0);
+  return packagePrice + (totalFoodPrice ?? 0);
 }

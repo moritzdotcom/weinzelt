@@ -85,6 +85,10 @@ export default function ReservationCard({
     }, 1000);
   };
 
+  const foodTotal = reservation.totalFoodPrice;
+  const drinksTotal = reservation.packagePrice;
+  const grandTotal = foodTotal + drinksTotal;
+
   return (
     <motion.div
       key={reservation.id}
@@ -124,7 +128,8 @@ export default function ReservationCard({
 
       <div className="flex items-center gap-2">
         <Typography className="text-sm mt-1 font-medium">
-          {reservation.packageName} - {reservation.packagePrice} €
+          {reservation.packageName} - {drinksTotal}
+          {foodTotal ? ` + ${foodTotal} = ${grandTotal} ` : ' '}€
         </Typography>
         <Tooltip
           title={reservation.payed ? 'Zahlung erhalten' : 'Zahlung ausstehend'}
