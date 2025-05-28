@@ -33,6 +33,8 @@ export const events = [
   {
     date: 'SO, 13.07.25',
     from: '11:00',
+    startDate: '2025-07-13T11:00',
+    endDate: '2025-07-13T13:00',
     image: '/events/sunday-morning-pilates.jpg',
     title: 'Sunday Morning Pilates',
     fullName: 'Weinzelt X Egoiste Studios - Sunday Morning Pilates',
@@ -41,6 +43,22 @@ export const events = [
     button: {
       text: 'Jetzt reservieren',
       link: '/reservation?date=13.07.25',
+    },
+  },
+  {
+    date: 'SO, 13.07.25',
+    from: '12:00',
+    startDate: '2025-07-13T12:00',
+    endDate: '2025-07-13T17:00',
+    image: '/events/winewalk.jpg',
+    title: 'WineWalk by Schlumberger',
+    fullName: 'Rheinkirmes WineWalk by Schlumberger',
+    description:
+      'Wir treffen uns um 12 Uhr bei Concept Riesling auf dem Carlsplatz, genießen Champagner und gehen dann mit Sommelier-Begleitung über die Rheinbrücke ins Weinzelt auf der Rheinkirmes, wo euch ein Don Carne Steak Sandwich erwartet.',
+    button: {
+      text: 'Zum Ticketshop',
+      link: 'https://www.conceptrieslingshop.com/collections/wine-walk-rheinkirmes/products/winewalk1?variant=53210776174915',
+      external: true,
     },
   },
   {
@@ -134,6 +152,22 @@ export const events = [
     button: {
       text: 'Jetzt reservieren',
       link: '/reservation?date=19.07.25',
+    },
+  },
+  {
+    date: 'SO, 20.07.25',
+    from: '12:00',
+    startDate: '2025-07-20T12:00',
+    endDate: '2025-07-20T17:00',
+    image: '/events/winewalk.jpg',
+    title: 'WineWalk by Schlumberger',
+    fullName: 'Rheinkirmes WineWalk by Schlumberger',
+    description:
+      'Wir treffen uns um 12 Uhr bei Concept Riesling auf dem Carlsplatz, genießen Champagner und gehen dann mit Sommelier-Begleitung über die Rheinbrücke ins Weinzelt auf der Rheinkirmes, wo euch ein Don Carne Steak Sandwich erwartet.',
+    button: {
+      text: 'Zum Ticketshop',
+      link: 'https://www.conceptrieslingshop.com/collections/wine-walk-rheinkirmes/products/winewalk2?variant=53210778272067',
+      external: true,
     },
   },
   // {

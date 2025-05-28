@@ -234,6 +234,8 @@ export default function Home({ session }: { session: Session }) {
                   <Link
                     className="w-full py-3 text-center bg-gray-200 inline-block text-black hover:underline text-lg"
                     href={e.button.link}
+                    target={e.button.external ? '_blank' : '_self'}
+                    rel={e.button.external ? 'noopener noreferrer' : undefined}
                   >
                     {e.button.text}
                   </Link>
