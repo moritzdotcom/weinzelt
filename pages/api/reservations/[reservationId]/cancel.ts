@@ -1,5 +1,4 @@
 import sendReservationCancelMail from '@/lib/mailer/reservationCancelMail';
-import sendReservationMail from '@/lib/mailer/reservationMail';
 import prisma from '@/lib/prismadb';
 import { getServerSession } from '@/lib/session';
 import { NextApiRequest, NextApiResponse } from 'next';

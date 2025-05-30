@@ -1,5 +1,4 @@
 import sendPaymentReminderMail from '@/lib/mailer/paymentReminderMail';
-import sendReservationMail from '@/lib/mailer/reservationMail';
 import prisma from '@/lib/prismadb';
 import { fullPrice } from '@/lib/reservation';
 import { getServerSession } from '@/lib/session';

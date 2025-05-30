@@ -18,7 +18,7 @@ export default function ARGBPage() {
           Das Weinzelt Düsseldorf (Weinzelt GmbH, nachfolgend „Weinzelt“) bietet
           Ihnen über das Online-Reservierungsformular unter
           https://dasweinzelt.de/reservation (nachfolgend
-          „Reservierungsformular“ die Möglichkeit der Reservierung von
+          „Reservierungsformular“) die Möglichkeit der Reservierung von
           Sitzplätzen sowie den Erwerb von Verzehrgutscheinen für die Stehtische
           im Weinzelt während der Düsseldorfer Rheinkirmes 2025 an. Diese
           Reservierungs- und Geschäftsbedingungen (nachfolgend „ARGB“) gelten
@@ -35,8 +35,8 @@ export default function ARGBPage() {
             Ihre Reservierungsanfragen werden ausschließlich über das
             Reservierungsformular oder in unten genannten Ausnahmefall über
             reservierung@weinzelt.de entgegengenommen und können nur darüber
-            gebucht werden. In unserem Zelt befinden sich 10 VIP-Tische für je 8
-            Personen sowie 20 Stehtische in Form von Weinfässern, die von uns
+            gebucht werden. In unserem Zelt befinden sich 8 VIP-Tische für je 8
+            Personen sowie 16 Stehtische in Form von Weinfässern, die von uns
             zur Reservierung angeboten werden. Es werden nur volle Tische zu
             festen Zeiten vergeben. Sollten Sie mit einer größeren Gruppe eine
             Tischreservierung anfragen wollen, senden Sie uns bitte eine E-Mail
