@@ -1,5 +1,20 @@
 export const events = [
   {
+    date: 'FR, 11.07.25',
+    from: '20:00',
+    startDate: '2025-07-11T20:00',
+    endDate: '2025-07-11T22:00',
+    image: '/events/audiokitchen.jpg',
+    title: 'HEAT UP! Audiokitchen X Weinzelt',
+    fullName: 'HEAT UP! Audiokitchen bringt die Stimmung zum kochen',
+    description:
+      'Lass dir die Stimmung nicht entgehen, wenn Audiokitchen beim Opening im Weinzelt für den perfekten musikalischen Auftakt sorgt! Mit ihren heißen Beats bringen sie die Menge zum Kochen - ein Abend voller Energie und unvergesslicher Momente!',
+    button: {
+      text: 'Jetzt reservieren',
+      link: '/reservation?date=11.07.25',
+    },
+  },
+  {
     date: 'SA, 12.07.25',
     from: '15:00',
     startDate: '2025-07-12T15:00',
@@ -90,6 +105,21 @@ export const events = [
     button: {
       text: 'Jetzt reservieren',
       link: '/reservation?date=14.07.25',
+    },
+  },
+  {
+    date: 'DI, 15.07.25',
+    from: '19:00',
+    startDate: '2025-07-15T19:00',
+    endDate: '2025-07-15T21:00',
+    image: '/events/angelakutscher.jpg',
+    title: 'Angela Kutscher @ Weinzelt',
+    fullName: 'Angela Kutscher @ Weinzelt',
+    description:
+      'Erlebe einen unvergesslichen Abend mit Angela Kutscher, die mit ihrem einzigartigen Melodic Techno Set das Weinzelt zum Beben bringt. Tanz und feiere mit, während Angela die Stimmung mit ihren heißesten Beats auf das nächste Level bringt!',
+    button: {
+      text: 'Jetzt reservieren',
+      link: '/reservation?date=15.07.25',
     },
   },
   {
