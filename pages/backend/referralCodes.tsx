@@ -16,6 +16,8 @@ import { useRouter } from 'next/router';
 import { Session } from '@/hooks/useSession';
 import { ApiGetReferralCodesResponse } from '../api/referralCodes';
 import { ApiPostReferralCodeToggleResponse } from '../api/referralCodes/[referralCodeId]/toggle';
+import CheckIcon from '@mui/icons-material/Check';
+import CopyAllIcon from '@mui/icons-material/CopyAll';
 
 export default function BackendEventsPage({ session }: { session: Session }) {
   const [referralCodes, setreferralCodes] =
@@ -97,6 +99,16 @@ function CodeCard({
   code: ApiGetReferralCodesResponse[number];
   onUpdate: (code: ApiPostReferralCodeToggleResponse) => void;
 }) {
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopyLink = () => {
+    const link = `${window.location.origin}/reservation?code=${code.code}`;
+    navigator.clipboard.writeText(link).then(() => {
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 4000);
+    });
+  };
+
   const toggleActive = async () => {
     try {
       const { data } = await axios.post<ApiPostReferralCodeToggleResponse>(
@@ -124,14 +136,35 @@ function CodeCard({
         <Typography className="text-sm text-gray-500 mb-2">
           {code.description}
         </Typography>
-        <button
-          className={`w-full rounded py-2 border mt-5 ${
-            code.valid ? 'text-green-800' : 'text-red-800'
-          }`}
-          onClick={toggleActive}
-        >
-          {code.valid ? 'Deaktivieren' : 'Aktivieren'}
-        </button>
+        <div className="flex items-center gap-3 mt-5">
+          <button
+            className={`w-full rounded py-2 border ${
+              code.valid ? 'text-green-800' : 'text-red-800'
+            }`}
+            onClick={toggleActive}
+          >
+            {code.valid ? 'Deaktivieren' : 'Aktivieren'}
+          </button>
+          {code.valid && (
+            <button
+              onClick={handleCopyLink}
+              disabled={copiedLink}
+              className={
+                'w-full py-2 rounded text-white transition flex items-center justify-center gap-2 border' +
+                (copiedLink
+                  ? ' bg-emerald-600 border-emerald-600 hover:bg-emerald-700'
+                  : ' bg-sky-600 border-sky-600 hover:bg-sky-800')
+              }
+            >
+              {copiedLink ? (
+                <CheckIcon fontSize="small" />
+              ) : (
+                <CopyAllIcon fontSize="small" />
+              )}
+              <p>{copiedLink ? 'Link Kopiert!' : 'Link kopieren'}</p>
+            </button>
+          )}
+        </div>
       </Box>
     </Grid>
   );
