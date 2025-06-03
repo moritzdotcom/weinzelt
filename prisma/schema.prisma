@@ -83,6 +83,8 @@ model Reservation {
   payed               Boolean           @default(false)
   pageVisitId         String?
   pageVisit           PageVisit?        @relation(fields: [pageVisitId], references: [id])
+  referralCodeId      String?
+  referralCode        ReferralCode?     @relation(fields: [referralCodeId], references: [id])
   createdAt           DateTime          @default(now())
 }
 
@@ -113,6 +115,15 @@ model PageVisit {
   city         String?
   latitude     Float?
   longitude    Float?
+  createdAt    DateTime      @default(now())
+  reservations Reservation[]
+}
+
+model ReferralCode {
+  id           String        @id @default(uuid())
+  code         String        @unique()
+  description  String
+  valid        Boolean       @default(true)
   createdAt    DateTime      @default(now())
   reservations Reservation[]
 }

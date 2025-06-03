@@ -10,6 +10,7 @@ import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import Diversity1Icon from '@mui/icons-material/Diversity1';
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import LineAxisIcon from '@mui/icons-material/LineAxis';
+import PasswordIcon from '@mui/icons-material/Password';
 
 export default function Backend({ session }: { session: Session }) {
   const router = useRouter();
@@ -64,6 +65,11 @@ export default function Backend({ session }: { session: Session }) {
           href="/backend/dashboard"
           text="Statistiken"
           Icon={LineAxisIcon}
+        />
+        <LinkItem
+          href="/backend/referralCodes"
+          text="Referral Codes"
+          Icon={PasswordIcon}
         />
       </Grid>
     </div>

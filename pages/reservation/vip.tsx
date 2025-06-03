@@ -22,6 +22,8 @@ import RestaurantIcon from '@mui/icons-material/Restaurant';
 import FoodOptionCard from '@/components/reservation/foodOptionCard';
 import OrderSummary from '@/components/reservation/orderSummary';
 import { isValidEmail } from '@/lib/validator';
+import ReferralCodeField from '@/components/reservation/referralCodeField';
+import { ApiGetReferralCodeResponse } from '../api/referralCodes/getCode';
 
 type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
@@ -43,6 +45,8 @@ export default function VipReservationPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [fetchError, setFetchError] = useState<string>();
   const [argbChecked, setArgbChecked] = useState(false);
+  const [referralCode, setReferralCode] =
+    useState<ApiGetReferralCodeResponse | null>(null);
   const [foodData, setFoodData] = useState({
     meat: 8,
     vegetarian: 0,
@@ -102,6 +106,7 @@ export default function VipReservationPage() {
       foodCountMeat: foodData.meat,
       foodCountVegetarian: foodData.vegetarian,
       totalFoodPrice: pricePerMenu * (foodData.meat + foodData.vegetarian),
+      referralCodeId: referralCode?.id,
     });
 
     setSuccess(true);
@@ -117,6 +122,7 @@ export default function VipReservationPage() {
     setFoodData({ meat: 8, vegetarian: 0 });
     setSubmitted(false);
     setArgbChecked(false);
+    setReferralCode(null);
   };
 
   const selectDate = (date: string) => {
@@ -411,6 +417,8 @@ export default function VipReservationPage() {
                 fullWidth
                 margin="normal"
               />
+
+              <ReferralCodeField onValidCode={setReferralCode} />
 
               {selectedPackage && selectedSlot && (
                 <OrderSummary

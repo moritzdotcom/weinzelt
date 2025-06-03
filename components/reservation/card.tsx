@@ -11,7 +11,6 @@ import {
   Divider,
   IconButton,
   InputAdornment,
-  LinearProgress,
   Menu,
   MenuItem,
   TextField,

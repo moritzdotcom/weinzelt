@@ -410,6 +410,15 @@ function ReservationCard({
             {reservation.packageDescription}
           </p>
 
+          {reservation.referralCode && (
+            <div className="px-3 py-2 bg-green-50 rounded mt-2">
+              <h6>
+                Referral Code: <b>{reservation.referralCode.code}</b>
+              </h6>
+              <p>{reservation.referralCode.description}</p>
+            </div>
+          )}
+
           <div className="flex gap-3 mt-4">
             {reservation.confirmationState !== 'ACCEPTED' && (
               <button

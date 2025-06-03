@@ -18,6 +18,8 @@ import ARGBConfirmation from '@/components/reservation/argbConfirmation';
 import { useRouter } from 'next/router';
 import ReservationCountdownSection from '@/components/reservation/countdown';
 import { isValidEmail } from '@/lib/validator';
+import ReferralCodeField from '@/components/reservation/referralCodeField';
+import { ApiGetReferralCodeResponse } from '../api/referralCodes/getCode';
 
 type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
@@ -35,6 +37,8 @@ export default function StandingReservationPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [fetchError, setFetchError] = useState<string>();
   const [argbChecked, setArgbChecked] = useState(false);
+  const [referralCode, setReferralCode] =
+    useState<ApiGetReferralCodeResponse | null>(null);
 
   const [submitted, setSubmitted] = useState(false);
   const [mailError, setMailError] = useState('');
@@ -78,6 +82,7 @@ export default function StandingReservationPage() {
       packagePrice: Number(personCount) * 50,
       people: Number(personCount),
       seatingId: selectedSlot?.id,
+      referralCodeId: referralCode?.id,
     });
 
     setSuccess(true);
@@ -89,6 +94,7 @@ export default function StandingReservationPage() {
     setPersonCount('8');
     setName('');
     setEmail('');
+    setReferralCode(null);
   };
 
   const selectDate = (date: string) => {
@@ -304,6 +310,7 @@ export default function StandingReservationPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 margin="normal"
               />
+              <ReferralCodeField onValidCode={setReferralCode} />
               <div className="rounded-md bg-emerald-50 border border-gray-300 p-4 my-4">
                 <Typography variant="body1" className="text-emerald-800">
                   Bitte hab Verständnis, dass die Tische pünktlich geräumt

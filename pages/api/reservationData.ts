@@ -91,6 +91,7 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
     foodCountFish,
     foodCountVegetarian,
     totalFoodPrice,
+    referralCodeId,
   } = req.body;
 
   const reservationType = type == 'STANDING' ? 'STANDING' : 'VIP';
@@ -125,6 +126,7 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
       foodCountVegetarian,
       totalFoodPrice,
       pageVisitId,
+      referralCodeId,
     },
     include: {
       seating: {
