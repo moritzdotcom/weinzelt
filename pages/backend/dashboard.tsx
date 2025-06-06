@@ -171,8 +171,10 @@ export default function EventDashboard({ session }: { session: Session }) {
   );
   const [pageVisitData, setPageVisitData] =
     useState<ApiGetPageVisitsResponse | null>(null);
+  const [loadingData, setLoadingData] = useState(false);
 
   const fetchData = async (eventId: string) => {
+    setLoadingData(true);
     try {
       const eventResponse = await axios.get<ApiGetEventDataResponse>(
         `/api/events/${eventId}/data`
@@ -186,6 +188,7 @@ export default function EventDashboard({ session }: { session: Session }) {
       console.error('Error fetching event data:', error);
       setEventData(null);
     }
+    setLoadingData(false);
   };
 
   useEffect(() => {
@@ -242,12 +245,12 @@ export default function EventDashboard({ session }: { session: Session }) {
           ))}
         </TextField>
         <button
-          className="rounded-full bg-black text-white px-5 py-2 flex items-center gap-2 hover:bg-neutral-600 transition"
+          className="rounded-full bg-black text-white px-5 py-2 flex items-center gap-2 hover:bg-neutral-600 transition disabled:bg-neutral-500"
           onClick={() => fetchData(selectedEventId || '')}
-          disabled={!selectedEventId}
+          disabled={!selectedEventId || loadingData}
         >
           <Refresh />
-          Aktualisieren
+          {loadingData ? 'Aktualisiert...' : 'Aktualisieren'}
         </button>
       </div>
       {metrics && eventData && pageVisitData && (
