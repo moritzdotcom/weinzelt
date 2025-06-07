@@ -1,8 +1,11 @@
 import Footer from '@/components/footer';
 import Navbar from '@/components/navbar';
 import { Session } from '@/hooks/useSession';
+import { TextField, Box, Button, MenuItem } from '@mui/material';
+import axios from 'axios';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function JobsPage({ session }: { session: Session }) {
   return (
@@ -96,11 +99,11 @@ export default function JobsPage({ session }: { session: Session }) {
               </p>
             </div>
           </div>
+          <ApplicationForm />
 
-          {/* Footer Call-to-Action */}
           <div className="mt-16 text-center">
             <p className="text-lg text-gray-800 mb-4">
-              Neugierig? Dann sende uns jetzt deine Bewerbung per Mail oder
+              Selbstverständlich kannst du dich auch per
               <Link
                 href="https://www.instagram.com/weinzelt.dus/"
                 target="_blank"
@@ -109,18 +112,137 @@ export default function JobsPage({ session }: { session: Session }) {
               >
                 Instagram
               </Link>
-              - wir freuen uns auf dich!
+              oder per
+              <a
+                href="mailto:jobs@dasweinzelt.de"
+                className="underline underline-offset-2 mx-1"
+              >
+                Mail
+              </a>
+              bei uns bewerben - wir freuen uns auf dich!
             </p>
-            <a
-              href="mailto:jobs@dasweinzelt.de"
-              className="inline-block mt-4 px-8 py-3 text-white bg-black hover:bg-gray-500 rounded-full text-lg font-semibold transition"
-            >
-              Jetzt bewerben
-            </a>
           </div>
         </div>
       </section>
       <Footer />
+    </div>
+  );
+}
+
+function ApplicationForm() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [availability, setAvailability] = useState('');
+  const [selectedJob, setSelectedJob] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      await axios.post('/api/jobApplication', {
+        name,
+        email,
+        availability,
+        selectedJob,
+      });
+      setSuccess(true);
+
+      setName('');
+      setEmail('');
+      setAvailability('');
+      setSelectedJob('');
+
+      setTimeout(() => {
+        setSuccess(false);
+      }, 5000);
+    } catch (error) {}
+    setLoading(false);
+  };
+
+  return (
+    <div className="border border-gray-200 rounded-2xl p-6 shadow mt-12">
+      <h2 className="text-2xl font-cocogoose mb-4 text-left">Jetzt bewerben</h2>
+      <form className="space-y-6">
+        {/* Name */}
+        <TextField
+          label="Name"
+          variant="outlined"
+          autoComplete="name"
+          fullWidth
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          sx={{ marginBottom: 2 }}
+        />
+
+        {/* Email */}
+        <TextField
+          label="E-Mail"
+          variant="outlined"
+          type="email"
+          autoComplete="email"
+          fullWidth
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          sx={{ marginBottom: 2 }}
+        />
+
+        <TextField
+          select
+          label="Aufgabenbereich wählen"
+          fullWidth
+          required
+          value={selectedJob}
+          onChange={(e) => {
+            setSelectedJob(e.target.value);
+          }}
+          sx={{ marginBottom: 2, textAlign: 'start' }}
+        >
+          <MenuItem value={'VIP-Kellner:in'}>✨ VIP-Kellner:in</MenuItem>
+          <MenuItem value={'Barkraft'}>🍷 Barkraft</MenuItem>
+          <MenuItem value={'Küchen- & Spülhilfe'}>
+            🍽️ Küchen- & Spülhilfe
+          </MenuItem>
+          <MenuItem value={'Runner'}>🏃‍♂️ Runner</MenuItem>
+        </TextField>
+
+        {/* Availability */}
+        <TextField
+          label="Verfügbarkeit im Zeitraum vom 11.07. bis 20.07."
+          variant="outlined"
+          fullWidth
+          required
+          value={availability}
+          onChange={(e) => setAvailability(e.target.value)}
+          placeholder="z.B. 5 Tage"
+          sx={{ marginBottom: 2 }}
+        />
+
+        {/* Submit Button */}
+        <Box display="flex" justifyContent="center">
+          <button
+            onClick={handleSubmit}
+            disabled={
+              loading ||
+              !name.trim() ||
+              !email.trim() ||
+              !availability.trim() ||
+              !selectedJob.trim()
+            }
+            className={`rounded mt-3 text-white px-3 py-2 disabled:opacity-60 ${
+              success ? 'bg-green-600' : 'bg-black'
+            }`}
+          >
+            {loading
+              ? 'Wird gesendet...'
+              : success
+              ? 'Bewerbung gesendet'
+              : 'Bewerbung absenden'}
+          </button>
+        </Box>
+      </form>
     </div>
   );
 }
