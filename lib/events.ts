@@ -52,12 +52,13 @@ export const events = [
     endDate: '2025-07-13T13:00',
     image: '/events/sunday-morning-pilates.jpg',
     title: 'Sunday Morning Pilates',
-    fullName: 'Weinzelt X Egoiste Studios - Sunday Morning Pilates',
+    fullName: 'Weinzelt X égoïste Studios - Sunday Morning Pilates',
     description:
-      'Sanfter Sonnengruß im Zelt: Starte deinen Sonntag mit fließenden Pilates-Moves vom gehypten egoiste Studio aus Düsseldorf, entspannendem Atem und einem belebenden Glas Weißwein on top.',
+      'Sanfter Sonnengruß im Zelt: Starte deinen Sonntag mit fließenden Pilates-Moves vom gehypten égoïste Studio aus Düsseldorf. Das Ticket beinhaltet eine 45-minütige Pilates Class, einen Iced Matcha von der égoïste Matcha Bar, und ein erfrischendes Glas Sekt.',
     button: {
-      text: 'Jetzt reservieren',
-      link: '/reservation?date=13.07.25',
+      text: 'Ticket kaufen',
+      link: 'https://backoffice.bsport.io/m/%C3%A9go%C3%AFste%20Pilates%20&%20Yoga%20Studio/3150/calendar?tabSelected=0&date=2025-07-13',
+      external: true,
     },
   },
   {
@@ -205,9 +206,9 @@ export const events = [
   //   from: '11:00',
   //   image: '/events/sunday-morning-pilates.jpg',
   //   title: 'Sunday Morning Pilates',
-  //   fullName: 'Weinzelt X Egoiste Studios - Sunday Morning Pilates',
+  //   fullName: 'Weinzelt X égoïste Studios - Sunday Morning Pilates',
   //   description:
-  //     'Entspannt ins Sonntagsglück: Pilates-Flow vom angesagten egoiste Studio Düsseldorf, frische Morgenluft und als krönender Abschluss ein glasperlendes Prickeln.',
+  //     'Entspannt ins Sonntagsglück: Pilates-Flow vom angesagten égoïste Studio Düsseldorf, frische Morgenluft und als krönender Abschluss ein glasperlendes Prickeln.',
   //   button: {
   //     text: 'Jetzt reservieren',
   //     link: '/reservation?date=20.07.25',
