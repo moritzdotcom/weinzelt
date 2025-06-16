@@ -16,9 +16,9 @@ export const events = [
   },
   {
     date: 'SA, 12.07.25',
-    from: '15:00',
-    startDate: '2025-07-12T15:00',
-    endDate: '2025-07-12T17:00',
+    from: '14:00',
+    startDate: '2025-07-12T14:00',
+    endDate: '2025-07-12T16:00',
     image: '/events/winetasting.jpg',
     title: 'Das größte Winetasting Düsseldorfs',
     fullName:
@@ -26,7 +26,7 @@ export const events = [
     description:
       'Tauche ein in eine Welt erlesener Tropfen - Powered by Concept Riesling - und entdecke bei sommerlicher Zeltromantik deinen neuen Lieblingswein. Cheers auf genussvolle Stunden!',
     button: {
-      text: 'Jetzt reservieren',
+      text: 'Kostenfrei - kommt vorbei!',
       link: '/reservation?date=12.07.25',
     },
   },
@@ -78,6 +78,22 @@ export const events = [
     },
   },
   {
+    date: 'SO, 13.07.25',
+    from: '14:00',
+    startDate: '2025-07-13T15:00',
+    endDate: '2025-07-13T16:00',
+    image: '/events/winetasting.jpg',
+    title: 'Das größte Winetasting Düsseldorfs',
+    fullName:
+      'Weintasting im Weinzelt by Concept Riesling - Das größte Winetasting Düsseldorfs',
+    description:
+      'Tauche ein in eine Welt erlesener Tropfen - Powered by Concept Riesling - und entdecke bei sommerlicher Zeltromantik deinen neuen Lieblingswein. Cheers auf genussvolle Stunden!',
+    button: {
+      text: 'Kostenfrei - kommt vorbei!',
+      link: '/reservation?date=13.07.25',
+    },
+  },
+  {
     date: 'MO, 14.07.25',
     from: '15:00',
     startDate: '2025-07-14T15:00',
@@ -89,7 +105,7 @@ export const events = [
     description:
       'Montags muss nicht fade sein: Powered by Concept Riesling - lass dich von außergewöhnlichen Raritäten verführen und genieße Weinwissen mit jeder Menge Spaß.',
     button: {
-      text: 'Jetzt reservieren',
+      text: 'Kostenfrei - kommt vorbei!',
       link: '/reservation?date=14.07.25',
     },
   },
@@ -135,7 +151,7 @@ export const events = [
     description:
       'Weinmittwoch im Zelt: Powered by Concept Riesling - entdecke spannende Newcomer-Weingüter und profitiere von Tipps unserer Sommeliers beim genüsslichen Degustieren.',
     button: {
-      text: 'Jetzt reservieren',
+      text: 'Kostenfrei - kommt vorbei!',
       link: '/reservation?date=16.07.25',
     },
   },
@@ -181,7 +197,7 @@ export const events = [
     description:
       'Das Wochenende feiert mit dir: Powered by Concept Riesling - noch mehr Premium-Weine, lockere Atmosphäre und natürlich jede Menge guter Laune.',
     button: {
-      text: 'Jetzt reservieren',
+      text: 'Kostenfrei - kommt vorbei!',
       link: '/reservation?date=19.07.25',
     },
   },
