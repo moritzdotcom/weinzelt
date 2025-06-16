@@ -54,7 +54,7 @@ export const events = [
     title: 'Sunday Morning Pilates',
     fullName: 'Weinzelt X égoïste Studios - Sunday Morning Pilates',
     description:
-      'Sanfter Sonnengruß im Zelt: Starte deinen Sonntag mit fließenden Pilates-Moves vom gehypten égoïste Studio aus Düsseldorf. Das Ticket beinhaltet eine 45-minütige Pilates Class, einen Iced Matcha von der égoïste Matcha Bar, und ein erfrischendes Glas Sekt.',
+      'Starte deinen Sonntag mit einem dynamischen Pilates Workout vom gehypten égoïste Pilates Studio aus Düsseldorf. Danach genießt du coole Beats bei einem Glas Weißwein oder Matcha und connectest mit der Community.',
     button: {
       text: 'Ticket kaufen',
       link: 'https://backoffice.bsport.io/m/%C3%A9go%C3%AFste%20Pilates%20&%20Yoga%20Studio/3150/calendar?tabSelected=0&date=2025-07-13',
@@ -87,7 +87,7 @@ export const events = [
     fullName:
       'Weintasting im Weinzelt by Concept Riesling - Das größte Winetasting Düsseldorfs',
     description:
-      'Tauche ein in eine Welt erlesener Tropfen - Powered by Concept Riesling - und entdecke bei sommerlicher Zeltromantik deinen neuen Lieblingswein. Cheers auf genussvolle Stunden!',
+      'Tauche ein in eine Welt erlesener Tropfen - Powered by Schlumberger & Concept Riesling - und entdecke bei sommerlicher Zeltromantik deinen neuen Lieblingswein. Moderiert wird das größte Winetasting von Star Sommelier Nico von der Ohe. Cheers auf genussvolle Stunden!',
     button: {
       text: 'Kostenfrei - kommt vorbei!',
       link: '/reservation?date=13.07.25',
