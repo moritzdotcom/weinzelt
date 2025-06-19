@@ -28,11 +28,12 @@ import { ApiGetEventsResponse } from '../api/events';
 import { ApiPutSeatingResponse } from '../api/seatings/[seatingId]';
 import ConfirmDialog from '@/components/confirmDialog';
 import { ApiDeleteEventDateResponse } from '../api/eventDates/[eventDateId]';
+import EventSelector from '@/components/eventSelector';
 
 export default function BackendSeatingsPage({ session }: { session: Session }) {
   const router = useRouter();
-  const [events, setEvents] = useState<ApiGetEventsResponse>([]);
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] =
+    useState<ApiGetEventsResponse[number]>();
   const [eventDates, setEventDates] = useState<ApiGetEventDatesResponse>();
   const [newDate, setNewDate] = useState('');
   const [newDow, setNewDow] = useState('');
@@ -59,30 +60,16 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
   }, [session.status, router.isReady]);
 
   useEffect(() => {
-    axios
-      .get('/api/events')
-      .then(({ data }: { data: ApiGetEventsResponse }) => {
-        setEvents(data);
-        const preselect = router.query.eventId as string;
-        if (preselect) {
-          setSelectedEventId(preselect);
-        } else if (data.length == 1) {
-          setSelectedEventId(data[0].id);
-        }
-      });
-  }, [router.query.eventId]);
-
-  useEffect(() => {
-    if (selectedEventId) {
-      axios.get(`/api/events/${selectedEventId}/eventDates`).then((res) => {
+    if (selectedEvent?.id) {
+      axios.get(`/api/events/${selectedEvent.id}/eventDates`).then((res) => {
         setEventDates(res.data);
       });
     }
-  }, [selectedEventId]);
+  }, [selectedEvent?.id]);
 
   const handleCreateDate = async () => {
     const { data } = await axios.post(
-      `/api/events/${selectedEventId}/eventDates`,
+      `/api/events/${selectedEvent?.id}/eventDates`,
       {
         date: newDate,
         dow: newDow,
@@ -183,20 +170,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
       </Typography>
 
       <div className="my-7 flex items-center flex-col sm:flex-row justify-between gap-5">
-        <TextField
-          select
-          label="Veranstaltung wählen"
-          fullWidth
-          sx={{ maxWidth: 'var(--container-md)' }}
-          value={selectedEventId || ''}
-          onChange={(e) => setSelectedEventId(e.target.value)}
-        >
-          {events.map((event) => (
-            <MenuItem key={event.id} value={event.id}>
-              {event.name}
-            </MenuItem>
-          ))}
-        </TextField>
+        <EventSelector onChange={setSelectedEvent} />
         <button
           className="rounded-full bg-black text-white px-5 py-2 text-sm"
           onClick={() => setCreateDateDialogOpen(true)}

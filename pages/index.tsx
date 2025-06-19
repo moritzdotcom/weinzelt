@@ -9,6 +9,7 @@ import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
 import { trackPageVisit } from '@/lib/pageVisit';
 import { GetServerSideProps } from 'next';
+import SpecialEventRegistrationDialog from '@/components/specialEventRegistrationDialog';
 
 export default function Home({ session }: { session: Session }) {
   return (
@@ -230,7 +231,13 @@ export default function Home({ session }: { session: Session }) {
                     <p className="text-gray-400 text-sm">{e.description}</p>
                   </div>
                 </div>
-                {e.button && (
+                {e.button.specialEventId && (
+                  <SpecialEventRegistrationDialog
+                    id={e.button.specialEventId}
+                    buttonLabel={e.button.text}
+                  />
+                )}
+                {e.button.link && (
                   <Link
                     className="w-full py-3 text-center bg-gray-200 inline-block text-black hover:underline text-lg"
                     href={e.button.link}

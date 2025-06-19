@@ -28,6 +28,7 @@ export const events = [
     button: {
       text: 'Kostenfrei - kommt vorbei!',
       link: '/reservation?date=12.07.25',
+      // specialEventId: '32b9cba3-5a7e-4797-a1de-991547c35d9e',
     },
   },
   {

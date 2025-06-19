@@ -11,6 +11,7 @@ import Diversity1Icon from '@mui/icons-material/Diversity1';
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import LineAxisIcon from '@mui/icons-material/LineAxis';
 import PasswordIcon from '@mui/icons-material/Password';
+import LocalActivityIcon from '@mui/icons-material/LocalActivity';
 
 export default function Backend({ session }: { session: Session }) {
   const router = useRouter();
@@ -70,6 +71,11 @@ export default function Backend({ session }: { session: Session }) {
           href="/backend/referralCodes"
           text="Referral Codes"
           Icon={PasswordIcon}
+        />
+        <LinkItem
+          href="/backend/specialEvents"
+          text="Special Events"
+          Icon={LocalActivityIcon}
         />
       </Grid>
     </div>

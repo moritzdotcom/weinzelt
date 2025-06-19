@@ -38,12 +38,13 @@ model Event {
 }
 
 model EventDate {
-  id       String    @id @default(uuid())
-  date     String
-  dow      String
-  eventId  String
-  event    Event     @relation(fields: [eventId], references: [id])
-  seatings Seating[]
+  id            String         @id @default(uuid())
+  date          String
+  dow           String
+  eventId       String
+  event         Event          @relation(fields: [eventId], references: [id])
+  seatings      Seating[]
+  specialEvents SpecialEvent[]
 }
 
 model Seating {
@@ -126,6 +127,27 @@ model ReferralCode {
   valid        Boolean       @default(true)
   createdAt    DateTime      @default(now())
   reservations Reservation[]
+}
+
+model SpecialEvent {
+  id            String              @id @default(uuid())
+  name          String
+  description   String
+  eventDate     EventDate           @relation(fields: [eventDateId], references: [id])
+  eventDateId   String
+  startTime     String
+  endTime       String
+  registrations EventRegistration[]
+}
+
+model EventRegistration {
+  id             String       @id @default(uuid())
+  specialEvent   SpecialEvent @relation(fields: [specialEventId], references: [id])
+  specialEventId String
+  name           String
+  email          String
+  personCount    Int
+  createdAt      DateTime     @default(now())
 }
 
 enum ConfirmationState {
