@@ -172,7 +172,7 @@ export default function VipReservationPage() {
   };
 
   useEffect(() => {
-    if (personCount.length > 0) {
+    if (personCount.length > 0 && selectedSlot?.foodRequired) {
       setFoodData({
         meat: Number(personCount),
         vegetarian: 0,
