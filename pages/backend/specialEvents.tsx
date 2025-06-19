@@ -151,7 +151,7 @@ function EventCard({
         <div className="flex flex-wrap gap-2 mt-4">
           <button
             onClick={onSelect}
-            className="px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100 transition"
+            className="px-4 py-2 w-full rounded border border-gray-300 text-sm text-gray-700 hover:bg-gray-100 transition"
           >
             Event bearbeiten
           </button>
@@ -160,7 +160,7 @@ function EventCard({
           onClick={handleCopyLink}
           disabled={copiedLink}
           className={
-            'w-full py-2 rounded text-white transition flex items-center justify-center gap-2 border' +
+            'w-full mt-3 py-2 rounded text-white transition flex items-center justify-center gap-2 border' +
             (copiedLink
               ? ' bg-emerald-600 border-emerald-600 hover:bg-emerald-700'
               : ' bg-sky-600 border-sky-600 hover:bg-sky-800')
