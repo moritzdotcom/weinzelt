@@ -90,7 +90,7 @@ export const events = [
       'Tauche ein in eine Welt erlesener Tropfen - Powered by Schlumberger & Concept Riesling - und entdecke bei sommerlicher Zeltromantik deinen neuen Lieblingswein. Moderiert wird das größte Winetasting von Star Sommelier Nico von der Ohe. Cheers auf genussvolle Stunden!',
     button: {
       text: 'Kostenfrei - kommt vorbei!',
-      link: '/reservation?date=13.07.25',
+      specialEventId: '781f66f9-e8de-4759-bf5a-eed8208af1a5',
     },
   },
   {
@@ -106,7 +106,7 @@ export const events = [
       'Montags muss nicht fade sein: Powered by Concept Riesling - lass dich von außergewöhnlichen Raritäten verführen und genieße Weinwissen mit jeder Menge Spaß.',
     button: {
       text: 'Kostenfrei - kommt vorbei!',
-      link: '/reservation?date=14.07.25',
+      specialEventId: '55424f90-03d0-4c8c-add1-f954d509da5c',
     },
   },
   {
@@ -152,7 +152,7 @@ export const events = [
       'Weinmittwoch im Zelt: Powered by Concept Riesling - entdecke spannende Newcomer-Weingüter und profitiere von Tipps unserer Sommeliers beim genüsslichen Degustieren.',
     button: {
       text: 'Kostenfrei - kommt vorbei!',
-      link: '/reservation?date=16.07.25',
+      specialEventId: '33affbe5-11f2-4b8c-82a2-07bcb9a751c9',
     },
   },
   {
@@ -198,7 +198,7 @@ export const events = [
       'Das Wochenende feiert mit dir: Powered by Concept Riesling - noch mehr Premium-Weine, lockere Atmosphäre und natürlich jede Menge guter Laune.',
     button: {
       text: 'Kostenfrei - kommt vorbei!',
-      link: '/reservation?date=19.07.25',
+      specialEventId: '9b4d3cc6-b859-4729-81cd-fda660f3ff15',
     },
   },
   {
