@@ -14,11 +14,12 @@ import {
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { Session } from '@/hooks/useSession';
-import { ApiGetSpecialEventsResponse } from '../api/specialEvents';
-import { ApiGetEventsResponse } from '../api/events';
+import { ApiGetSpecialEventsResponse } from '../../api/specialEvents';
+import { ApiGetEventsResponse } from '../../api/events';
 import EventSelector from '@/components/eventSelector';
 import CheckIcon from '@mui/icons-material/Check';
 import CopyAllIcon from '@mui/icons-material/CopyAll';
+import Link from 'next/link';
 
 type SpecialEvent = ApiGetSpecialEventsResponse[number];
 
@@ -160,10 +161,10 @@ function EventCard({
           onClick={handleCopyLink}
           disabled={copiedLink}
           className={
-            'w-full mt-3 py-2 rounded text-white transition flex items-center justify-center gap-2 border' +
+            'w-full mt-3 py-2 rounded text-neutral-800 transition flex items-center justify-center gap-2 border text-sm' +
             (copiedLink
-              ? ' bg-emerald-600 border-emerald-600 hover:bg-emerald-700'
-              : ' bg-sky-600 border-sky-600 hover:bg-sky-800')
+              ? ' bg-emerald-300 border-emerald-300 hover:bg-emerald-500'
+              : ' bg-neutral-200 border-neutral-200 hover:bg-neutral-300')
           }
         >
           {copiedLink ? (
@@ -173,6 +174,12 @@ function EventCard({
           )}
           <p>{copiedLink ? 'ID kopiert!' : 'ID kopieren'}</p>
         </button>
+        <Link
+          href={`/backend/specialEvents/${event.id}`}
+          className="w-full mt-3 py-2 rounded text-sky-600 transition flex items-center justify-center gap-2 border border-sky-600 text-sm hover:bg-sky-100"
+        >
+          Teilnehmer einsehen
+        </Link>
       </Box>
     </Grid>
   );

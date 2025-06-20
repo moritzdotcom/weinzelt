@@ -148,6 +148,7 @@ model EventRegistration {
   email          String
   personCount    Int
   createdAt      DateTime     @default(now())
+  reminderSent   DateTime?
 }
 
 enum ConfirmationState {
