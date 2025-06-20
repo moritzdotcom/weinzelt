@@ -133,9 +133,11 @@ export default function SpecialEventRegistrationDialog({
           <button className="float-end" onClick={handleClose}>
             <CloseIcon fontSize="large" />
           </button>
-          <div className="my-5">
+          <div className="mb-5 mt-9">
             {specialEvent ? (
-              <h1 className="text-4xl text-center">{specialEvent.name}</h1>
+              <h1 className="text-3xl sm:text-4xl text-center">
+                {specialEvent.name}
+              </h1>
             ) : (
               <Skeleton width="50%" height={50} sx={{ mx: 'auto' }} />
             )}
