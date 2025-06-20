@@ -22,7 +22,10 @@ export default async function handle(
 }
 
 export type ApiGetSpecialEventsResponse = Prisma.SpecialEventGetPayload<{
-  include: { eventDate: { select: { id: true; date: true; dow: true } } };
+  include: {
+    eventDate: { select: { id: true; date: true; dow: true } };
+    _count: { select: { registrations: true } };
+  };
 }>[];
 
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {
@@ -31,12 +34,18 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
   if (typeof eventId == 'string') {
     const events = await prisma.specialEvent.findMany({
       where: { eventDate: { eventId } },
-      include: { eventDate: { select: { id: true, date: true, dow: true } } },
+      include: {
+        eventDate: { select: { id: true, date: true, dow: true } },
+        _count: { select: { registrations: true } },
+      },
     });
     return res.json(events);
   } else {
     const events = await prisma.specialEvent.findMany({
-      include: { eventDate: { select: { id: true, date: true, dow: true } } },
+      include: {
+        eventDate: { select: { id: true, date: true, dow: true } },
+        _count: { select: { registrations: true } },
+      },
     });
     return res.json(events);
   }

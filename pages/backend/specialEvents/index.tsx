@@ -10,6 +10,7 @@ import {
   TextField,
   Skeleton,
   MenuItem,
+  Chip,
 } from '@mui/material';
 import axios from 'axios';
 import { useRouter } from 'next/router';
@@ -142,6 +143,7 @@ function EventCard({
           <Typography variant="h6" className="font-semibold">
             {event.name}
           </Typography>
+          <Chip label={event._count.registrations} color="error" />
         </Box>
         <Typography className="text-sm text-gray-500 mb-2">
           {event.eventDate.date}: {event.startTime} - {event.endTime}
