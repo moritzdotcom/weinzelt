@@ -71,7 +71,7 @@ async function handleGET(
 
   Object.entries(grouped)
     .sort((a, b) => a[0].localeCompare(b[0]))
-    .forEach(([timeslot, list]) => {
+    .forEach(([timeslot, list], timeslotIndex) => {
       // Sortiere innerhalb des Timeslots nach Tischnummer
       list.sort((a, b) =>
         (a.tableNumber || '').localeCompare(b.tableNumber || '')
@@ -85,7 +85,7 @@ async function handleGET(
       doc.moveDown(0.5);
 
       // Tabelle
-      const tableTop = doc.y;
+      let tableTop = doc.y;
       // const colWidths = [230, 80, 100, 90];
       const colWidths = [
         ((doc.page.width - 80) / 100) * 55,
@@ -109,9 +109,11 @@ async function handleGET(
         x += colWidths[i];
       });
 
-      // Vertikale Linien + Inhalte
-      list.forEach((r, idx) => {
-        const rowTop = tableTop + 20 + idx * 25;
+      let rowIndex = 0;
+      list.forEach((r) => {
+        let rowTop = tableTop + 20 + rowIndex * 25; // 25pt Zeilenhöhe
+        rowIndex += 1;
+
         const values = [r.name, r.people.toString(), r.tableNumber || '', ''];
 
         // Horizontale Linie oben
@@ -121,7 +123,13 @@ async function handleGET(
           .strokeColor('#000000')
           .stroke();
 
-        // Inhalte mit vertikalen Linien
+        if (rowTop > doc.page.height - 40) {
+          doc.addPage();
+          tableTop = 40;
+          rowTop = 60;
+          rowIndex = 0;
+        }
+
         let xPos = 40;
         values.forEach((text, i) => {
           doc
@@ -138,7 +146,7 @@ async function handleGET(
       });
 
       // horizontale Linie unter letzter Zeile
-      const endY = tableTop + 20 + list.length * 25 - 5;
+      const endY = doc.y + 18;
       doc
         .moveTo(40, endY)
         .lineTo(40 + colWidths.reduce((a, b) => a + b, 0), endY)
@@ -146,6 +154,7 @@ async function handleGET(
         .stroke();
 
       doc.moveDown(4);
+      if (timeslotIndex < Object.entries(grouped).length - 1) doc.addPage();
     });
 
   doc.end();

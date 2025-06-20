@@ -73,7 +73,7 @@ async function handleGET(
 
   Object.entries(grouped)
     .sort((a, b) => a[0].localeCompare(b[0]))
-    .forEach(([timeslot, list]) => {
+    .forEach(([timeslot, list], timeslotIndex) => {
       // Sortiere innerhalb des Timeslots nach Tischnummer
       list.sort((a, b) =>
         (a.tableNumber || '').localeCompare(b.tableNumber || '')
@@ -96,7 +96,7 @@ async function handleGET(
 
       // Header-Zeile
       let x = 40;
-      const tableTop = doc.y;
+      let tableTop = doc.y;
       headers.forEach((text, i) => {
         doc
           .font('Helvetica-Bold')
@@ -117,9 +117,17 @@ async function handleGET(
         .strokeColor('#000000')
         .stroke();
 
-      // Zeilen pro Gast doppelt zeichnen
-      list.forEach((r, idx) => {
-        const rowTop = tableTop + 20 + idx * 38; // 35pt Zeilenhöhe
+      let rowIndex = 0;
+      list.forEach((r) => {
+        let rowTop = tableTop + 20 + rowIndex * 38; // 35pt Zeilenhöhe
+        rowIndex += 1;
+
+        if (rowTop > doc.page.height - 80) {
+          doc.addPage();
+          tableTop = 40;
+          rowTop = 60;
+          rowIndex = 1;
+        }
 
         // Erste Zeile: Name | Personen | Tischnummer
         let xPos = 40;
@@ -158,6 +166,7 @@ async function handleGET(
 
       // Nach der Liste ausreichend Abstand einfügen
       doc.moveDown(3);
+      if (timeslotIndex < Object.entries(grouped).length - 1) doc.addPage();
     });
 
   doc.end();
