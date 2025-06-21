@@ -8,6 +8,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   Paper,
   Snackbar,
   Table,
@@ -22,6 +23,7 @@ import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function BackendSpecialEventPage({
   session,
@@ -44,6 +46,15 @@ export default function BackendSpecialEventPage({
               reminderSent: new Date(),
             })),
           }
+        : undefined
+    );
+  };
+
+  const handleDelete = async (id: string) => {
+    await axios.delete(`/api/eventRegistration/${id}`);
+    setSpecialEvent((p) =>
+      p
+        ? { ...p, registrations: p.registrations.filter((r) => r.id !== id) }
         : undefined
     );
   };
@@ -109,36 +120,51 @@ export default function BackendSpecialEventPage({
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>
+              <TableCell sx={{ whiteSpace: 'nowrap' }}>
                 <strong>Name</strong>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{ whiteSpace: 'nowrap' }}>
                 <strong>E-Mail</strong>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{ whiteSpace: 'nowrap' }}>
                 <strong>Personen</strong>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{ whiteSpace: 'nowrap' }}>
                 <strong>Registriert am</strong>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{ whiteSpace: 'nowrap' }}>
                 <strong>Erinnert am</strong>
               </TableCell>
+              <TableCell />
             </TableRow>
           </TableHead>
           <TableBody>
             {specialEvent.registrations.map((registration, index) => (
               <TableRow key={index}>
-                <TableCell>{registration.name}</TableCell>
-                <TableCell>{registration.email}</TableCell>
-                <TableCell>{registration.personCount}</TableCell>
-                <TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                  {registration.name}
+                </TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                  {registration.email}
+                </TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                  {registration.personCount}
+                </TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>
                   {new Date(registration.createdAt).toLocaleDateString()}
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>
                   {registration.reminderSent
                     ? new Date(registration.reminderSent).toLocaleDateString()
                     : '-'}
+                </TableCell>
+                <TableCell>
+                  <IconButton
+                    onClick={() => handleDelete(registration.id)}
+                    color="error"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
                 </TableCell>
               </TableRow>
             ))}
