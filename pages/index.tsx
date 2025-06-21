@@ -274,17 +274,27 @@ export default function Home({ session }: { session: Session }) {
               und clevere alkoholfreie Alternativen. Alles, was du brauchst für
               einen Abend, der stilvoll knallt!
             </p>
-            <Link
-              href="/weinzelt-karte.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-300 hover:text-black transition"
-            >
-              Jetzt Karte checken{' '}
-              <span className="hidden sm:inline">
-                & Lieblingstropfen finden!
-              </span>
-            </Link>
+            <div className="flex flex-col items-center sm:items-start gap-3">
+              <Link
+                href="/weinzelt-food.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block border border-black text-black px-6 py-3 rounded-full shadow-md hover:bg-gray-200 hover:text-black text-center transition"
+              >
+                Entdecke unser Weingarten Menü
+              </Link>
+              <Link
+                href="/weinzelt-karte.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-300 hover:text-black transition"
+              >
+                Jetzt Karte checken{' '}
+                <span className="hidden sm:inline">
+                  & Lieblingstropfen finden!
+                </span>
+              </Link>
+            </div>
           </div>
 
           {/* Bildbereich */}
@@ -329,7 +339,7 @@ export default function Home({ session }: { session: Session }) {
           Unterstützung!
         </p>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 items-center justify-center">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 gap-y-16 items-center justify-center">
           <a
             href="https://conceptriesling.com/"
             target="_blank"
@@ -387,6 +397,42 @@ export default function Home({ session }: { session: Session }) {
             <img
               src="/partners/mls-logo.jpg"
               alt="MLS"
+              className="w-full max-h-20 object-contain mx-auto"
+            />
+          </a>
+          <a
+            href="https://www.redbull.com/de-de"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:scale-105 transition-transform duration-300"
+          >
+            <img
+              src="/partners/redBull-logo.png"
+              alt="Red Bull"
+              className="w-full max-h-20 object-contain mx-auto"
+            />
+          </a>
+          <a
+            href="https://www.gerolsteiner.de/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:scale-105 transition-transform duration-300"
+          >
+            <img
+              src="/partners/gerolsteiner-logo.png"
+              alt="Gerolsteiner"
+              className="w-full max-h-20 object-contain mx-auto"
+            />
+          </a>
+          <a
+            href="https://foodexplorer.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:scale-105 transition-transform duration-300"
+          >
+            <img
+              src="/partners/foodexplorer-logo.webp"
+              alt="Food Explorer"
               className="w-full max-h-20 object-contain mx-auto"
             />
           </a>
