@@ -38,6 +38,11 @@ interface LineData {
   x: string;
   y: number;
 }
+interface MultiLineData {
+  x: string;
+  y1: number;
+  y2: number;
+}
 interface TableData {
   [key: string]: string | number;
 }
@@ -96,6 +101,50 @@ export const LineChartCard: React.FC<{
           name={yLabel || 'Anzahl'}
           dataKey="y"
           stroke="#000000"
+          strokeWidth={2}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  </div>
+);
+
+export const MultiLineChartCard: React.FC<{
+  title: string;
+  data: MultiLineData[];
+  y1Label?: string;
+  y2Label?: string;
+  formatter?: (value: any, index: number) => string;
+}> = ({ title, data, y1Label, y2Label, formatter }) => (
+  <div className="col-span-12 lg:col-span-6 rounded-lg bg-white pt-6 shadow-md">
+    <h6 className="text-gray-600 text-center mb-5">{title}</h6>
+    <ResponsiveContainer width="90%" height={300}>
+      <LineChart
+        data={data}
+        margin={{ top: 10, right: 10, left: 10, bottom: 30 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis
+          dataKey="x"
+          angle={-30}
+          textAnchor="end"
+          height={60}
+          interval={0}
+          tick={{ fontSize: 10 }}
+        />
+        <YAxis tickFormatter={formatter} />
+        <ReTooltip formatter={formatter} />
+        <Line
+          type="monotone"
+          name={y1Label || 'Anzahl'}
+          dataKey="y1"
+          stroke="#000000"
+          strokeWidth={2}
+        />
+        <Line
+          type="monotone"
+          name={y2Label || 'Anzahl'}
+          dataKey="y2"
+          stroke="#FF0000"
           strokeWidth={2}
         />
       </LineChart>
@@ -293,9 +342,21 @@ export default function EventDashboard({ session }: { session: Session }) {
             }))}
             yLabel="Reservierungen"
           />
+          <MultiLineChartCard
+            title="Auslastung"
+            data={metrics.capacity}
+            formatter={(value: number) => `${Math.round(value)}%`}
+            y1Label="VIP"
+            y2Label="Stehtisch"
+          />
           <LineChartCard
             title="Reservierungsanfragen pro Package"
             data={metrics.packageCounts}
+            yLabel="Reservierungen"
+          />
+          <LineChartCard
+            title="Reservierungen pro Referral Code"
+            data={metrics.referralCodes}
             yLabel="Reservierungen"
           />
           <LineChartCard

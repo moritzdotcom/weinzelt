@@ -25,7 +25,9 @@ export type ApiGetEventDataResponse = Prisma.EventGetPayload<{
       include: {
         seatings: {
           include: {
-            reservations: true;
+            reservations: {
+              include: { referralCode: { select: { code: true } } };
+            };
           };
         };
       };
@@ -45,7 +47,9 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
         include: {
           seatings: {
             include: {
-              reservations: true,
+              reservations: {
+                include: { referralCode: { select: { code: true } } },
+              },
             },
           },
         },

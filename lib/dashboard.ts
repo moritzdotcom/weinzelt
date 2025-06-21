@@ -13,7 +13,9 @@ export interface Metrics {
   revenue: number;
   pageVisits: number;
   uniqueVisitors: number;
+  capacity: { x: string; y1: number; y2: number }[];
   packageCounts: { x: string; y: number }[];
+  referralCodes: { x: string; y: number }[];
   dailyPageVisitData: { x: string; y: number }[];
   pageVisitsBySource: { x: string; y: number }[];
   lastTenReservations: {
@@ -61,6 +63,37 @@ export function calculateMetrics(
   const pageVisitsCount = pageVisits.length;
   const uniqueVisitors = new Set(pageVisits.map((v) => v.ip)).size;
 
+  const capacity: {
+    [key: string]: {
+      vip: number;
+      standing: number;
+      availableVip: number;
+      availableStanding: number;
+    };
+  } = {};
+  eventData.eventDates.forEach((date) => {
+    const data = { vip: 0, standing: 0, availableVip: 0, availableStanding: 0 };
+    date.seatings.forEach((s) => {
+      data.vip += s.reservations.filter(
+        (r) => r.confirmationState == 'ACCEPTED' && r.type == 'VIP'
+      ).length;
+      data.standing += s.reservations.filter(
+        (r) => r.confirmationState == 'ACCEPTED' && r.type == 'STANDING'
+      ).length;
+      data.availableVip += s.availableVip;
+      data.availableStanding += s.availableStanding;
+    });
+    capacity[date.date] = data;
+  });
+
+  const sortedCapacity = Object.entries(capacity)
+    .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+    .map(([date, data]) => ({
+      x: date,
+      y1: (data.vip * 100) / data.availableVip,
+      y2: (data.standing * 100) / data.availableStanding,
+    }));
+
   const packageCounts: { [key: string]: number } = {};
   allReservations.forEach((reservation) => {
     if (reservation.packageName) {
@@ -72,6 +105,20 @@ export function calculateMetrics(
     .sort(([, countA], [, countB]) => countB - countA)
     .map(([packageName, count]) => ({
       x: packageName,
+      y: count,
+    }));
+
+  const referralCodes: { [key: string]: number } = {};
+  allReservations.forEach((reservation) => {
+    if (reservation.referralCode?.code) {
+      referralCodes[reservation.referralCode?.code] =
+        (referralCodes[reservation.referralCode?.code] || 0) + 1;
+    }
+  });
+  const sortedreferralCodes = Object.entries(referralCodes)
+    .sort(([, countA], [, countB]) => countB - countA)
+    .map(([code, count]) => ({
+      x: code,
       y: count,
     }));
 
@@ -125,7 +172,9 @@ export function calculateMetrics(
     revenue,
     pageVisits: pageVisitsCount,
     uniqueVisitors,
+    capacity: sortedCapacity,
     packageCounts: sortedPackageCounts,
+    referralCodes: sortedreferralCodes,
     dailyPageVisitData,
     pageVisitsBySource: sortedPageVisitsBySource,
     lastTenReservations,
