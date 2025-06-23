@@ -21,6 +21,7 @@ import EventSelector from '@/components/eventSelector';
 import CheckIcon from '@mui/icons-material/Check';
 import CopyAllIcon from '@mui/icons-material/CopyAll';
 import Link from 'next/link';
+import { compareEventDates } from '@/lib/eventDates';
 
 type SpecialEvent = ApiGetSpecialEventsResponse[number];
 
@@ -43,10 +44,8 @@ export default function BackendSpecialEventsPage({
     const res = await axios.get('/api/specialEvents', {
       params: { eventId: selectedEvent?.id },
     });
-    const sorted = res.data.sort(
-      (a: SpecialEvent, b: SpecialEvent) =>
-        new Date(b.eventDate.date).getTime() -
-        new Date(a.eventDate.date).getTime()
+    const sorted = res.data.sort((a: SpecialEvent, b: SpecialEvent) =>
+      compareEventDates(a.eventDate.date, b.eventDate.date)
     );
     setLoading(false);
     setSpecialEvents(sorted);
