@@ -22,6 +22,7 @@ import { SimpleOrderSummary } from '@/components/reservation/orderSummary';
 import { isValidEmail } from '@/lib/validator';
 import ReferralCodeField from '@/components/reservation/referralCodeField';
 import { ApiGetReferralCodeResponse } from '../api/referralCodes/getCode';
+import Link from 'next/link';
 
 type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
@@ -291,6 +292,14 @@ export default function VipReservationPage() {
                 <h5 className="text-lg text-neutral-500">
                   (Essen im ausgewählten Timeslot verpflichtend)
                 </h5>
+                <Link
+                  href="/weincorner-food.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-neutral-400 hover:text-neutral-900 underline transition-all"
+                >
+                  Hier findest du unsere Speisekarte
+                </Link>
               </div>
               <div className="flex flex-col gap-5">
                 <FoodOptionCard
@@ -378,6 +387,14 @@ export default function VipReservationPage() {
                   <b>
                     nach der Reservierung mit deiner Gruppe im Weinzelt bleiben
                   </b>
+                  .<br /> Getränke können auch per Mail vorbestellt werden.
+                  Bitte kontaktiere uns dafür unter{' '}
+                  <a
+                    href="mailto:reservierung@dasweinzelt.de"
+                    className="font-bold hover:underline"
+                  >
+                    reservierung@dasweinzelt.de
+                  </a>
                   .
                 </Typography>
               </div>

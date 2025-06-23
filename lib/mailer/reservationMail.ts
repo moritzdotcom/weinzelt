@@ -48,6 +48,9 @@ export default function sendReservationMail(
                 <p><strong>Dein gebuchtes Package:</strong><br/>
                   <strong>${packageName}</strong><br/>
                   ${packageDescription}
+                  <br/>
+                  <br/>
+                  Getränke können auch vorab bestellt werden. So sind sie bei deiner Ankunft bereits für dich bereit! Antworte dazu einfach auf diese E-Mail und teile uns deine Wünsche mit. Wir kümmern uns um den Rest!
                 </p>
                 <hr style="border:none; border-top:1px solid #cccccc; margin:16px 0;" />
                 <p><strong>Zahlungsdaten:</strong><br/>
