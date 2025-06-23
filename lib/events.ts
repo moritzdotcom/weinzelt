@@ -1,6 +1,22 @@
 export const events = [
   {
     date: 'FR, 11.07.25',
+    from: '16:00',
+    startDate: '2025-07-11T16:00',
+    endDate: '2025-07-11T17:00',
+    image: '/events/winetasting-diehl.jpg',
+    title: 'Das größte Winetasting Düsseldorfs',
+    fullName:
+      'Weintasting im Weinzelt by Weingut Diehl & Concept Riesling - Der Auftakt',
+    description:
+      'Sei dabei beim exklusiven Opening des Weinzelt! Gemeinsam mit dem renommierten Weingut Diehl und Concept Riesling starten wir die Rheinkirmes mit einem besonderen Tasting, das dich in die Welt der edelsten Weine entführt. Lass uns gemeinsam den Sommer und den Startschuss für eine genussvolle Zeit feiern!',
+    button: {
+      text: 'Kostenfrei registrieren!',
+      specialEventId: '9d97c662-83ab-4732-bab7-20d467edd950',
+    },
+  },
+  {
+    date: 'FR, 11.07.25',
     from: '20:00',
     startDate: '2025-07-11T20:00',
     endDate: '2025-07-11T22:00',
@@ -18,15 +34,15 @@ export const events = [
     date: 'SA, 12.07.25',
     from: '14:00',
     startDate: '2025-07-12T14:00',
-    endDate: '2025-07-12T16:00',
-    image: '/events/winetasting.jpg',
+    endDate: '2025-07-12T15:00',
+    image: '/events/winetasting-pfalz.jpg',
     title: 'Das größte Winetasting Düsseldorfs',
     fullName:
-      'Weintasting im Weinzelt by Concept Riesling - Das größte Winetasting Düsseldorfs',
+      'Weintasting im Weinzelt by "die PFALZ" & Concept Riesling - Das größte Winetasting Düsseldorfs',
     description:
-      'Tauche ein in eine Welt erlesener Tropfen - Powered by Concept Riesling - und entdecke bei sommerlicher Zeltromantik deinen neuen Lieblingswein. Cheers auf genussvolle Stunden!',
+      'Tauche ein in eine Welt erlesener Tropfen - Powered by "die PFALZ" & Concept Riesling - und entdecke bei sommerlicher Zeltromantik deinen neuen Lieblingswein. Cheers auf genussvolle Stunden!',
     button: {
-      text: 'Kostenfrei - kommt vorbei!',
+      text: 'Kostenfrei registrieren',
       specialEventId: '9c5024b8-b4f0-44f7-9241-8ee78b519131',
     },
   },
@@ -80,35 +96,35 @@ export const events = [
   {
     date: 'SO, 13.07.25',
     from: '14:00',
-    startDate: '2025-07-13T15:00',
-    endDate: '2025-07-13T16:00',
-    image: '/events/winetasting.jpg',
+    startDate: '2025-07-13T14:00',
+    endDate: '2025-07-13T15:00',
+    image: '/events/winetasting-schlumberger.jpg',
     title: 'Das größte Winetasting Düsseldorfs',
     fullName:
-      'Weintasting im Weinzelt by Concept Riesling - Das größte Winetasting Düsseldorfs',
+      'Weintasting im Weinzelt by Schlumberger & Concept Riesling - Das größte Winetasting Düsseldorfs',
     description:
       'Tauche ein in eine Welt erlesener Tropfen - Powered by Schlumberger & Concept Riesling - und entdecke bei sommerlicher Zeltromantik deinen neuen Lieblingswein. Moderiert wird das größte Winetasting von Star Sommelier Nico von der Ohe. Cheers auf genussvolle Stunden!',
     button: {
-      text: 'Kostenfrei - kommt vorbei!',
+      text: 'Kostenfrei registrieren',
       specialEventId: '781f66f9-e8de-4759-bf5a-eed8208af1a5',
     },
   },
-  {
-    date: 'MO, 14.07.25',
-    from: '15:00',
-    startDate: '2025-07-14T15:00',
-    endDate: '2025-07-14T17:00',
-    image: '/events/winetasting.jpg',
-    title: 'Das größte Winetasting Düsseldorfs',
-    fullName:
-      'Weintasting im Weinzelt by Concept Riesling - Das größte Winetasting Düsseldorfs',
-    description:
-      'Montags muss nicht fade sein: Powered by Concept Riesling - lass dich von außergewöhnlichen Raritäten verführen und genieße Weinwissen mit jeder Menge Spaß.',
-    button: {
-      text: 'Kostenfrei - kommt vorbei!',
-      specialEventId: '55424f90-03d0-4c8c-add1-f954d509da5c',
-    },
-  },
+  // {
+  //   date: 'MO, 14.07.25',
+  //   from: '15:00',
+  //   startDate: '2025-07-14T15:00',
+  //   endDate: '2025-07-14T17:00',
+  //   image: '/events/winetasting.jpg',
+  //   title: 'Das größte Winetasting Düsseldorfs',
+  //   fullName:
+  //     'Weintasting im Weinzelt by Concept Riesling - Das größte Winetasting Düsseldorfs',
+  //   description:
+  //     'Montags muss nicht fade sein: Powered by Concept Riesling - lass dich von außergewöhnlichen Raritäten verführen und genieße Weinwissen mit jeder Menge Spaß.',
+  //   button: {
+  //     text: 'Kostenfrei registrieren',
+  //     specialEventId: '55424f90-03d0-4c8c-add1-f954d509da5c',
+  //   },
+  // },
   {
     date: 'MO, 14.07.25',
     from: '19:00',
@@ -139,22 +155,22 @@ export const events = [
       link: '/reservation?date=15.07.25',
     },
   },
-  {
-    date: 'MI, 16.07.25',
-    from: '15:00',
-    startDate: '2025-07-16T15:00',
-    endDate: '2025-07-16T17:00',
-    image: '/events/winetasting.jpg',
-    title: 'Das größte Winetasting Düsseldorfs',
-    fullName:
-      'Weintasting im Weinzelt by Concept Riesling - Das größte Winetasting Düsseldorfs',
-    description:
-      'Weinmittwoch im Zelt: Powered by Concept Riesling - entdecke spannende Newcomer-Weingüter und profitiere von Tipps unserer Sommeliers beim genüsslichen Degustieren.',
-    button: {
-      text: 'Kostenfrei - kommt vorbei!',
-      specialEventId: '33affbe5-11f2-4b8c-82a2-07bcb9a751c9',
-    },
-  },
+  // {
+  //   date: 'MI, 16.07.25',
+  //   from: '15:00',
+  //   startDate: '2025-07-16T15:00',
+  //   endDate: '2025-07-16T17:00',
+  //   image: '/events/winetasting.jpg',
+  //   title: 'Das größte Winetasting Düsseldorfs',
+  //   fullName:
+  //     'Weintasting im Weinzelt by Concept Riesling - Das größte Winetasting Düsseldorfs',
+  //   description:
+  //     'Weinmittwoch im Zelt: Powered by Concept Riesling - entdecke spannende Newcomer-Weingüter und profitiere von Tipps unserer Sommeliers beim genüsslichen Degustieren.',
+  //   button: {
+  //     text: 'Kostenfrei registrieren',
+  //     specialEventId: '33affbe5-11f2-4b8c-82a2-07bcb9a751c9',
+  //   },
+  // },
   {
     date: 'MI, 16.07.25',
     from: '19:00',
@@ -186,18 +202,34 @@ export const events = [
     },
   },
   {
-    date: 'SA, 19.07.25',
+    date: 'FR, 18.07.25',
     from: '15:00',
-    startDate: '2025-07-19T15:00',
-    endDate: '2025-07-19T17:00',
-    image: '/events/winetasting.jpg',
+    startDate: '2025-07-18T15:00',
+    endDate: '2025-07-18T16:00',
+    image: '/events/winetasting-reidemeister.jpg',
     title: 'Das größte Winetasting Düsseldorfs',
     fullName:
-      'Weintasting im Weinzelt by Concept Riesling - Das größte Winetasting Düsseldorfs',
+      'Weintasting im Weinzelt by Reidemeister & Concept Riesling - Entdecke die Welt des Weins',
     description:
-      'Das Wochenende feiert mit dir: Powered by Concept Riesling - noch mehr Premium-Weine, lockere Atmosphäre und natürlich jede Menge guter Laune.',
+      'Tauche ein in die Welt edelster Weine: Reidemeister & Concept Riesling präsentieren dir im Weinzelt ein exklusives Tasting-Erlebnis mit edelsten Tropfen, perfektem Ambiente und einer Atmosphäre zum Genießen und Entspannen.',
     button: {
-      text: 'Kostenfrei - kommt vorbei!',
+      text: 'Kostenfrei registrieren',
+      specialEventId: '0de58c53-50d4-4957-9eaa-921b6b0d1051',
+    },
+  },
+  {
+    date: 'SA, 19.07.25',
+    from: '14:00',
+    startDate: '2025-07-19T14:00',
+    endDate: '2025-07-19T15:00',
+    image: '/events/winetasting-messing.jpg',
+    title: 'Das größte Winetasting Düsseldorfs',
+    fullName:
+      'Weintasting im Weinzelt by Messing & Concept Riesling - Das größte Winetasting Düsseldorfs',
+    description:
+      'Das Wochenende feiert mit dir: Powered by Messing & Concept Riesling - noch mehr Premium-Weine, lockere Atmosphäre und natürlich jede Menge guter Laune.',
+    button: {
+      text: 'Kostenfrei registrieren',
       specialEventId: '9b4d3cc6-b859-4729-81cd-fda660f3ff15',
     },
   },
@@ -215,6 +247,22 @@ export const events = [
       text: 'Zum Ticketshop',
       link: 'https://www.conceptrieslingshop.com/collections/wine-walk-rheinkirmes/products/winewalk2?variant=53210778272067',
       external: true,
+    },
+  },
+  {
+    date: 'SO, 20.07.25',
+    from: '15:00',
+    startDate: '2025-07-20T15:00',
+    endDate: '2025-07-20T16:00',
+    image: '/events/winetasting-pfalz.jpg',
+    title: 'Das größte Winetasting Düsseldorfs',
+    fullName:
+      'Weintasting im Weinzelt by "die PFALZ" & Concept Riesling - Das große Finale',
+    description:
+      'Feiere das große Finale der Kirmes mit einem exklusiven Weintasting! "die PFALZ" & Concept Riesling lassen den Sommer ausklingen - genieße edelste Weine und die unverwechselbare Atmosphäre im Weinzelt, bevor wir uns verabschieden.',
+    button: {
+      text: 'Kostenfrei registrieren',
+      specialEventId: '752fdaaf-e782-4f09-bafe-6ba6eca6d5e5',
     },
   },
   // {
