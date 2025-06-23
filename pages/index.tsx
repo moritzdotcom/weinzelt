@@ -281,7 +281,7 @@ export default function Home({ session }: { session: Session }) {
                 rel="noopener noreferrer"
                 className="inline-block border border-black text-black px-6 py-3 rounded-full shadow-md hover:bg-gray-200 hover:text-black text-center transition"
               >
-                Entdecke unser Weingarten Menü
+                Entdecke unser Weingarten Menu
               </Link>
               <Link
                 href="/weinzelt-karte.pdf"
@@ -433,6 +433,54 @@ export default function Home({ session }: { session: Session }) {
             <img
               src="/partners/foodexplorer-logo.webp"
               alt="Food Explorer"
+              className="w-full max-h-20 object-contain mx-auto"
+            />
+          </a>
+          <a
+            href="https://groupefrio.com/de/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:scale-105 transition-transform duration-300"
+          >
+            <img
+              src="/partners/frio-logo.png"
+              alt="FRIO"
+              className="w-full max-h-20 object-contain mx-auto"
+            />
+          </a>
+          <a
+            href="https://www.goldberg-sons.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:scale-105 transition-transform duration-300"
+          >
+            <img
+              src="/partners/goldberg-logo.webp"
+              alt="Goldberg"
+              className="w-full max-h-20 object-contain mx-auto"
+            />
+          </a>
+          <a
+            href="https://de.lasommeliere.com/de-de/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:scale-105 transition-transform duration-300"
+          >
+            <img
+              src="/partners/laSommeliere-logo.webp"
+              alt="La Sommelière"
+              className="w-full max-h-20 object-contain mx-auto"
+            />
+          </a>
+          <a
+            href="https://www.moet-hennessy.de/de-de"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:scale-105 transition-transform duration-300"
+          >
+            <img
+              src="/partners/moetHennessy-logo.png"
+              alt="Moët Hennessy"
               className="w-full max-h-20 object-contain mx-auto"
             />
           </a>
