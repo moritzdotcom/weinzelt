@@ -37,6 +37,9 @@ async function handleGET(
       tableNumber: true,
       packageName: true,
       packagePrice: true,
+      foodCountMeat: true,
+      foodCountVegetarian: true,
+      totalFoodPrice: true,
       seating: {
         select: { timeslot: true, eventDate: { select: { date: true } } },
       },
@@ -146,11 +149,15 @@ async function handleGET(
 
         // Zweite Zeile: PackageName (PackagePrice €), eingerückt unter Name-Spalte
         const pkgText = `${r.packageName} (${r.packagePrice} €)`;
+        const foodText =
+          r.totalFoodPrice > 0
+            ? ` | ${r.foodCountMeat} x Fleisch, ${r.foodCountVegetarian} x Vegetarisch (${r.totalFoodPrice} €)`
+            : '';
         doc
           .font('Helvetica-Oblique')
           .fontSize(11)
           .fillColor('gray')
-          .text(pkgText, 50, rowTop + 16, {
+          .text(`${pkgText}${foodText}`, 50, rowTop + 16, {
             // 10pt Einzug, 16pt unter der ersten Zeile
             width: colWidths[0] + colWidths[1] + colWidths[2] - 20,
             align: 'left',
