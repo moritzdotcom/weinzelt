@@ -509,11 +509,11 @@ function SeatingCard({
             <span className="hidden md:inline mr-1">,</span>
           </p>
           <p>
-            MVZ VIP: {seating.minimumSpendStanding} €
+            MVZ VIP: {seating.minimumSpendVip} €
             <span className="hidden md:inline mr-1">,</span>
           </p>
           <p>
-            MVZ Stehtisch: {seating.minimumSpendVip} €
+            MVZ Stehtisch: {seating.minimumSpendStanding} €
             <span className="hidden md:inline mr-1">,</span>
           </p>
           <p>Essen: {seating.foodRequired ? 'Ja' : 'Nein'}</p>
