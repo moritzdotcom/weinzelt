@@ -34,6 +34,8 @@ export type ApiGetReservationDataResponse = Prisma.EventGetPayload<{
             availablePackageIds: true;
             foodRequired: true;
             minimumSpend: true;
+            minimumSpendVip: true;
+            minimumSpendStanding: true;
             reservations: { select: { tableCount: true; type: true } };
           };
         };
@@ -59,6 +61,8 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
               availablePackageIds: true,
               foodRequired: true,
               minimumSpend: true,
+              minimumSpendVip: true,
+              minimumSpendStanding: true,
               reservations: {
                 where: {
                   confirmationState: 'ACCEPTED',
@@ -99,11 +103,6 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
     return res.status(401).json('Ungültiger Name');
   if (typeof email !== 'string' || email.length == 0)
     return res.status(401).json('Ungültige Email');
-  if (
-    reservationType == 'VIP' &&
-    !validatePackage(packageName, packageDescription, packagePrice)
-  )
-    return res.status(401).json('Ungültiges Package');
   if (typeof people !== 'number' || people < 1)
     return res.status(401).json('Ungültige Personenanzahl');
   if (typeof seatingId !== 'string')

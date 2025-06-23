@@ -9,18 +9,16 @@ import {
 } from '@mui/material';
 import axios, { isAxiosError } from 'axios';
 import { ApiGetReservationDataResponse } from '../api/reservationData';
-import { calculatePackagePrice, packages, PackageType } from '@/lib/packages';
 import ReservationError from '@/components/reservation/error';
 import ReservationLoading from '@/components/reservation/loading';
 import ReservationHeader from '@/components/reservation/header';
-import PackageCard from '@/components/reservation/packageCard';
 import ReservationConfirmationDialog from '@/components/reservation/confirmationDialog';
 import ARGBConfirmation from '@/components/reservation/argbConfirmation';
 import { useRouter } from 'next/router';
 import ReservationCountdownSection from '@/components/reservation/countdown';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import FoodOptionCard from '@/components/reservation/foodOptionCard';
-import OrderSummary from '@/components/reservation/orderSummary';
+import { SimpleOrderSummary } from '@/components/reservation/orderSummary';
 import { isValidEmail } from '@/lib/validator';
 import ReferralCodeField from '@/components/reservation/referralCodeField';
 import { ApiGetReferralCodeResponse } from '../api/referralCodes/getCode';
@@ -34,9 +32,6 @@ export default function VipReservationPage() {
   const [data, setData] = useState<ApiGetReservationDataResponse | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<SeatingType | null>(null);
-  const [selectedPackage, setSelectedPackage] = useState<PackageType | null>(
-    null
-  );
   const [personCount, setPersonCount] = useState<string>('8');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -83,24 +78,19 @@ export default function VipReservationPage() {
   const handleSubmit = async () => {
     setSubmitted(true);
     if (!validateInputs()) return;
-    if (!selectedPackage || !selectedSlot) return;
+    if (!selectedSlot) return;
 
     setLoading(true);
     await axios.post('/api/reservationData', {
       type: 'VIP',
       name,
       email,
-      packageName: selectedPackage.name,
-      packageDescription: selectedPackage.description,
-      packagePrice: Math.max(
-        calculatePackagePrice(
-          selectedPackage,
-          Number(personCount),
-          foodData.meat * pricePerMenu + foodData.vegetarian * pricePerMenu,
-          selectedSlot.minimumSpend
-        ),
-        0
-      ),
+      packageName: 'VIP Tisch mit Getränkeguthaben',
+      packageDescription: `${
+        selectedSlot.minimumSpendVip * Math.min(Number(personCount), 80)
+      }€ Getränkeguthaben`,
+      packagePrice:
+        selectedSlot.minimumSpendVip * Math.min(Number(personCount), 80),
       people: Math.min(Number(personCount), 80),
       seatingId: selectedSlot.id,
       foodCountMeat: foodData.meat,
@@ -115,7 +105,6 @@ export default function VipReservationPage() {
     // Reset form
     setSelectedDate(null);
     setSelectedSlot(null);
-    setSelectedPackage(null);
     setPersonCount('8');
     setName('');
     setEmail('');
@@ -128,7 +117,6 @@ export default function VipReservationPage() {
   const selectDate = (date: string) => {
     setSelectedDate(date);
     setSelectedSlot(null);
-    setSelectedPackage(null);
     setFoodData({ meat: Number(personCount), vegetarian: 0 });
     setTimeout(() => {
       document
@@ -139,25 +127,13 @@ export default function VipReservationPage() {
 
   const selectTimeslot = (slot: SeatingType) => {
     setSelectedSlot(slot);
-    setSelectedPackage(null);
     setFoodData({
       meat: slot.foodRequired ? Number(personCount) : 0,
       vegetarian: 0,
     });
     setTimeout(() => {
       document
-        .querySelector('#packages')
-        ?.scrollIntoView({ behavior: 'smooth' });
-    }, 300);
-  };
-
-  const selectPackage = (pkg: PackageType) => {
-    setSelectedPackage(pkg);
-    setTimeout(() => {
-      document
-        .querySelector(
-          selectedSlot?.foodRequired ? '#foodSelection' : '#contact'
-        )
+        .querySelector(slot.foodRequired ? '#foodSelection' : '#contact')
         ?.scrollIntoView({ behavior: 'smooth' });
     }, 300);
   };
@@ -308,41 +284,7 @@ export default function VipReservationPage() {
             </Box>
           )}
 
-          {selectedSlot && (
-            <Box id="packages" className="mb-8">
-              <Typography variant="h5" gutterBottom>
-                Wähle ein Getränke-Package
-              </Typography>
-              <Grid container spacing={3} alignItems="stretch">
-                {packages
-                  .filter(({ id }) =>
-                    selectedSlot.availablePackageIds.includes(id)
-                  )
-                  .sort((a, b) => a.sortId - b.sortId)
-                  .map((pkg) => (
-                    <Grid size={{ xs: 12, sm: 6 }} key={pkg.name}>
-                      <PackageCard
-                        pkg={pkg}
-                        price={Math.max(
-                          calculatePackagePrice(
-                            pkg,
-                            Number(personCount),
-                            foodData.meat * pricePerMenu +
-                              foodData.vegetarian * pricePerMenu,
-                            selectedSlot.minimumSpend
-                          ),
-                          0
-                        )}
-                        selected={selectedPackage?.id === pkg.id}
-                        onSelect={() => selectPackage(pkg)}
-                      />
-                    </Grid>
-                  ))}
-              </Grid>
-            </Box>
-          )}
-
-          {selectedPackage && selectedSlot?.foodRequired && (
+          {selectedSlot && selectedSlot?.foodRequired && (
             <Box id="foodSelection" mt={6} className="space-y-4">
               <div className="flex flex-col gap-1">
                 <h5 className="text-2xl">Wähle dein Essen</h5>
@@ -379,7 +321,7 @@ export default function VipReservationPage() {
             </Box>
           )}
 
-          {selectedPackage && (
+          {selectedSlot && (
             <Box id="contact" mt={6} className="space-y-4">
               <Typography variant="h5" gutterBottom>
                 Kontaktdaten
@@ -420,20 +362,10 @@ export default function VipReservationPage() {
 
               <ReferralCodeField onValidCode={setReferralCode} />
 
-              {selectedPackage && selectedSlot && (
-                <OrderSummary
+              {selectedSlot && (
+                <SimpleOrderSummary
                   people={Number(personCount)}
-                  pkg={selectedPackage}
-                  drinksTotal={Math.max(
-                    calculatePackagePrice(
-                      selectedPackage,
-                      Number(personCount),
-                      foodData.meat * pricePerMenu +
-                        foodData.vegetarian * pricePerMenu,
-                      selectedSlot.minimumSpend
-                    ),
-                    0
-                  )}
+                  minimumSpend={selectedSlot.minimumSpendVip}
                   foodCount={foodData.meat + foodData.vegetarian}
                   menuPrice={pricePerMenu}
                 />

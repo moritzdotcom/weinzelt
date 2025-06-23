@@ -32,6 +32,8 @@ export type ApiPutSeatingResponse = {
   foodRequired: boolean;
   availablePackageIds: number[];
   minimumSpend: number;
+  minimumSpendVip: number;
+  minimumSpendStanding: number;
 };
 
 async function handlePUT(
@@ -46,6 +48,8 @@ async function handlePUT(
     timeslot,
     availablePackageIds,
     minimumSpend,
+    minimumSpendVip,
+    minimumSpendStanding,
   } = req.body;
 
   const seating = await prisma.seating.update({
@@ -57,6 +61,8 @@ async function handlePUT(
       timeslot,
       availablePackageIds,
       minimumSpend,
+      minimumSpendVip,
+      minimumSpendStanding,
     },
   });
 

@@ -20,6 +20,7 @@ import ReservationCountdownSection from '@/components/reservation/countdown';
 import { isValidEmail } from '@/lib/validator';
 import ReferralCodeField from '@/components/reservation/referralCodeField';
 import { ApiGetReferralCodeResponse } from '../api/referralCodes/getCode';
+import { SimpleOrderSummary } from '@/components/reservation/orderSummary';
 
 type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
@@ -72,6 +73,7 @@ export default function StandingReservationPage() {
     setSubmitted(true);
     if (!validateInputs()) return;
 
+    if (!selectedSlot) return;
     setLoading(true);
     await axios.post('/api/reservationData', {
       type: 'STANDING',
@@ -79,7 +81,7 @@ export default function StandingReservationPage() {
       email,
       packageName: 'Stehtisch',
       packageDescription: `Stehtisch für ${personCount} Personen`,
-      packagePrice: Number(personCount) * 50,
+      packagePrice: Number(personCount) * selectedSlot.minimumSpendStanding,
       people: Number(personCount),
       seatingId: selectedSlot?.id,
       referralCodeId: referralCode?.id,
@@ -284,7 +286,8 @@ export default function StandingReservationPage() {
               </Box>
 
               <p className="text-center text-gray-600 mb-16 sm:mb-8">
-                Mindestverzehr: <b>50€ pro Person</b>
+                Mindestverzehr:{' '}
+                <b>{selectedSlot.minimumSpendStanding}€ pro Person</b>
               </p>
 
               <Typography variant="h5" gutterBottom>
@@ -311,6 +314,14 @@ export default function StandingReservationPage() {
                 margin="normal"
               />
               <ReferralCodeField onValidCode={setReferralCode} />
+              {selectedSlot && (
+                <SimpleOrderSummary
+                  people={Number(personCount)}
+                  minimumSpend={selectedSlot.minimumSpendStanding}
+                  foodCount={0}
+                  menuPrice={0}
+                />
+              )}
               <div className="rounded-md bg-emerald-50 border border-gray-300 p-4 my-4">
                 <Typography variant="body1" className="text-emerald-800">
                   Bitte hab Verständnis, dass die Tische pünktlich geräumt

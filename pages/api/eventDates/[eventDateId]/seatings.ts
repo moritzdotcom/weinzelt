@@ -31,6 +31,8 @@ export type ApiPostSeatingResponse = {
   foodRequired: boolean;
   availablePackageIds: number[];
   minimumSpend: number;
+  minimumSpendVip: number;
+  minimumSpendStanding: number;
 };
 
 async function handlePOST(
@@ -44,6 +46,8 @@ async function handlePOST(
     foodRequired,
     timeslot,
     minimumSpend,
+    minimumSpendVip,
+    minimumSpendStanding,
   } = req.body;
   if (typeof availableVip !== 'number')
     return res.status(401).json('Availability Required');
@@ -62,6 +66,8 @@ async function handlePOST(
       timeslot,
       eventDateId: id,
       minimumSpend,
+      minimumSpendVip,
+      minimumSpendStanding,
     },
   });
 

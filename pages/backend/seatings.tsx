@@ -5,7 +5,6 @@ import {
   Box,
   Typography,
   TextField,
-  MenuItem,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -14,6 +13,7 @@ import {
   FormControlLabel,
   Button,
   Tooltip,
+  InputAdornment,
 } from '@mui/material';
 import { packages } from '@/lib/packages';
 import { ApiGetEventDatesResponse } from '../api/events/[eventId]/eventDates';
@@ -50,6 +50,8 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
     availableStanding: '10',
     foodRequired: false,
     minimumSpend: '800',
+    minimumSpendVip: '50',
+    minimumSpendStanding: '50',
   });
 
   useEffect(() => {
@@ -112,6 +114,8 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
       {
         ...seatingData,
         minimumSpend: Number(seatingData.minimumSpend),
+        minimumSpendVip: Number(seatingData.minimumSpendVip),
+        minimumSpendStanding: Number(seatingData.minimumSpendStanding),
         availableVip: Number(seatingData.availableVip),
         availableStanding: Number(seatingData.availableStanding),
       }
@@ -123,6 +127,8 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
       availableStanding: '10',
       foodRequired: false,
       minimumSpend: '800',
+      minimumSpendVip: '50',
+      minimumSpendStanding: '50',
     });
 
     setEventDates((prev) =>
@@ -340,7 +346,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
             }
             margin="normal"
           />
-          <TextField
+          {/* <TextField
             label="Reservierungs Schwelle"
             type="number"
             fullWidth
@@ -351,6 +357,46 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
                 minimumSpend: e.target.value,
               })
             }
+            margin="normal"
+          /> */}
+          <TextField
+            label="Getränkeguthaben VIP"
+            type="number"
+            fullWidth
+            value={seatingData.minimumSpendVip}
+            onChange={(e) =>
+              setSeatingData({
+                ...seatingData,
+                minimumSpendVip: e.target.value,
+              })
+            }
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">p.P.</InputAdornment>
+                ),
+              },
+            }}
+            margin="normal"
+          />
+          <TextField
+            label="Getränkeguthaben Stehtisch"
+            type="number"
+            fullWidth
+            value={seatingData.minimumSpendStanding}
+            onChange={(e) =>
+              setSeatingData({
+                ...seatingData,
+                minimumSpendStanding: e.target.value,
+              })
+            }
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">p.P.</InputAdornment>
+                ),
+              },
+            }}
             margin="normal"
           />
           <FormControlLabel
@@ -409,6 +455,8 @@ function SeatingCard({
     availableStanding: `${seating.availableStanding}`,
     minimumSpend: `${seating.minimumSpend}`,
     foodRequired: seating.foodRequired,
+    minimumSpendVip: `${seating.minimumSpendVip}`,
+    minimumSpendStanding: `${seating.minimumSpendStanding}`,
   });
 
   const togglePackage = async (packageId: number) => {
@@ -430,6 +478,8 @@ function SeatingCard({
         ...seatingData,
         availableVip: Number(seatingData.availableVip),
         minimumSpend: Number(seatingData.minimumSpend),
+        minimumSpendVip: Number(seatingData.minimumSpendVip),
+        minimumSpendStanding: Number(seatingData.minimumSpendStanding),
         availableStanding: Number(seatingData.availableStanding),
       }
     );
@@ -459,7 +509,11 @@ function SeatingCard({
             <span className="hidden md:inline mr-1">,</span>
           </p>
           <p>
-            Schwelle: {seating.minimumSpend} €
+            MVZ VIP: {seating.minimumSpendStanding} €
+            <span className="hidden md:inline mr-1">,</span>
+          </p>
+          <p>
+            MVZ Stehtisch: {seating.minimumSpendVip} €
             <span className="hidden md:inline mr-1">,</span>
           </p>
           <p>Essen: {seating.foodRequired ? 'Ja' : 'Nein'}</p>
@@ -544,7 +598,7 @@ function SeatingCard({
             }
             margin="normal"
           />
-          <TextField
+          {/* <TextField
             label="Reservierungs Schwelle"
             type="number"
             fullWidth
@@ -555,6 +609,46 @@ function SeatingCard({
                 minimumSpend: e.target.value,
               })
             }
+            margin="normal"
+          /> */}
+          <TextField
+            label="Getränkeguthaben VIP"
+            type="number"
+            fullWidth
+            value={seatingData.minimumSpendVip}
+            onChange={(e) =>
+              setSeatingData({
+                ...seatingData,
+                minimumSpendVip: e.target.value,
+              })
+            }
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">p.P.</InputAdornment>
+                ),
+              },
+            }}
+            margin="normal"
+          />
+          <TextField
+            label="Getränkeguthaben Stehtisch"
+            type="number"
+            fullWidth
+            value={seatingData.minimumSpendStanding}
+            onChange={(e) =>
+              setSeatingData({
+                ...seatingData,
+                minimumSpendStanding: e.target.value,
+              })
+            }
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">p.P.</InputAdornment>
+                ),
+              },
+            }}
             margin="normal"
           />
           <FormControlLabel
