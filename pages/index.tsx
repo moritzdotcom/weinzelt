@@ -484,6 +484,18 @@ export default function Home({ session }: { session: Session }) {
               className="w-full max-h-20 object-contain mx-auto"
             />
           </a>
+          <a
+            href="https://ta0.de/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:scale-105 transition-transform duration-300"
+          >
+            <img
+              src="/partners/ta0-logo.png"
+              alt="Terminal A0"
+              className="w-full max-h-20 object-contain mx-auto"
+            />
+          </a>
         </div>
         <h6 className="text-xl text-gray-600 mt-10">
           Du möchtest Teil vom Weinzelt werden? Dann kontaktiere uns unter{' '}
