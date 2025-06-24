@@ -9,7 +9,12 @@ export default function SpecialEventPage({ id }: { id: string }) {
   };
 
   return (
-    <SpecialEventRegistrationDialogContent id={id} handleClose={handleClose} />
+    <div className="w-full px-3">
+      <SpecialEventRegistrationDialogContent
+        id={id}
+        handleClose={handleClose}
+      />
+    </div>
   );
 }
 
