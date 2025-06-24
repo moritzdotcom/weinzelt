@@ -21,6 +21,48 @@ export default function SpecialEventRegistrationDialog({
   buttonLabel: string;
 }) {
   const [open, setOpen] = useState(false);
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <>
+      <button
+        className="w-full py-3 text-center bg-gray-200 inline-block text-black hover:underline text-lg"
+        onClick={() => setOpen(true)}
+      >
+        {buttonLabel}
+      </button>
+      <Dialog
+        open={open}
+        slots={{ transition: Transition }}
+        keepMounted
+        fullScreen
+        onClose={handleClose}
+        slotProps={{
+          paper: {
+            sx: {
+              px: 2,
+              py: 1.5,
+              bgcolor: '#f9f9f9',
+              boxShadow: '0 4px 30px rgba(0,0,0,0.1)',
+            },
+          },
+        }}
+      >
+        <SpecialEventRegistrationDialogContent />
+      </Dialog>
+    </>
+  );
+}
+
+export function SpecialEventRegistrationDialogContent({
+  id,
+  handleClose,
+}: {
+  id?: string;
+  handleClose?: () => void;
+}) {
   const [specialEvent, setSpecialEvent] =
     useState<ApiGetSpecialEventPublicResponse>();
   const [name, setName] = useState('');
@@ -34,8 +76,7 @@ export default function SpecialEventRegistrationDialog({
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleClose = () => {
-    setOpen(false);
+  const onClose = () => {
     setName('');
     setEmail('');
     setPersonCount('');
@@ -45,6 +86,7 @@ export default function SpecialEventRegistrationDialog({
     setFormDirty(false);
     setSubmitting(false);
     setShowSuccess(false);
+    handleClose?.();
   };
 
   const validate = () => {
@@ -105,119 +147,93 @@ export default function SpecialEventRegistrationDialog({
   }, [id]);
 
   return (
-    <>
-      <button
-        className="w-full py-3 text-center bg-gray-200 inline-block text-black hover:underline text-lg"
-        onClick={() => setOpen(true)}
-      >
-        {buttonLabel}
+    <div className="w-full max-w-3xl mx-auto">
+      <button className="float-end" onClick={onClose}>
+        <CloseIcon fontSize="large" />
       </button>
-      <Dialog
-        open={open}
-        slots={{ transition: Transition }}
-        keepMounted
-        fullScreen
-        onClose={handleClose}
-        slotProps={{
-          paper: {
-            sx: {
-              px: 2,
-              py: 1.5,
-              bgcolor: '#f9f9f9',
-              boxShadow: '0 4px 30px rgba(0,0,0,0.1)',
-            },
-          },
-        }}
-      >
-        <div className="w-full max-w-3xl mx-auto">
-          <button className="float-end" onClick={handleClose}>
-            <CloseIcon fontSize="large" />
-          </button>
-          <div className="mb-5 mt-9">
-            {specialEvent ? (
-              <h1 className="text-3xl sm:text-4xl text-center">
-                {specialEvent.name}
-              </h1>
-            ) : (
-              <Skeleton width="50%" height={50} sx={{ mx: 'auto' }} />
-            )}
+      <div className="mb-5 mt-9">
+        {specialEvent ? (
+          <h1 className="text-3xl sm:text-4xl text-center">
+            {specialEvent.name}
+          </h1>
+        ) : (
+          <Skeleton width="50%" height={50} sx={{ mx: 'auto' }} />
+        )}
+      </div>
+      <div className="my-3">
+        {specialEvent ? (
+          <h3 className="text-neutral-500">
+            {specialEvent.eventDate.dow}, {specialEvent.eventDate.date} /{' '}
+            {specialEvent.startTime} - {specialEvent.endTime}
+          </h3>
+        ) : (
+          <Skeleton width="50%" height={35} />
+        )}
+      </div>
+      <div className="mb-8">
+        {specialEvent ? (
+          <p>{specialEvent.description}</p>
+        ) : (
+          <div>
+            <Skeleton height={15} sx={{ my: 1 }} />
+            <Skeleton height={15} sx={{ my: 1 }} />
+            <Skeleton height={15} sx={{ my: 1 }} width="70%" />
           </div>
-          <div className="my-3">
-            {specialEvent ? (
-              <h3 className="text-neutral-500">
-                {specialEvent.eventDate.dow}, {specialEvent.eventDate.date} /{' '}
-                {specialEvent.startTime} - {specialEvent.endTime}
-              </h3>
-            ) : (
-              <Skeleton width="50%" height={35} />
-            )}
-          </div>
-          <div className="mb-8">
-            {specialEvent ? (
-              <p>{specialEvent.description}</p>
-            ) : (
-              <div>
-                <Skeleton height={15} sx={{ my: 1 }} />
-                <Skeleton height={15} sx={{ my: 1 }} />
-                <Skeleton height={15} sx={{ my: 1 }} width="70%" />
-              </div>
-            )}
-          </div>
-          {specialEvent && (
-            <>
-              <Divider>Jetzt Registrieren</Divider>
-              {showSuccess ? (
-                <div className="mt-8 rounded bg-green-200 shadow px-3 py-8 text-neutral-900 text-center">
-                  Du hast dich erfolgreich registriert.
-                  <br /> Wir freuen uns auf deinen Besuch!
-                </div>
-              ) : (
-                <div>
-                  <TextField
-                    fullWidth
-                    label="Name"
-                    autoComplete="name"
-                    required
-                    value={name}
-                    error={Boolean(nameError)}
-                    helperText={nameError}
-                    onChange={(e) => setName(e.target.value)}
-                    margin="normal"
-                  />
-                  <TextField
-                    fullWidth
-                    label="E-Mail"
-                    autoComplete="email"
-                    required
-                    value={email}
-                    error={Boolean(emailError)}
-                    helperText={emailError}
-                    onChange={(e) => setEmail(e.target.value)}
-                    margin="normal"
-                  />
-                  <TextField
-                    fullWidth
-                    label="Personenanzahl"
-                    required
-                    value={personCount}
-                    error={Boolean(personCountError)}
-                    helperText={personCountError}
-                    onChange={(e) => setPersonCount(e.target.value)}
-                    margin="normal"
-                  />
-                  <button
-                    disabled={submitting}
-                    onClick={handleSubmit}
-                    className="mt-5 w-full rounded bg-black text-white py-3 hover:bg-neutral-800"
-                  >
-                    {submitting ? 'Wird gesendet...' : 'Registrieren'}
-                  </button>
-                </div>
-              )}
-            </>
+        )}
+      </div>
+      {specialEvent && (
+        <>
+          <Divider>Jetzt Registrieren</Divider>
+          {showSuccess ? (
+            <div className="mt-8 rounded bg-green-200 shadow px-3 py-8 text-neutral-900 text-center">
+              Du hast dich erfolgreich registriert.
+              <br /> Wir freuen uns auf deinen Besuch!
+            </div>
+          ) : (
+            <div>
+              <TextField
+                fullWidth
+                label="Name"
+                autoComplete="name"
+                required
+                value={name}
+                error={Boolean(nameError)}
+                helperText={nameError}
+                onChange={(e) => setName(e.target.value)}
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                label="E-Mail"
+                autoComplete="email"
+                required
+                value={email}
+                error={Boolean(emailError)}
+                helperText={emailError}
+                onChange={(e) => setEmail(e.target.value)}
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                label="Personenanzahl"
+                required
+                value={personCount}
+                error={Boolean(personCountError)}
+                helperText={personCountError}
+                onChange={(e) => setPersonCount(e.target.value)}
+                margin="normal"
+              />
+              <button
+                disabled={submitting}
+                onClick={handleSubmit}
+                className="mt-5 w-full rounded bg-black text-white py-3 hover:bg-neutral-800"
+              >
+                {submitting ? 'Wird gesendet...' : 'Registrieren'}
+              </button>
+            </div>
           )}
-        </div>
-      </Dialog>
-    </>
+        </>
+      )}
+    </div>
   );
 }

@@ -22,6 +22,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CopyAllIcon from '@mui/icons-material/CopyAll';
 import Link from 'next/link';
 import { compareEventDates } from '@/lib/eventDates';
+import CopyButton from '@/components/copyButton';
 
 type SpecialEvent = ApiGetSpecialEventsResponse[number];
 
@@ -126,15 +127,6 @@ function EventCard({
   event: SpecialEvent;
   onSelect: () => void;
 }) {
-  const [copiedLink, setCopiedLink] = useState(false);
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(event.id).then(() => {
-      setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 4000);
-    });
-  };
-
   return (
     <Grid size={{ xs: 12, sm: 6 }}>
       <Box className="rounded-2xl border border-gray-200 p-6 shadow-sm">
@@ -158,23 +150,11 @@ function EventCard({
             Event bearbeiten
           </button>
         </div>
-        <button
-          onClick={handleCopyLink}
-          disabled={copiedLink}
-          className={
-            'w-full mt-3 py-2 rounded text-neutral-800 transition flex items-center justify-center gap-2 border text-sm' +
-            (copiedLink
-              ? ' bg-emerald-300 border-emerald-300 hover:bg-emerald-500'
-              : ' bg-neutral-200 border-neutral-200 hover:bg-neutral-300')
-          }
-        >
-          {copiedLink ? (
-            <CheckIcon fontSize="small" />
-          ) : (
-            <CopyAllIcon fontSize="small" />
-          )}
-          <p>{copiedLink ? 'ID kopiert!' : 'ID kopieren'}</p>
-        </button>
+        <CopyButton data={event.id} label="ID kopieren" />
+        <CopyButton
+          data={`https://www.dasweinzelt.de/events/${event.id}`}
+          label="Link kopieren"
+        />
         <Link
           href={`/backend/specialEvents/${event.id}`}
           className="w-full mt-3 py-2 rounded text-sky-600 transition flex items-center justify-center gap-2 border border-sky-600 text-sm hover:bg-sky-100"
