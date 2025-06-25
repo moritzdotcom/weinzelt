@@ -81,6 +81,7 @@ model Reservation {
   totalFoodPrice      Int               @default(0)
   tableCount          Int               @default(1)
   tableNumber         String?
+  internalNotes       String?
   notified            DateTime?
   paymentReminderSent DateTime?
   payed               Boolean           @default(false)

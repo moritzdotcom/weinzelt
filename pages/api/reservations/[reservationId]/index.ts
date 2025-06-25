@@ -42,10 +42,34 @@ async function handlePUT(
   res: NextApiResponse,
   id: string
 ) {
-  const { confirmationState, tableNumber, payed } = req.body;
+  const {
+    confirmationState,
+    tableNumber,
+    payed,
+    name,
+    email,
+    people,
+    packagePrice,
+    foodCountMeat,
+    foodCountVegetarian,
+    totalFoodPrice,
+    internalNotes,
+  } = req.body;
 
   const reservation = await prisma.reservation.update({
-    data: { confirmationState, tableNumber, payed },
+    data: {
+      confirmationState,
+      tableNumber,
+      payed,
+      name,
+      email,
+      people,
+      packagePrice,
+      foodCountMeat,
+      foodCountVegetarian,
+      totalFoodPrice,
+      internalNotes,
+    },
     where: { id },
   });
 

@@ -24,7 +24,7 @@ export default async function handle(
 }
 
 export type ApiGetReservationsResponse = Prisma.ReservationGetPayload<{
-  include: { seating: true; referralCode: true };
+  include: { seating: { include: { eventDate: true } }; referralCode: true };
 }>[];
 
 async function handleGET(
@@ -33,7 +33,7 @@ async function handleGET(
   id: string
 ) {
   const reservations = await prisma.reservation.findMany({
-    include: { seating: true, referralCode: true },
+    include: { seating: { include: { eventDate: true } }, referralCode: true },
     where: { seating: { eventDate: { eventId: id } } },
   });
   return res.json(reservations);

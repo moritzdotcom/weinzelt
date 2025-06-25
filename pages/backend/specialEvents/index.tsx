@@ -18,8 +18,6 @@ import { Session } from '@/hooks/useSession';
 import { ApiGetSpecialEventsResponse } from '../../api/specialEvents';
 import { ApiGetEventsResponse } from '../../api/events';
 import EventSelector from '@/components/eventSelector';
-import CheckIcon from '@mui/icons-material/Check';
-import CopyAllIcon from '@mui/icons-material/CopyAll';
 import Link from 'next/link';
 import { compareEventDates } from '@/lib/eventDates';
 import CopyButton from '@/components/copyButton';

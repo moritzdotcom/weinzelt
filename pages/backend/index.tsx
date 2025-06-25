@@ -12,6 +12,7 @@ import ApartmentIcon from '@mui/icons-material/Apartment';
 import LineAxisIcon from '@mui/icons-material/LineAxis';
 import PasswordIcon from '@mui/icons-material/Password';
 import LocalActivityIcon from '@mui/icons-material/LocalActivity';
+import SearchIcon from '@mui/icons-material/Search';
 
 export default function Backend({ session }: { session: Session }) {
   const router = useRouter();
@@ -51,6 +52,11 @@ export default function Backend({ session }: { session: Session }) {
           href="/backend/requests"
           text="Reservierungsanfragen"
           Icon={QuestionAnswerIcon}
+        />
+        <LinkItem
+          href="/backend/search"
+          text="Reservierungen suchen"
+          Icon={SearchIcon}
         />
         <LinkItem
           href="/backend/company"

@@ -40,6 +40,7 @@ async function handleGET(
       foodCountMeat: true,
       foodCountVegetarian: true,
       totalFoodPrice: true,
+      internalNotes: true,
       seating: {
         select: { timeslot: true, eventDate: { select: { date: true } } },
       },
@@ -121,8 +122,9 @@ async function handleGET(
         .stroke();
 
       let rowIndex = 0;
+      let extraRowHeights = 0;
       list.forEach((r) => {
-        let rowTop = tableTop + 20 + rowIndex * 38; // 35pt Zeilenhöhe
+        let rowTop = tableTop + 20 + rowIndex * 38 + extraRowHeights; // 35pt Zeilenhöhe
         rowIndex += 1;
 
         if (rowTop > doc.page.height - 80) {
@@ -130,6 +132,7 @@ async function handleGET(
           tableTop = 40;
           rowTop = 60;
           rowIndex = 1;
+          extraRowHeights = 0; // Reset für neue Seite
         }
 
         // Erste Zeile: Name | Personen | Tischnummer
@@ -163,10 +166,24 @@ async function handleGET(
             align: 'left',
           });
 
+        if (r.internalNotes) {
+          extraRowHeights += 16; // Zusätzliche Höhe für interne Notizen
+          // Interne Notizen, eingerückt unter Package-Text
+          doc
+            .font('Helvetica-Oblique')
+            .fontSize(11)
+            .fillColor('gray')
+            .text(`Interne Notizen: ${r.internalNotes}`, 50, rowTop + 32, {
+              // 10pt Einzug, 32pt unter der ersten Zeile
+              width: colWidths[0] + colWidths[1] + colWidths[2] - 20,
+              align: 'left',
+            });
+        }
+        const rowHeight = r.internalNotes ? 48 : 32;
         // Horizontale Linie unterhalb beider Zeilen
         doc
-          .moveTo(40, rowTop + 32)
-          .lineTo(40 + colWidths.reduce((a, b) => a + b, 0), rowTop + 32)
+          .moveTo(40, rowTop + rowHeight)
+          .lineTo(40 + colWidths.reduce((a, b) => a + b, 0), rowTop + rowHeight)
           .strokeColor('#000000')
           .stroke();
       });

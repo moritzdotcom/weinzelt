@@ -165,6 +165,15 @@ export default function ReservationCard({
         </ul>
       )}
 
+      {reservation.internalNotes && (
+        <div className="my-3">
+          <Divider />
+          <p className="text-sm text-gray-600 mt-2 px-2">
+            Notiz: {reservation.internalNotes}
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-4">
         <Box className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
           <TextField
