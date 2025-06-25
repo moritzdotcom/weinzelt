@@ -284,7 +284,7 @@ export default function Home({ session }: { session: Session }) {
                 Entdecke unser Weingarten Menu
               </Link>
               <Link
-                href="/weinzelt-karte.pdf"
+                href="/weinzelt-drinks.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-300 hover:text-black transition"
