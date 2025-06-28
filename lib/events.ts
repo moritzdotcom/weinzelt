@@ -109,6 +109,21 @@ export const events = [
       specialEventId: '781f66f9-e8de-4759-bf5a-eed8208af1a5',
     },
   },
+  {
+    date: 'SO, 13.07.25',
+    from: '20:00',
+    startDate: '2025-07-13T20:00',
+    endDate: '2025-07-13T00:00',
+    image: '/events/asry.jpg',
+    title: 'ASRŸ x Weinzelt',
+    fullName: 'ASRŸ x Weinzelt',
+    description:
+      'Am 13. Juli wird das Weinzelt zur Bühne für ASRŸ - den Berliner DJ und Producer, der weltweit für Furore sorgt: Warm-up für Black Coffee, Sets auf Travis Scotts Yacht in Monaco, Gigs in Miami, Tulum, Beirut & Mykonos - und jetzt mitten in Düsseldorf.',
+    button: {
+      text: 'Jetzt reservieren',
+      link: '/reservation?date=13.07.25',
+    },
+  },
   // {
   //   date: 'MO, 14.07.25',
   //   from: '15:00',
@@ -149,7 +164,7 @@ export const events = [
     title: 'Angela Kutscher @ Weinzelt',
     fullName: 'Angela Kutscher @ Weinzelt',
     description:
-      'Erlebe einen unvergesslichen Abend mit Angela Kutscher, die mit ihrem einzigartigen Melodic Techno Set das Weinzelt zum Beben bringt. Tanz und feiere mit, während Angela die Stimmung mit ihren heißesten Beats auf das nächste Level bringt!',
+      'Erlebe einen unvergesslichen Abend mit Angela Kutscher, die mit ihrem einzigartigen Afro House Set das Weinzelt zum Beben bringt. Tanz und feiere mit, während Angela die Stimmung mit ihren heißesten Beats auf das nächste Level bringt!',
     button: {
       text: 'Jetzt reservieren',
       link: '/reservation?date=15.07.25',
