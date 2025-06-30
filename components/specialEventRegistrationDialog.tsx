@@ -50,7 +50,10 @@ export default function SpecialEventRegistrationDialog({
           },
         }}
       >
-        <SpecialEventRegistrationDialogContent />
+        <SpecialEventRegistrationDialogContent
+          id={id}
+          handleClose={handleClose}
+        />
       </Dialog>
     </>
   );
