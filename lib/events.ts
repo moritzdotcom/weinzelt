@@ -233,6 +233,21 @@ export const events = [
     },
   },
   {
+    date: 'FR, 18.07.25',
+    from: '18:00',
+    startDate: '2025-07-18T18:00',
+    endDate: '2025-07-19T02:00',
+    image: '/events/jochens.jpg',
+    title: 'Three of a Kind - Serviert wird nur Premium Sound',
+    fullName: 'Three of a Kind - Serviert wird nur Premium Sound',
+    description:
+      'Drei DJs, ein Zelt, keine Gnade für ruhige Füße: BassT, G-Diamond & Salvatore Mancuso verwandeln das Weinzelt in einen vibenden Dancefloor - mit heißen Beats zwischen House, RnB, Hip-Hop & Club Sounds. Freitagabend wird laut, wild und tanzbar bis tief in die Nacht. Komm vorbei, tanz dich frei und genieße dazu ein Glas vom Feinsten!',
+    button: {
+      text: 'Jetzt reservieren',
+      link: '/reservation?date=18.07.25',
+    },
+  },
+  {
     date: 'SA, 19.07.25',
     from: '14:00',
     startDate: '2025-07-19T14:00',
@@ -246,6 +261,21 @@ export const events = [
     button: {
       text: 'Kostenfrei registrieren',
       specialEventId: '9b4d3cc6-b859-4729-81cd-fda660f3ff15',
+    },
+  },
+  {
+    date: 'SA, 19.07.25',
+    from: '18:00',
+    startDate: '2025-07-19T18:00',
+    endDate: '2025-07-20T02:00',
+    image: '/events/weindampfer.jpg',
+    title: 'Weindampfer Night',
+    fullName: 'Weindampfer Night - Das Weinzelt wird zum Dampfer',
+    description:
+      'Erlebe die Weindampfer Night im Weinzelt: Ein Abend voller Genuss, Musik und guter Laune. Lass dich von der einzigartigen Atmosphäre mitreißen und genieße die besten Weine der Stadt.',
+    button: {
+      text: 'Jetzt reservieren',
+      link: '/reservation?date=19.07.25',
     },
   },
   {
