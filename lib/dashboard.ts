@@ -40,15 +40,19 @@ export function calculateMetrics(
     )
   );
 
-  const totalCount = allReservations.length;
-  const vipCount = allReservations.filter((r) => r.type === 'VIP').length;
-  const standingCount = allReservations.filter(
-    (r) => r.type === 'STANDING'
-  ).length;
-  const acceptedCount = allReservations.filter(
-    (r) => r.confirmationState === 'ACCEPTED'
-  ).length;
-  const paidCount = allReservations.filter((r) => r.payed).length;
+  const totalCount = allReservations.reduce((a, b) => a + b.tableCount, 0);
+  const vipCount = allReservations
+    .filter((r) => r.type === 'VIP')
+    .reduce((a, b) => a + b.tableCount, 0);
+  const standingCount = allReservations
+    .filter((r) => r.type === 'STANDING')
+    .reduce((a, b) => a + b.tableCount, 0);
+  const acceptedCount = allReservations
+    .filter((r) => r.confirmationState === 'ACCEPTED')
+    .reduce((a, b) => a + b.tableCount, 0);
+  const paidCount = allReservations
+    .filter((r) => r.payed)
+    .reduce((a, b) => a + b.tableCount, 0);
 
   const paidPercentage =
     acceptedCount > 0 ? (paidCount / acceptedCount) * 100 : 0;
@@ -74,12 +78,14 @@ export function calculateMetrics(
   eventData.eventDates.forEach((date) => {
     const data = { vip: 0, standing: 0, availableVip: 0, availableStanding: 0 };
     date.seatings.forEach((s) => {
-      data.vip += s.reservations.filter(
-        (r) => r.confirmationState == 'ACCEPTED' && r.type == 'VIP'
-      ).length;
-      data.standing += s.reservations.filter(
-        (r) => r.confirmationState == 'ACCEPTED' && r.type == 'STANDING'
-      ).length;
+      data.vip += s.reservations
+        .filter((r) => r.confirmationState == 'ACCEPTED' && r.type == 'VIP')
+        .reduce((a, b) => a + b.tableCount, 0);
+      data.standing += s.reservations
+        .filter(
+          (r) => r.confirmationState == 'ACCEPTED' && r.type == 'STANDING'
+        )
+        .reduce((a, b) => a + b.tableCount, 0);
       data.availableVip += s.availableVip;
       data.availableStanding += s.availableStanding;
     });
