@@ -32,6 +32,7 @@ export default function EditReservationDialog({
     name: '',
     email: '',
     people: '1',
+    tableCount: '1',
     packagePrice: '0',
     foodCountMeat: '0',
     foodCountVegetarian: '0',
@@ -48,6 +49,7 @@ export default function EditReservationDialog({
         name: reservation.name,
         email: reservation.email,
         people: `${reservation.people}`,
+        tableCount: `${reservation.tableCount}`,
         packagePrice: `${reservation.packagePrice}`,
         foodCountMeat: `${reservation.foodCountMeat}`,
         foodCountVegetarian: `${reservation.foodCountVegetarian}`,
@@ -84,6 +86,7 @@ export default function EditReservationDialog({
       ...reservation,
       ...form,
       people: Number(form.people),
+      tableCount: Number(form.tableCount),
       packagePrice: Number(form.packagePrice),
       foodCountMeat: Number(form.foodCountMeat),
       foodCountVegetarian: Number(form.foodCountVegetarian),
@@ -132,6 +135,13 @@ export default function EditReservationDialog({
           type="number"
           value={form.people}
           onChange={(e) => handleChange('people', e.target.value)}
+          fullWidth
+        />
+        <TextField
+          label="Tischanzahl"
+          type="number"
+          value={form.tableCount}
+          onChange={(e) => handleChange('tableCount', e.target.value)}
           fullWidth
         />
         <TextField
