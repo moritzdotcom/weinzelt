@@ -104,21 +104,17 @@ export function calculateMetrics(
   const vipCountByDay: {
     [key: string]: { people: number; foodCount: number };
   } = {};
-  allReservations.forEach((reservation) => {
-    if (
-      reservation.type === 'VIP' &&
-      reservation.confirmationState === 'ACCEPTED'
-    ) {
-      const date = reservation.date;
-      if (!vipCountByDay[date]) {
-        vipCountByDay[date] = { people: 0, foodCount: 0 };
-      }
-      vipCountByDay[date].people += reservation.people;
-      vipCountByDay[date].foodCount +=
-        reservation.foodCountMeat +
-        reservation.foodCountFish +
-        reservation.foodCountVegetarian;
-    }
+  eventData.eventDates.forEach((date) => {
+    const data = { people: 0, foodCount: 0 };
+    date.seatings.forEach((s) => {
+      s.reservations.forEach((r) => {
+        if (r.type === 'VIP' && r.confirmationState === 'ACCEPTED') {
+          data.people += r.people;
+          if (s.foodRequired) data.foodCount += r.people;
+        }
+      });
+    });
+    vipCountByDay[date.date] = data;
   });
 
   const sortedVipCountByDay = Object.entries(vipCountByDay)
