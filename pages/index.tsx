@@ -10,6 +10,7 @@ import Footer from '@/components/footer';
 import { trackPageVisit } from '@/lib/pageVisit';
 import { GetServerSideProps } from 'next';
 import SpecialEventRegistrationDialog from '@/components/specialEventRegistrationDialog';
+import FoodGrid from '@/components/foodGrid';
 
 export default function Home({ session }: { session: Session }) {
   return (
@@ -306,6 +307,7 @@ export default function Home({ session }: { session: Session }) {
             />
           </div>
         </div>
+        <FoodGrid />
       </section>
 
       <section
