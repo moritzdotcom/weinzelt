@@ -330,6 +330,31 @@ export default function EventDashboard({ session }: { session: Session }) {
             title="Unique Visitors"
             number={metrics.uniqueVisitors}
           />
+          <Card className="col-span-12 lg:col-span-6 rounded-lg bg-white shadow-md p-6">
+            <h3 className="text-gray-600 text-center">
+              Unbezahlte Reservierungen
+            </h3>
+            <div className="max-h-60 overflow-y-auto rounded-md bg-gray-50 my-3 px-3 py-1">
+              {metrics.allUnpaidMails.map((email, index) => (
+                <p key={index}>{email}</p>
+              ))}
+            </div>
+            {metrics.allUnpaidMails.length > 0 && (
+              <button
+                className="w-full rounded bg-black text-white px-4 py-2 hover:bg-neutral-600 transition"
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    metrics.allUnpaidMails.join('; ')
+                  );
+                  alert(
+                    'Alle E-Mail-Adressen wurden in die Zwischenablage kopiert.'
+                  );
+                }}
+              >
+                Alle Mails kopieren
+              </button>
+            )}
+          </Card>
           {/* Diagramme */}
           <LineChartCard
             title="Reservierungsanfragen pro Tag"

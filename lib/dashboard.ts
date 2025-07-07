@@ -13,6 +13,7 @@ export interface Metrics {
   revenue: number;
   pageVisits: number;
   uniqueVisitors: number;
+  allUnpaidMails: string[];
   capacity: { x: string; y1: number; y2: number }[];
   vipCountByDay: { x: string; y1: number; y2: number }[];
   packageCounts: { x: string; y: number }[];
@@ -65,6 +66,9 @@ export function calculateMetrics(
       0
     );
 
+  const allUnpaidMails = allReservations
+    .filter((r) => r.confirmationState === 'ACCEPTED' && !r.payed)
+    .map((r) => r.email);
   const pageVisitsCount = pageVisits.length;
   const uniqueVisitors = new Set(pageVisits.map((v) => v.ip)).size;
 
@@ -204,6 +208,7 @@ export function calculateMetrics(
     revenue,
     pageVisits: pageVisitsCount,
     uniqueVisitors,
+    allUnpaidMails,
     capacity: sortedCapacity,
     vipCountByDay: sortedVipCountByDay,
     packageCounts: sortedPackageCounts,
