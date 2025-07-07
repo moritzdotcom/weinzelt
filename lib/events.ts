@@ -241,7 +241,7 @@ export const events = [
     title: 'Three of a Kind - Serviert wird nur Premium Sound',
     fullName: 'Three of a Kind - Serviert wird nur Premium Sound',
     description:
-      'Drei DJs, ein Zelt, keine Gnade für ruhige Füße: BassT, G-Diamond & Salvatore Mancuso verwandeln das Weinzelt in einen vibenden Dancefloor - mit heißen Beats zwischen House, RnB, Hip-Hop & Club Sounds. Freitagabend wird laut, wild und tanzbar bis tief in die Nacht. Komm vorbei, tanz dich frei und genieße dazu ein Glas vom Feinsten!',
+      'Drei DJs, ein Zelt, keine Gnade für ruhige Füße: BassT, G-Diamond & Salvatore Mancuso verwandeln das Weinzelt in einen vibenden Dancefloor - mit heißen Beats zwischen House, Afro-House & Club Sounds. Freitagabend wird laut, wild und tanzbar bis tief in die Nacht. Komm vorbei, tanz dich frei und genieße dazu ein Glas vom Feinsten!',
     button: {
       text: 'Jetzt reservieren',
       link: '/reservation?date=18.07.25',
