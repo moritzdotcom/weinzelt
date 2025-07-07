@@ -105,7 +105,10 @@ export function calculateMetrics(
     [key: string]: { people: number; foodCount: number };
   } = {};
   allReservations.forEach((reservation) => {
-    if (reservation.type === 'VIP') {
+    if (
+      reservation.type === 'VIP' &&
+      reservation.confirmationState === 'ACCEPTED'
+    ) {
       const date = reservation.date;
       if (!vipCountByDay[date]) {
         vipCountByDay[date] = { people: 0, foodCount: 0 };
