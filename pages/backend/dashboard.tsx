@@ -349,6 +349,13 @@ export default function EventDashboard({ session }: { session: Session }) {
             y1Label="VIP"
             y2Label="Stehtisch"
           />
+          <MultiLineChartCard
+            title="VIP-Personen pro Tag"
+            data={metrics.vipCountByDay}
+            formatter={(value: number) => `${Math.round(value)}`}
+            y1Label="Gesamt"
+            y2Label="Essen gebucht"
+          />
           <LineChartCard
             title="Reservierungsanfragen pro Package"
             data={metrics.packageCounts}

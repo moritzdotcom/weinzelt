@@ -14,6 +14,7 @@ export interface Metrics {
   pageVisits: number;
   uniqueVisitors: number;
   capacity: { x: string; y1: number; y2: number }[];
+  vipCountByDay: { x: string; y1: number; y2: number }[];
   packageCounts: { x: string; y: number }[];
   referralCodes: { x: string; y: number }[];
   dailyPageVisitData: { x: string; y: number }[];
@@ -100,6 +101,31 @@ export function calculateMetrics(
       y2: (data.standing * 100) / data.availableStanding,
     }));
 
+  const vipCountByDay: {
+    [key: string]: { people: number; foodCount: number };
+  } = {};
+  allReservations.forEach((reservation) => {
+    if (reservation.type === 'VIP') {
+      const date = reservation.date;
+      if (!vipCountByDay[date]) {
+        vipCountByDay[date] = { people: 0, foodCount: 0 };
+      }
+      vipCountByDay[date].people += reservation.people;
+      vipCountByDay[date].foodCount +=
+        reservation.foodCountMeat +
+        reservation.foodCountFish +
+        reservation.foodCountVegetarian;
+    }
+  });
+
+  const sortedVipCountByDay = Object.entries(vipCountByDay)
+    .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+    .map(([date, data]) => ({
+      x: date,
+      y1: data.people,
+      y2: data.foodCount,
+    }));
+
   const packageCounts: { [key: string]: number } = {};
   allReservations.forEach((reservation) => {
     if (reservation.packageName) {
@@ -107,6 +133,7 @@ export function calculateMetrics(
         (packageCounts[reservation.packageName] || 0) + 1;
     }
   });
+
   const sortedPackageCounts = Object.entries(packageCounts)
     .sort(([, countA], [, countB]) => countB - countA)
     .map(([packageName, count]) => ({
@@ -179,6 +206,7 @@ export function calculateMetrics(
     pageVisits: pageVisitsCount,
     uniqueVisitors,
     capacity: sortedCapacity,
+    vipCountByDay: sortedVipCountByDay,
     packageCounts: sortedPackageCounts,
     referralCodes: sortedreferralCodes,
     dailyPageVisitData,
