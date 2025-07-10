@@ -251,7 +251,6 @@ export default function ReservationCard({
         </MenuItem>
         <Divider />
         <MenuItem
-          disabled={reservation.payed}
           onClick={() => {
             setAnchorEl(null);
             setCancelDialogOpen(true);
