@@ -176,7 +176,7 @@ export default function VipReservationPage() {
             0
           ),
         0
-      ) === 0
+      ) <= 0
     : false;
 
   const selectedDateData = data
@@ -226,7 +226,7 @@ export default function VipReservationPage() {
                               .filter(({ type }) => type == 'VIP')
                               .reduce((a, b) => a + b.tableCount, 0)),
                         0
-                      ) === 0
+                      ) <= 0
                     }
                     onClick={() => selectDate(date)}
                   >
@@ -260,7 +260,7 @@ export default function VipReservationPage() {
                               : 'bg-white border-gray-300 text-gray-800'
                           }`}
                           onClick={() => selectTimeslot(seat)}
-                          disabled={tablesLeft === 0}
+                          disabled={tablesLeft <= 0}
                         >
                           <p>{seat.timeslot}</p>
                           {seat.foodRequired && (
@@ -272,7 +272,7 @@ export default function VipReservationPage() {
                           className="text-center"
                           color={tablesLeft === 1 ? 'error' : 'textSecondary'}
                         >
-                          {tablesLeft == 0
+                          {tablesLeft <= 0
                             ? 'Sold Out'
                             : `Noch ${tablesLeft} Tisch${
                                 tablesLeft === 1 ? '' : 'e'

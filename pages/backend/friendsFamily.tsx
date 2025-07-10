@@ -249,7 +249,7 @@ export default function FriendsFamilyReservationPage() {
                             ? 'bg-black text-white'
                             : 'bg-white border-gray-300 text-gray-800'
                         }`}
-                      disabled={free === 0}
+                      disabled={free <= 0}
                       onClick={() => selectDate(date)}
                     >
                       <span className="text-xs text-gray-500 mr-2">{dow}</span>
@@ -287,7 +287,7 @@ export default function FriendsFamilyReservationPage() {
                                 : 'bg-white border-gray-300 text-gray-800'
                             }`}
                           onClick={() => selectTimeslot(s)}
-                          disabled={free === 0}
+                          disabled={free <= 0}
                         >
                           {s.timeslot}
                         </button>
@@ -296,7 +296,7 @@ export default function FriendsFamilyReservationPage() {
                           className="text-center"
                           color={free === 1 ? 'error' : 'textSecondary'}
                         >
-                          {free === 0
+                          {free <= 0
                             ? 'Ausgebucht'
                             : `Noch ${free} Tisch${free === 1 ? '' : 'e'} frei`}
                         </Typography>

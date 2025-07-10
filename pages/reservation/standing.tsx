@@ -146,7 +146,7 @@ export default function StandingReservationPage() {
             0
           ),
         0
-      ) === 0
+      ) <= 0
     : false;
 
   const selectedDateData = data
@@ -196,7 +196,7 @@ export default function StandingReservationPage() {
                               .filter(({ type }) => type == 'STANDING')
                               .reduce((a, b) => a + b.tableCount, 0)),
                         0
-                      ) === 0
+                      ) <= 0
                     }
                     onClick={() => selectDate(date)}
                   >
@@ -230,7 +230,7 @@ export default function StandingReservationPage() {
                               : 'bg-white border-gray-300 text-gray-800'
                           }`}
                           onClick={() => selectTimeslot(seat)}
-                          disabled={tablesLeft === 0}
+                          disabled={tablesLeft <= 0}
                         >
                           {seat.timeslot}
                         </button>
@@ -239,7 +239,7 @@ export default function StandingReservationPage() {
                           className="text-center"
                           color={tablesLeft === 1 ? 'error' : 'textSecondary'}
                         >
-                          {tablesLeft == 0
+                          {tablesLeft <= 0
                             ? 'Sold Out'
                             : `Noch ${tablesLeft} Tisch${
                                 tablesLeft === 1 ? '' : 'e'
