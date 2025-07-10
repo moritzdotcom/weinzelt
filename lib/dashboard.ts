@@ -1,6 +1,6 @@
 import { ApiGetEventDataResponse } from '@/pages/api/events/[eventId]/data';
 import { ApiGetPageVisitsResponse } from '@/pages/api/pageVisits';
-import { translateState, translateType } from './reservation';
+import { fullPrice, translateState, translateType } from './reservation';
 
 // types.ts
 export interface Metrics {
@@ -67,7 +67,9 @@ export function calculateMetrics(
     );
 
   const allUnpaidMails = allReservations
-    .filter((r) => r.confirmationState === 'ACCEPTED' && !r.payed)
+    .filter(
+      (r) => r.confirmationState === 'ACCEPTED' && !r.payed && fullPrice(r) > 0
+    )
     .map((r) => r.email);
   const pageVisitsCount = pageVisits.length;
   const uniqueVisitors = new Set(pageVisits.map((v) => v.ip)).size;
