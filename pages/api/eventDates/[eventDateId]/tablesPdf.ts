@@ -32,6 +32,8 @@ async function handleGET(
   const reservations = await prisma.reservation.findMany({
     where: { seating: { eventDateId: id }, confirmationState: 'ACCEPTED' },
     select: {
+      type: true,
+      payed: true,
       name: true,
       people: true,
       tableNumber: true,
@@ -42,7 +44,12 @@ async function handleGET(
       totalFoodPrice: true,
       internalNotes: true,
       seating: {
-        select: { timeslot: true, eventDate: { select: { date: true } } },
+        select: {
+          timeslot: true,
+          eventDate: { select: { date: true } },
+          availableStanding: true,
+          availableVip: true,
+        },
       },
     },
   });
@@ -78,25 +85,33 @@ async function handleGET(
   Object.entries(grouped)
     .sort((a, b) => a[0].localeCompare(b[0]))
     .forEach(([timeslot, list], timeslotIndex) => {
-      // Sortiere innerhalb des Timeslots nach Tischnummer
-      list.sort((a, b) =>
-        (a.tableNumber || '').localeCompare(b.tableNumber || '')
-      );
-
       doc.text('', 40);
       doc
         .fontSize(14)
         .fillColor('black')
         .text(`Timeslot: ${timeslot}`, { underline: true });
-      doc.moveDown(0.5);
+      doc.moveUp(1);
+      doc
+        .fontSize(9)
+        .fillColor('black')
+        .text(
+          `VIP: ${list.filter((r) => r.type == 'VIP').length} / ${
+            list[0]?.seating.availableVip
+          }   ST: ${list.filter((r) => r.type == 'STANDING').length} / ${
+            list[0]?.seating.availableStanding
+          }`,
+          { align: 'right' }
+        );
+      doc.moveDown(1.5);
 
       // Tabelle
       const colWidths = [
-        ((doc.page.width - 80) / 12) * 8,
-        ((doc.page.width - 80) / 12) * 2,
-        ((doc.page.width - 80) / 12) * 2,
+        ((doc.page.width - 80) / 48) * 2,
+        ((doc.page.width - 80) / 48) * 30,
+        ((doc.page.width - 80) / 48) * 8,
+        ((doc.page.width - 80) / 48) * 8,
       ];
-      const headers = ['Name', 'Personen', 'Tischnummer'];
+      const headers = ['', 'Name', 'Personen', 'Tischnummer'];
 
       // Header-Zeile
       let x = 40;
@@ -123,70 +138,82 @@ async function handleGET(
 
       let rowIndex = 0;
       let extraRowHeights = 0;
-      list.forEach((r) => {
-        let rowTop = tableTop + 20 + rowIndex * 38 + extraRowHeights; // 35pt Zeilenhöhe
-        rowIndex += 1;
+      list
+        .sort((a, b) =>
+          (a.tableNumber || '').localeCompare(b.tableNumber || '')
+        )
+        .forEach((r) => {
+          let rowTop = tableTop + 20 + rowIndex * 38 + extraRowHeights; // 35pt Zeilenhöhe
+          rowIndex += 1;
 
-        if (rowTop > doc.page.height - 80) {
-          doc.addPage();
-          tableTop = 40;
-          rowTop = 60;
-          rowIndex = 1;
-          extraRowHeights = 0; // Reset für neue Seite
-        }
+          if (rowTop > doc.page.height - 80) {
+            doc.addPage();
+            tableTop = 40;
+            rowTop = 60;
+            rowIndex = 1;
+            extraRowHeights = 0; // Reset für neue Seite
+          }
 
-        // Erste Zeile: Name | Personen | Tischnummer
-        let xPos = 40;
-        const values = [r.name, r.people.toString(), r.tableNumber || ''];
-        values.forEach((text, i) => {
-          doc
-            .font('Helvetica')
-            .fontSize(12)
-            .fillColor('black')
-            .text(text, xPos + 4, rowTop, {
-              width: colWidths[i] - 8,
-              align: 'left',
-            });
-          xPos += colWidths[i];
-        });
-
-        // Zweite Zeile: PackageName (PackagePrice €), eingerückt unter Name-Spalte
-        const pkgText = `${r.packageName} (${r.packagePrice} €)`;
-        const foodText =
-          r.totalFoodPrice > 0
-            ? ` | ${r.foodCountMeat} x Fleisch, ${r.foodCountVegetarian} x Vegetarisch (${r.totalFoodPrice} €)`
-            : '';
-        doc
-          .font('Helvetica-Oblique')
-          .fontSize(11)
-          .fillColor('gray')
-          .text(`${pkgText}${foodText}`, 50, rowTop + 16, {
-            // 10pt Einzug, 16pt unter der ersten Zeile
-            width: colWidths[0] + colWidths[1] + colWidths[2] - 20,
-            align: 'left',
+          // Erste Zeile: Name | Personen | Tischnummer
+          let xPos = 40;
+          const values = [
+            r.type == 'VIP' ? 'VIP' : 'ST',
+            `${r.name} (${r.payed ? 'bezahlt' : 'offen'})`,
+            r.people.toString(),
+            r.tableNumber || '',
+          ];
+          values.forEach((text, i) => {
+            doc
+              .font('Helvetica')
+              .fontSize(i == 0 ? 8 : 12)
+              .fillColor('black')
+              .text(text, xPos + 4, rowTop, {
+                width: colWidths[i] - 8,
+                align: 'left',
+              });
+            xPos += colWidths[i];
           });
 
-        if (r.internalNotes) {
-          extraRowHeights += 16; // Zusätzliche Höhe für interne Notizen
-          // Interne Notizen, eingerückt unter Package-Text
+          // Zweite Zeile: PackageName (PackagePrice €), eingerückt unter Name-Spalte
+          const pkgText = `${r.packageName} (${r.packagePrice} €)`;
+          const foodText =
+            r.totalFoodPrice > 0
+              ? ` | ${r.foodCountMeat} x Fleisch, ${r.foodCountVegetarian} x Vegetarisch (${r.totalFoodPrice} €)`
+              : '';
           doc
             .font('Helvetica-Oblique')
             .fontSize(11)
             .fillColor('gray')
-            .text(`Interne Notizen: ${r.internalNotes}`, 50, rowTop + 32, {
-              // 10pt Einzug, 32pt unter der ersten Zeile
+            .text(`${pkgText}${foodText}`, 65, rowTop + 16, {
+              // 10pt Einzug, 16pt unter der ersten Zeile
               width: colWidths[0] + colWidths[1] + colWidths[2] - 20,
               align: 'left',
             });
-        }
-        const rowHeight = r.internalNotes ? 48 : 32;
-        // Horizontale Linie unterhalb beider Zeilen
-        doc
-          .moveTo(40, rowTop + rowHeight)
-          .lineTo(40 + colWidths.reduce((a, b) => a + b, 0), rowTop + rowHeight)
-          .strokeColor('#000000')
-          .stroke();
-      });
+
+          if (r.internalNotes) {
+            extraRowHeights += 16; // Zusätzliche Höhe für interne Notizen
+            // Interne Notizen, eingerückt unter Package-Text
+            doc
+              .font('Helvetica-Oblique')
+              .fontSize(11)
+              .fillColor('gray')
+              .text(`Interne Notiz: ${r.internalNotes}`, 42, rowTop + 32, {
+                // 10pt Einzug, 32pt unter der ersten Zeile
+                width: colWidths[0] + colWidths[1] + colWidths[2] - 20,
+                align: 'left',
+              });
+          }
+          const rowHeight = r.internalNotes ? 48 : 32;
+          // Horizontale Linie unterhalb beider Zeilen
+          doc
+            .moveTo(40, rowTop + rowHeight)
+            .lineTo(
+              40 + colWidths.reduce((a, b) => a + b, 0),
+              rowTop + rowHeight
+            )
+            .strokeColor('#000000')
+            .stroke();
+        });
 
       // Nach der Liste ausreichend Abstand einfügen
       doc.moveDown(3);
