@@ -190,8 +190,14 @@ async function handleGET(
               align: 'left',
             });
 
+          const rowsNeeded = r.internalNotes
+            ? Math.ceil(`Interne Notiz: ${r.internalNotes}`.length / 88)
+            : 0;
+
           if (r.internalNotes) {
-            extraRowHeights += 16; // Zusätzliche Höhe für interne Notizen
+            console.log(`Interne Notiz: ${r.internalNotes}`);
+            // Zusätzliche Höhe für interne Notizen
+            extraRowHeights += 16 * rowsNeeded;
             // Interne Notizen, eingerückt unter Package-Text
             doc
               .font('Helvetica-Oblique')
@@ -203,7 +209,7 @@ async function handleGET(
                 align: 'left',
               });
           }
-          const rowHeight = r.internalNotes ? 48 : 32;
+          const rowHeight = r.internalNotes ? 32 + 16 * rowsNeeded : 32;
           // Horizontale Linie unterhalb beider Zeilen
           doc
             .moveTo(40, rowTop + rowHeight)
