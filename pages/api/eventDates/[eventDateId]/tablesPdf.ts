@@ -37,6 +37,7 @@ async function handleGET(
       name: true,
       people: true,
       tableNumber: true,
+      tableCount: true,
       packageName: true,
       packagePrice: true,
       foodCountMeat: true,
@@ -95,9 +96,13 @@ async function handleGET(
         .fontSize(9)
         .fillColor('black')
         .text(
-          `VIP: ${list.filter((r) => r.type == 'VIP').length} / ${
+          `VIP: ${list
+            .filter((r) => r.type == 'VIP')
+            .reduce((a, b) => a + b.tableCount, 0)} / ${
             list[0]?.seating.availableVip
-          }   ST: ${list.filter((r) => r.type == 'STANDING').length} / ${
+          }   ST: ${list
+            .filter((r) => r.type == 'STANDING')
+            .reduce((a, b) => a + b.tableCount, 0)} / ${
             list[0]?.seating.availableStanding
           }`,
           { align: 'right' }
@@ -159,7 +164,9 @@ async function handleGET(
           const values = [
             r.type == 'VIP' ? 'VIP' : 'ST',
             `${r.name} (${r.payed ? 'bezahlt' : 'offen'})`,
-            r.people.toString(),
+            `${r.people.toString()}${
+              r.tableCount > 1 ? ` (${r.tableCount} Tische)` : ''
+            }`,
             r.tableNumber || '',
           ];
           values.forEach((text, i) => {
