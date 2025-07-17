@@ -124,22 +124,6 @@ export const events = [
       link: '/reservation?date=13.07.25',
     },
   },
-  // {
-  //   date: 'MO, 14.07.25',
-  //   from: '15:00',
-  //   startDate: '2025-07-14T15:00',
-  //   endDate: '2025-07-14T17:00',
-  //   image: '/events/winetasting.jpg',
-  //   title: 'Das größte Winetasting Düsseldorfs',
-  //   fullName:
-  //     'Weintasting im Weinzelt by Concept Riesling - Das größte Winetasting Düsseldorfs',
-  //   description:
-  //     'Montags muss nicht fade sein: Powered by Concept Riesling - lass dich von außergewöhnlichen Raritäten verführen und genieße Weinwissen mit jeder Menge Spaß.',
-  //   button: {
-  //     text: 'Kostenfrei registrieren',
-  //     specialEventId: '55424f90-03d0-4c8c-add1-f954d509da5c',
-  //   },
-  // },
   {
     date: 'MO, 14.07.25',
     from: '19:00',
@@ -310,17 +294,20 @@ export const events = [
       specialEventId: '752fdaaf-e782-4f09-bafe-6ba6eca6d5e5',
     },
   },
-  // {
-  //   date: 'SO, 20.07.25',
-  //   from: '11:00',
-  //   image: '/events/sunday-morning-pilates.jpg',
-  //   title: 'Sunday Morning Pilates',
-  //   fullName: 'Weinzelt X égoïste Studios - Sunday Morning Pilates',
-  //   description:
-  //     'Entspannt ins Sonntagsglück: Pilates-Flow vom angesagten égoïste Studio Düsseldorf, frische Morgenluft und als krönender Abschluss ein glasperlendes Prickeln.',
-  //   button: {
-  //     text: 'Jetzt reservieren',
-  //     link: '/reservation?date=20.07.25',
-  //   },
-  // },
+  {
+    date: 'SO, 20.07.25',
+    from: '11:00',
+    startDate: '2025-07-20T11:00',
+    endDate: '2025-07-20T13:00',
+    image: '/events/sunday-morning-pilates.jpg',
+    title: 'Sunday Morning Pilates',
+    fullName: 'Weinzelt X égoïste Studios - Sunday Morning Pilates',
+    description:
+      'Starte deinen Sonntag mit einem dynamischen Pilates Workout vom gehypten égoïste Pilates Studio aus Düsseldorf. Danach genießt du coole Beats bei einem Glas Weißwein oder Matcha und connectest mit der Community.',
+    button: {
+      text: 'Ticket kaufen',
+      link: 'https://www.eventbrite.com/e/rheinkirmes-weinzelt-x-egoiste-pilates-20072025-tickets-1498268524489?utm_experiment=test_share_listing&aff=ebdsshios',
+      external: true,
+    },
+  },
 ];
