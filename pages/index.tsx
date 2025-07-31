@@ -7,8 +7,6 @@ import { KeyboardArrowRight } from '@mui/icons-material';
 import { events } from '@/lib/events';
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
-import { trackPageVisit } from '@/lib/pageVisit';
-import { GetServerSideProps } from 'next';
 import SpecialEventRegistrationDialog from '@/components/specialEventRegistrationDialog';
 import FoodGrid from '@/components/foodGrid';
 
@@ -317,13 +315,13 @@ export default function Home({ session }: { session: Session }) {
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
           <img src="/logo.png" alt="Logo" className="w-80 h-auto mb-4" />
           <p className="text-xl md:text-2xl">
-            Ab <b>11.07.2025</b> wird wieder eingeschenkt! Wein, Beats & beste
+            Ab <b>17.07.2026</b> wird wieder eingeschenkt! Wein, Beats & beste
             Stimmung - <b>wir sehen uns im Weinzelt auf der Rheinkirmes!</b>
           </p>
           <p className="uppercase tracking-widest text-sm text-gray-700 mt-10">
             Noch
           </p>
-          <Countdown targetDate="2025-07-11T14:00:00" />
+          <Countdown targetDate="2026-07-17T14:00:00" />
           <p className="uppercase tracking-widest text-sm text-gray-700">
             bis zum Opening
           </p>
@@ -515,8 +513,3 @@ export default function Home({ session }: { session: Session }) {
     </div>
   );
 }
-
-export const getServerSideProps: GetServerSideProps = async (props) => {
-  await trackPageVisit(props);
-  return { props: {} };
-};

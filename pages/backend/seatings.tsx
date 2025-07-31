@@ -101,7 +101,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
   const handleDeleteDate = async () => {
     if (!selectedEventDateId) return;
     const { data }: { data: ApiDeleteEventDateResponse } = await axios.delete(
-      `/api/eventDates/${selectedEventDateId}/duplicate`
+      `/api/eventDates/${selectedEventDateId}`
     );
     setDeleteDateDialogOpen(false);
     setEventDates((prev) => (prev ? prev.filter((p) => p.id !== data.id) : []));

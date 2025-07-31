@@ -26,6 +26,13 @@ export default function EventSelector({
         setSelectedEventId(preselect);
       } else if (data.length == 1) {
         setSelectedEventId(data[0].id);
+      } else {
+        setSelectedEventId(
+          data.sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )[0].id
+        );
       }
     });
   }, [router.query.eventId]);
