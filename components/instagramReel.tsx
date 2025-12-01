@@ -16,7 +16,7 @@ export function InstagramReel() {
     }
   }, []);
 
-  const permalink = 'https://www.instagram.com/reel/DMgCG-TM-Ww/';
+  const permalink = 'https://www.instagram.com/reel/DMSyS8ZMhOC/';
 
   return (
     <>
