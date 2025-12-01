@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import InstagramIcon from '@mui/icons-material/Instagram';
-import FacebookIcon from '@mui/icons-material/Facebook';
 
 export default function Footer() {
   return (
@@ -26,11 +25,11 @@ export default function Footer() {
             <InstagramIcon fontSize="inherit" />
           </Link>
           <Link
-            href="https://www.facebook.com/weinzelt.dus/"
+            href="https://www.tiktok.com/@weinzelt"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <FacebookIcon fontSize="inherit" />
+            <img src="/icons/tiktok.png" alt="TikTok" className="w-7 h-7" />
           </Link>
         </div>
       </div>
