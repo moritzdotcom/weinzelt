@@ -9,6 +9,8 @@ import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
 import SpecialEventRegistrationDialog from '@/components/specialEventRegistrationDialog';
 import FoodGrid from '@/components/foodGrid';
+import { InstagramReel } from '@/components/instagramReel';
+import HeroFade from '@/components/heroFade';
 
 export default function Home({ session }: { session: Session }) {
   return (
@@ -24,15 +26,7 @@ export default function Home({ session }: { session: Session }) {
       </div>
       <Navbar session={session} />
 
-      {/* Hero */}
-      <section className="relative h-[45vh] sm:h-[60vh] flex items-center justify-center bg-black text-white">
-        <Image
-          src="/home/weinzelt.jpg"
-          alt="Weinzelt"
-          layout="fill"
-          objectFit="cover"
-        />
-      </section>
+      <HeroFade />
 
       {/* Konzept */}
       <section id="konzept" className="max-w-6xl mx-auto px-4 py-20">
@@ -167,7 +161,7 @@ export default function Home({ session }: { session: Session }) {
           {/* Bildbereich */}
           <div>
             <img
-              src="/home/standing-tables.jpeg"
+              src="/home/standing-tables.jpg"
               alt="Stehtische im Weinzelt"
               className="w-full h-full object-cover rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105"
             />
@@ -204,8 +198,18 @@ export default function Home({ session }: { session: Session }) {
           </div>
         </div>
 
+        <h3 className="text-2xl font-cocogoose text-center text-white mt-12 mb-6">
+          Ein kleiner Vorgeschmack gefällig?
+        </h3>
+        <div className="flex justify-center mx-5">
+          <InstagramReel />
+        </div>
+        <h3 className="text-2xl font-cocogoose text-center text-white mt-12 mb-6">
+          Letztes Jahr war nur der Anfang...
+        </h3>
+
         {/* Eventkalender */}
-        <div className="mt-12">
+        {/* <div className="mt-12">
           <h3 className="text-2xl font-cocogoose text-center text-white mb-6">
             Unsere Events im Weinzelt
           </h3>
@@ -249,7 +253,7 @@ export default function Home({ session }: { session: Session }) {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
       </section>
 
       {/* Speisen & Getränke */}
@@ -273,7 +277,7 @@ export default function Home({ session }: { session: Session }) {
               und clevere alkoholfreie Alternativen. Alles, was du brauchst für
               einen Abend, der stilvoll knallt!
             </p>
-            <div className="flex flex-col items-center sm:items-start gap-3">
+            {/* <div className="flex flex-col items-center sm:items-start gap-3">
               <Link
                 href="/weinzelt-food.pdf"
                 target="_blank"
@@ -293,7 +297,7 @@ export default function Home({ session }: { session: Session }) {
                   & Lieblingstropfen finden!
                 </span>
               </Link>
-            </div>
+            </div> */}
           </div>
 
           {/* Bildbereich */}
@@ -315,8 +319,9 @@ export default function Home({ session }: { session: Session }) {
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
           <img src="/logo.png" alt="Logo" className="w-80 h-auto mb-4" />
           <p className="text-xl md:text-2xl">
-            Ab <b>17.07.2026</b> wird wieder eingeschenkt! Wein, Beats & beste
-            Stimmung - <b>wir sehen uns im Weinzelt auf der Rheinkirmes!</b>
+            Ab dem <b>17.07.2026</b> wird wieder eingeschenkt! Wein, Beats &
+            beste Stimmung -{' '}
+            <b>wir sehen uns im Weinzelt auf der Rheinkirmes!</b>
           </p>
           <p className="uppercase tracking-widest text-sm text-gray-700 mt-10">
             Noch
