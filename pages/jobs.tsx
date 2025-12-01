@@ -36,7 +36,7 @@ export default function JobsPage({ session }: { session: Session }) {
             Rheinkirmes ist ein neuer Treffpunkt für Genießer, Nachtschwärmer
             und Weinliebhaber - und du kannst ein Teil davon sein. Wir suchen
             motivierte Teamplayer, die in der Zeit vom{' '}
-            <strong>11.07. bis 20.07.</strong> mindestens{' '}
+            <strong>17.07. bis 26.07.</strong> mindestens{' '}
             <strong>5 Tage verfügbar</strong> sind. Pünktlichkeit,
             Zuverlässigkeit und Eigeninitiative sind für dich
             selbstverständlich? Dann bewirb dich jetzt!
@@ -210,7 +210,7 @@ function ApplicationForm() {
 
         {/* Availability */}
         <TextField
-          label="Verfügbarkeit im Zeitraum vom 11.07. bis 20.07."
+          label="Verfügbarkeit im Zeitraum vom 17.07. bis 26.07."
           variant="outlined"
           fullWidth
           required
