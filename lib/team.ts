@@ -10,11 +10,6 @@ export const team = [
     bio: 'Adonis mit Abrechnung. Sunnyboy mit Zahlenverständnis. In der Gastro zu Hause, in der Finanzwelt souverän - Moritz verbindet gutes Aussehen mit gutem Überblick. Immer charmant, nie chaotisch.',
   },
   {
-    name: 'Nicolas Menke',
-    imgSrc: '/team/nicolas.jpg',
-    bio: 'Herzlichkeit in Person. Zuständig für HR und alles, was den Laden menschlich macht. Ein echter Sonnenschein mit dem Millionen-Dollar-Lächeln und Gespür für gute Gespräche.',
-  },
-  {
     name: 'Nico von der Ohe',
     imgSrc: '/team/nico.jpg',
     bio: "Wenn Logistik auf Lebensart trifft. Als hauseigener Sommelier hat Nico nicht nur Chardonnay im Glas, sondern Champagner im Blut. Trocken? Nur, wenn's der Wein verlangt.",

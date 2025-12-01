@@ -154,6 +154,14 @@ model EventRegistration {
   reminderSent   DateTime?
 }
 
+model ReservationReminder {
+  id           String    @id @default(uuid())
+  name         String
+  email        String
+  createdAt    DateTime  @default(now())
+  reminderSent DateTime?
+}
+
 enum ConfirmationState {
   REQUESTED
   ACCEPTED

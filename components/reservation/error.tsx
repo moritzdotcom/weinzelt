@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import Link from 'next/link';
+import ReservationReminderForm from './reminderForm';
 
 export default function ReservationError({ text }: { text: string }) {
   return (
@@ -8,6 +9,8 @@ export default function ReservationError({ text }: { text: string }) {
       <Typography variant="h6" gutterBottom>
         {text}
       </Typography>
+
+      <ReservationReminderForm />
       <Link href="/" className="underline text-lg">
         Zurück zur Startseite
       </Link>
