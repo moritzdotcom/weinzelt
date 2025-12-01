@@ -94,7 +94,7 @@ export default function Document() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="twitter:image"
-          content={encodeURI('https://dasweinzelt.de/home/weinzelt-og.jpg')}
+          content={encodeURI('https://dasweinzelt.de/home/weinzelt2.jpg')}
         />
         <meta name="twitter:url" content="https://dasweinzelt.de/" />
         <meta
@@ -109,7 +109,7 @@ export default function Document() {
         <meta property="og:type" content="website" />
         <meta
           property="og:image"
-          content={encodeURI('https://dasweinzelt.de/home/weinzelt-og.jpg')}
+          content={encodeURI('https://dasweinzelt.de/home/weinzelt2.jpg')}
         />
         <meta
           property="og:title"
