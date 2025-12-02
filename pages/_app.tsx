@@ -1,5 +1,6 @@
 import UseSession from '@/hooks/useSession';
 import '@/styles/globals.css';
+import 'photoswipe/style.css';
 import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';

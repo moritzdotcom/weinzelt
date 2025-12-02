@@ -13,6 +13,7 @@ import LineAxisIcon from '@mui/icons-material/LineAxis';
 import PasswordIcon from '@mui/icons-material/Password';
 import LocalActivityIcon from '@mui/icons-material/LocalActivity';
 import SearchIcon from '@mui/icons-material/Search';
+import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 
 export default function Backend({ session }: { session: Session }) {
   const router = useRouter();
@@ -82,6 +83,11 @@ export default function Backend({ session }: { session: Session }) {
           href="/backend/specialEvents"
           text="Special Events"
           Icon={LocalActivityIcon}
+        />
+        <LinkItem
+          href="/backend/impressions"
+          text="Fotos hochladen"
+          Icon={AddAPhotoIcon}
         />
       </Grid>
     </div>

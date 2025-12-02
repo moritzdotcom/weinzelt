@@ -162,6 +162,31 @@ model ReservationReminder {
   reminderSent DateTime?
 }
 
+model Album {
+  id           String            @id @default(uuid())
+  year         Int
+  day          String // z.B. "opening", "day1", "vip-night"
+  photos       ImpressionPhoto[] @relation("AlbumPhotos")
+  coverPhotoId String?
+  coverPhoto   ImpressionPhoto?  @relation("AlbumCoverPhoto", fields: [coverPhotoId], references: [id])
+  createdAt    DateTime          @default(now())
+
+  @@unique([year, day])
+}
+
+model ImpressionPhoto {
+  id        String   @id @default(uuid())
+  path      String // z.B. "2025/opening/uuid.jpg" im Supabase-Bucket
+  title     String? // optional
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  width     Int?
+  height    Int?
+  albumId   String
+  album     Album    @relation("AlbumPhotos", fields: [albumId], references: [id])
+  coverFor  Album[]  @relation("AlbumCoverPhoto")
+}
+
 enum ConfirmationState {
   REQUESTED
   ACCEPTED
