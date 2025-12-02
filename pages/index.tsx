@@ -67,6 +67,12 @@ export default function Home({ session }: { session: Session }) {
               Komm vorbei. Probier dich durch. Und genieß Düsseldorf von seiner
               leckersten Seite.
             </p>
+            <Link
+              href="/impressions"
+              className="inline-block mx-auto text-center bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-300 hover:text-black transition"
+            >
+              Zu den Fotos 2025
+            </Link>
           </div>
           <div>
             <img

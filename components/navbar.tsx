@@ -55,9 +55,9 @@ export default function Navbar({ session }: { session: Session }) {
             <Link href="/#vip">VIP</Link>
             <Link href="/#musik">Musik</Link>
             <Link href="/#gastro">Getränke</Link>
-            <Link href="/#partner">Partner</Link>
             <Link href="/about">Über uns</Link>
             <Link href="/jobs">Jobs</Link>
+            <Link href="/impressions">Fotos</Link>
             <Link
               href="/reservation"
               className="inline-block bg-black text-white px-3 py-2 rounded-full shadow hover:bg-gray-300 hover:text-black"
@@ -75,7 +75,7 @@ export default function Navbar({ session }: { session: Session }) {
           open={menuOpen}
           onClose={() => setMenuOpen(false)}
         >
-          <div className="p-5 flex flex-col justify-between text-left text-xl min-w-[70vw] h-full">
+          <div className="p-5 flex flex-col justify-between text-left text-xl min-w-[80vw] h-full">
             <div className="flex flex-col gap-4">
               <div className="flex justify-end">
                 <IconButton onClick={() => setMenuOpen(false)}>
@@ -134,6 +134,10 @@ export default function Navbar({ session }: { session: Session }) {
               <Link href="/reservation" onClick={() => setMenuOpen(false)}>
                 Tisch reservieren
               </Link>
+              <Divider />
+              <Link href="/impressions" onClick={() => setMenuOpen(false)}>
+                Fotos
+              </Link>
             </div>
 
             {/* Social Icons */}
@@ -146,11 +150,11 @@ export default function Navbar({ session }: { session: Session }) {
                 <InstagramIcon fontSize="inherit" />
               </Link>
               <Link
-                href="https://www.facebook.com/weinzelt.dus/"
+                href="https://www.tiktok.com/@weinzelt"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <FacebookIcon fontSize="inherit" />
+                <img src="/icons/tiktok.png" alt="TikTok" className="w-8 h-8" />
               </Link>
             </div>
           </div>

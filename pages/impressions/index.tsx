@@ -65,10 +65,13 @@ export const getServerSideProps: GetServerSideProps<Partial<Props>> = async (
 export default function ImpressionenPage({ albums, session }: Props) {
   if (albums.length === 0) {
     return (
-      <main className="max-w-5xl mx-auto px-4 py-10">
-        <h1 className="text-3xl font-bold mb-4">Impressionen</h1>
-        <p>Noch keine Impressionen verfügbar.</p>
-      </main>
+      <>
+        <Navbar session={session} />
+        <main className="max-w-7xl mx-auto px-4 py-10">
+          <h1 className="text-3xl font-cocogoose mb-4">Bilder vom WEINZELT</h1>
+          <p>Noch keine Fotos verfügbar.</p>
+        </main>
+      </>
     );
   }
 
@@ -76,7 +79,7 @@ export default function ImpressionenPage({ albums, session }: Props) {
     <>
       <Navbar session={session} />
       <main className="max-w-7xl mx-auto px-4 py-10">
-        <h1 className="text-3xl font-bold mb-6">Impressionen</h1>
+        <h1 className="text-3xl font-cocogoose mb-6">Bilder vom WEINZELT</h1>
 
         {/* Album Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mb-10">
