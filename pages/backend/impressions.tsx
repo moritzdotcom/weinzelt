@@ -32,8 +32,6 @@ type AlbumOption = {
 type Photo = {
   id: string;
   url: string;
-  year: number;
-  day: string;
   path: string;
   sortOrder: number;
   createdAt: string;
@@ -584,12 +582,11 @@ export default function AdminImpressionsPage() {
                   component="img"
                   height="160"
                   image={photo.url}
-                  alt={`Impression ${photo.year} ${photo.day}`}
                   sx={{ objectFit: 'cover' }}
                 />
                 <CardContent sx={{ py: 1.5 }}>
                   <Typography variant="caption" color="text.secondary" noWrap>
-                    {photo.year} · {photo.day}
+                    {photo.id}
                   </Typography>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'space-between', py: 0.5 }}>

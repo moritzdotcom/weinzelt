@@ -36,10 +36,16 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse) {
         coverUrl = publicUrl;
       }
 
+      const normalizedDay = album.day
+        .replaceAll('ae', 'ä')
+        .replaceAll('oe', 'ö')
+        .replaceAll('ue', 'ü')
+        .replaceAll('ss', 'ß');
+
       return {
         id: album.id,
         year: album.year,
-        day: album.day,
+        day: normalizedDay,
         photoCount: album._count.photos,
         coverUrl,
         coverPhotoId: album.coverPhotoId,
@@ -65,10 +71,16 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
       return res.status(400).json({ error: 'year und day sind erforderlich' });
     }
 
+    const normalizedDay = day
+      .replaceAll('ä', 'ae')
+      .replaceAll('ö', 'oe')
+      .replaceAll('ü', 'ue')
+      .replaceAll('ß', 'ss');
+
     const album = await prisma.album.create({
       data: {
         year,
-        day,
+        day: normalizedDay,
       },
     });
 

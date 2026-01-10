@@ -38,8 +38,6 @@ export default async function handler(
       return {
         ...photo,
         url: publicUrl,
-        year: album.year,
-        day: album.day,
       };
     });
 
