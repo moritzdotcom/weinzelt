@@ -7,7 +7,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handle(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const session = await getServerSession(req);
   if (!session) return res.status(401).json('Not authenticated');
@@ -16,7 +16,7 @@ export default async function handle(
     await handlePOST(req, res, session.name);
   } else {
     throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
+      `The HTTP ${req.method} method is not supported at this route.`,
     );
   }
 }
@@ -29,18 +29,16 @@ export type ApiPostReservationResponse = {
   people: number;
   seatingId: string;
   confirmed: boolean;
-  packageName: string;
-  packageDescription: string;
-  packagePrice: number;
+  minimumSpend: number;
   tableNumber: string | null;
 };
 
 async function handlePOST(
   req: NextApiRequest,
   res: NextApiResponse,
-  userName: string
+  userName: string,
 ) {
-  const { type, name, email, packagePrice, people, seatingId } = req.body;
+  const { type, name, email, minimumSpend, people, seatingId } = req.body;
 
   const reservationType = type == 'STANDING' ? 'STANDING' : 'VIP';
   if (typeof name !== 'string' || name.length == 0)
@@ -57,15 +55,13 @@ async function handlePOST(
       type: reservationType,
       name,
       email,
-      packageName: 'Friends and Family',
-      packageDescription: `${translateType(
-        reservationType
-      )} - Eingeladen von ${userName}`,
-      packagePrice,
       people,
+      minimumSpend,
       seatingId,
-      confirmationState: 'ACCEPTED',
       notified: new Date(),
+      internalNotes: `${translateType(
+        reservationType,
+      )} - Eingeladen von ${userName}`,
     },
     include: {
       seating: {
@@ -86,7 +82,7 @@ async function handlePOST(
     name,
     String(people),
     reservation.seating.eventDate.date,
-    reservation.seating.timeslot
+    reservation.seating.timeslot,
   );
 
   return res.json(reservation);

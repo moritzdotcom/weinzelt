@@ -19,8 +19,6 @@ import {
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { translateType } from '@/lib/reservation';
-import MailOutlineIcon from '@mui/icons-material/MailOutline';
-import CheckIcon from '@mui/icons-material/Check';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 
 export default function ReservationCard({
@@ -32,41 +30,19 @@ export default function ReservationCard({
   doubleBooking?: ApiGetReservationsResponse[number];
   onUpdate: (reservation: ApiGetReservationsResponse[number]) => void;
 }) {
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const [notifying, setNotifying] = useState(false);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   const [savingTableNumber, setSavingTableNumber] = useState(false);
 
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
 
-  const handleConfirmPayment = async () => {
-    await axios.put(`/api/reservations/${reservation.id}`, { payed: true });
-    onUpdate({ ...reservation, payed: true });
-    setPaymentDialogOpen(false);
-    setAnchorEl(null);
-  };
-
-  const handleNotify = async () => {
-    setNotifying(true);
-    await axios.post(`/api/reservations/${reservation.id}/notify`);
-    onUpdate({ ...reservation, notified: new Date() });
-    setNotifying(false);
-  };
-
-  const handlePaymentReminder = async () => {
-    await axios.post(`/api/reservations/${reservation.id}/sendPaymentReminder`);
-    onUpdate({ ...reservation, paymentReminderSent: new Date() });
-    setAnchorEl(null);
-  };
-
   const handleCancelReservation = async () => {
     await axios.post(`/api/reservations/${reservation.id}/cancel`, {
       reason: cancelReason,
     });
-    onUpdate({ ...reservation, confirmationState: 'DECLINED' });
+    onUpdate({ ...reservation, paymentStatus: 'CANCELED' });
     setAnchorEl(null);
   };
 
@@ -83,10 +59,6 @@ export default function ReservationCard({
       setSavingTableNumber(false);
     }, 1000);
   };
-
-  const foodTotal = reservation.totalFoodPrice;
-  const drinksTotal = reservation.packagePrice;
-  const grandTotal = foodTotal + drinksTotal;
 
   return (
     <motion.div
@@ -127,43 +99,20 @@ export default function ReservationCard({
 
       <div className="flex items-center gap-2">
         <Typography className="text-sm mt-1 font-medium">
-          {reservation.packageName} - {drinksTotal}
-          {foodTotal ? ` + ${foodTotal} = ${grandTotal} ` : ' '}€
+          {reservation.minimumSpend}€
         </Typography>
         <Tooltip
           title={reservation.payed ? 'Zahlung erhalten' : 'Zahlung ausstehend'}
         >
-          <button
+          <p
             className={`${
               reservation.payed ? 'text-emerald-600' : 'text-amber-600'
             }`}
-            onClick={() => setPaymentDialogOpen(!reservation.payed)}
           >
             {reservation.payed ? 'Bezahlt' : 'Nix Geld'}
-          </button>
+          </p>
         </Tooltip>
       </div>
-
-      <Typography className="text-sm text-gray-600">
-        {reservation.packageDescription}
-      </Typography>
-
-      {reservation.foodCountMeat +
-        reservation.foodCountFish +
-        reservation.foodCountVegetarian >
-        0 && (
-        <ul className="text-sm text-gray-600 ml-2">
-          {reservation.foodCountMeat > 0 && (
-            <li>{reservation.foodCountMeat} x Fleisch</li>
-          )}
-          {reservation.foodCountFish > 0 && (
-            <li>{reservation.foodCountFish} x Fisch</li>
-          )}
-          {reservation.foodCountVegetarian > 0 && (
-            <li>{reservation.foodCountVegetarian} x Vegetarisch</li>
-          )}
-        </ul>
-      )}
 
       {reservation.internalNotes && (
         <div className="my-3">
@@ -200,56 +149,12 @@ export default function ReservationCard({
             <p className="text-red-600">Tisch doppelt belegt!</p>
           )}
         </Box>
-        {reservation.notified ? (
-          <Tooltip
-            title={`Benachrichtigt am: ${new Date(
-              reservation.notified
-            ).toLocaleDateString('de')} ${
-              reservation.paymentReminderSent
-                ? ` - Erinnert am: ${new Date(
-                    reservation.paymentReminderSent
-                  ).toLocaleDateString('de')}`
-                : ''
-            }`}
-          >
-            <button className="border bg-neutral-400 text-white px-3 py-2 rounded-full flex items-center gap-1 text-base cursor-default!">
-              <CheckIcon fontSize="inherit" />
-              <span>Benachrichtigt</span>
-            </button>
-          </Tooltip>
-        ) : (
-          <button
-            onClick={handleNotify}
-            disabled={notifying}
-            className="border border-sky-500 text-sky-500 px-3 py-2 rounded-full flex items-center gap-1 text-base"
-          >
-            <MailOutlineIcon fontSize="inherit" />
-            <span>Benachrichtigen</span>
-          </button>
-        )}
       </div>
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={() => setAnchorEl(null)}
       >
-        <MenuItem disabled={reservation.payed} onClick={handleConfirmPayment}>
-          Zahlungseingang bestätigen
-        </MenuItem>
-        <Divider />
-        <MenuItem
-          disabled={
-            Boolean(reservation.paymentReminderSent) ||
-            reservation.payed ||
-            !reservation.notified ||
-            new Date(reservation.notified).getTime() - new Date().getTime() <
-              1000 * 60 * 60 * 24 * 7
-          }
-          onClick={handlePaymentReminder}
-        >
-          Zahlungserinnerung versenden
-        </MenuItem>
-        <Divider />
         <MenuItem
           onClick={() => {
             setAnchorEl(null);
@@ -259,40 +164,6 @@ export default function ReservationCard({
           Stornieren & benachrichtigen
         </MenuItem>
       </Menu>
-      <Dialog
-        open={paymentDialogOpen}
-        onClose={() => setPaymentDialogOpen(false)}
-      >
-        <DialogTitle>Zahlungseingang bestätigen</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Möchtest du den Zahlungseingang für{' '}
-            <strong>{reservation.name}</strong> bestätigen?
-          </Typography>
-        </DialogContent>
-        <DialogActions
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            px: 3,
-            pb: 2,
-            pt: 1,
-          }}
-        >
-          <button
-            className="w-full shadow rounded bg-gray-300 hover:bg-gray-400 px-3 py-2 transition hover:scale-105 mr-3"
-            onClick={() => setPaymentDialogOpen(false)}
-          >
-            Abbrechen
-          </button>
-          <button
-            className="w-full shadow rounded text-white bg-green-600 hover:bg-green-700 px-3 py-2 transition hover:scale-105 ml-3"
-            onClick={handleConfirmPayment}
-          >
-            Bestätigen
-          </button>
-        </DialogActions>
-      </Dialog>
       <Dialog
         open={cancelDialogOpen}
         onClose={() => setCancelDialogOpen(false)}

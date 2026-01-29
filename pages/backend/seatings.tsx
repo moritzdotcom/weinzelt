@@ -15,7 +15,6 @@ import {
   Tooltip,
   InputAdornment,
 } from '@mui/material';
-import { packages } from '@/lib/packages';
 import { ApiGetEventDatesResponse } from '../api/events/[eventId]/eventDates';
 import { ApiPostSeatingResponse } from '../api/eventDates/[eventDateId]/seatings';
 import { Seating } from '@prisma/client';
@@ -48,8 +47,6 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
     timeslot: '',
     availableVip: '10',
     availableStanding: '10',
-    foodRequired: false,
-    minimumSpend: '800',
     minimumSpendVip: '50',
     minimumSpendStanding: '50',
   });
@@ -113,7 +110,6 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
       `/api/eventDates/${selectedEventDateId}/seatings`,
       {
         ...seatingData,
-        minimumSpend: Number(seatingData.minimumSpend),
         minimumSpendVip: Number(seatingData.minimumSpendVip),
         minimumSpendStanding: Number(seatingData.minimumSpendStanding),
         availableVip: Number(seatingData.availableVip),
@@ -125,8 +121,6 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
       timeslot: '',
       availableVip: '10',
       availableStanding: '10',
-      foodRequired: false,
-      minimumSpend: '800',
       minimumSpendVip: '50',
       minimumSpendStanding: '50',
     });
@@ -373,7 +367,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
             slotProps={{
               input: {
                 endAdornment: (
-                  <InputAdornment position="end">p.P.</InputAdornment>
+                  <InputAdornment position="end">pro Tisch</InputAdornment>
                 ),
               },
             }}
@@ -393,25 +387,11 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
             slotProps={{
               input: {
                 endAdornment: (
-                  <InputAdornment position="end">p.P.</InputAdornment>
+                  <InputAdornment position="end">pro Tisch</InputAdornment>
                 ),
               },
             }}
             margin="normal"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={seatingData.foodRequired}
-                onChange={(e) =>
-                  setSeatingData({
-                    ...seatingData,
-                    foodRequired: e.target.checked,
-                  })
-                }
-              />
-            }
-            label="Essen verpflichtend"
           />
         </DialogContent>
         <DialogActions>
@@ -444,32 +424,15 @@ function SeatingCard({
   onDelete: () => void;
   onUpdate: (data: ApiPutSeatingResponse) => void;
 }) {
-  const [selectedPackages, setSelectedPackages] = useState(
-    seating.availablePackageIds
-  );
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [seatingData, setSeatingData] = useState({
     timeslot: seating.timeslot,
     availableVip: `${seating.availableVip}`,
     availableStanding: `${seating.availableStanding}`,
-    minimumSpend: `${seating.minimumSpend}`,
-    foodRequired: seating.foodRequired,
     minimumSpendVip: `${seating.minimumSpendVip}`,
     minimumSpendStanding: `${seating.minimumSpendStanding}`,
   });
-
-  const togglePackage = async (packageId: number) => {
-    const newSelection = selectedPackages.includes(packageId)
-      ? selectedPackages.filter((id) => id !== packageId)
-      : [...selectedPackages, packageId];
-
-    await axios.put(`/api/seatings/${seating.id}`, {
-      availablePackageIds: newSelection,
-    });
-
-    setSelectedPackages(newSelection);
-  };
 
   const handleUpdate = async () => {
     const { data }: { data: ApiPutSeatingResponse } = await axios.put(
@@ -477,7 +440,6 @@ function SeatingCard({
       {
         ...seatingData,
         availableVip: Number(seatingData.availableVip),
-        minimumSpend: Number(seatingData.minimumSpend),
         minimumSpendVip: Number(seatingData.minimumSpendVip),
         minimumSpendStanding: Number(seatingData.minimumSpendStanding),
         availableStanding: Number(seatingData.availableStanding),
@@ -512,11 +474,7 @@ function SeatingCard({
             MVZ VIP: {seating.minimumSpendVip} €
             <span className="hidden md:inline mr-1">,</span>
           </p>
-          <p>
-            MVZ Stehtisch: {seating.minimumSpendStanding} €
-            <span className="hidden md:inline mr-1">,</span>
-          </p>
-          <p>Essen: {seating.foodRequired ? 'Ja' : 'Nein'}</p>
+          <p>MVZ Stehtisch: {seating.minimumSpendStanding} €</p>
         </div>
         <div className="flex gap-3">
           <Tooltip title="Bearbeiten">
@@ -537,26 +495,6 @@ function SeatingCard({
           </Tooltip>
         </div>
       </div>
-      <Box className="flex flex-col sm:flex-row gap-2 mt-2 flex-wrap">
-        {packages
-          .sort((a, b) => a.sortId - b.sortId)
-          .map((pkg) => {
-            const isAssigned = selectedPackages.includes(pkg.id);
-            return (
-              <button
-                key={pkg.name}
-                onClick={() => togglePackage(pkg.id)}
-                className={`px-3 py-1 text-sm rounded-full border ${
-                  isAssigned ? 'bg-black text-white' : 'bg-white text-gray-700'
-                }`}
-              >
-                <Tooltip title={pkg.description}>
-                  <p>{pkg.name}</p>
-                </Tooltip>
-              </button>
-            );
-          })}
-      </Box>
       <Dialog
         open={updateDialogOpen}
         onClose={() => setUpdateDialogOpen(false)}
@@ -598,19 +536,6 @@ function SeatingCard({
             }
             margin="normal"
           />
-          {/* <TextField
-            label="Reservierungs Schwelle"
-            type="number"
-            fullWidth
-            value={seatingData.minimumSpend}
-            onChange={(e) =>
-              setSeatingData({
-                ...seatingData,
-                minimumSpend: e.target.value,
-              })
-            }
-            margin="normal"
-          /> */}
           <TextField
             label="Getränkeguthaben VIP"
             type="number"
@@ -625,7 +550,7 @@ function SeatingCard({
             slotProps={{
               input: {
                 endAdornment: (
-                  <InputAdornment position="end">p.P.</InputAdornment>
+                  <InputAdornment position="end">pro Tisch</InputAdornment>
                 ),
               },
             }}
@@ -645,25 +570,11 @@ function SeatingCard({
             slotProps={{
               input: {
                 endAdornment: (
-                  <InputAdornment position="end">p.P.</InputAdornment>
+                  <InputAdornment position="end">pro Tisch</InputAdornment>
                 ),
               },
             }}
             margin="normal"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={seatingData.foodRequired}
-                onChange={(e) =>
-                  setSeatingData({
-                    ...seatingData,
-                    foodRequired: e.target.checked,
-                  })
-                }
-              />
-            }
-            label="Essen verpflichtend"
           />
         </DialogContent>
         <DialogActions>

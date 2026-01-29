@@ -34,13 +34,13 @@ export default function BackendReservationsPage({
 
   const selectedEvent = useMemo(
     () => events.filter((e) => e.id == selectedEventId)[0],
-    [selectedEventId, events]
+    [selectedEventId, events],
   );
 
   const sortedEventDates = useMemo(() => {
     if (!selectedEvent) return undefined;
     return selectedEvent.eventDates.sort((a, b) =>
-      a.date.localeCompare(b.date)
+      a.date.localeCompare(b.date),
     );
   }, [selectedEvent]);
 
@@ -52,8 +52,8 @@ export default function BackendReservationsPage({
   const filteredReservations = useMemo(() => {
     return reservations?.filter(
       (r) =>
-        r.confirmationState == 'ACCEPTED' &&
-        r.seating.eventDateId == selectedEventDate?.id
+        r.paymentStatus == 'PAID' &&
+        r.seating.eventDateId == selectedEventDate?.id,
     );
   }, [selectedEventDate, reservations]);
 
@@ -68,12 +68,12 @@ export default function BackendReservationsPage({
   }, [filteredReservations]);
 
   const updateReservation = (
-    reservation: ApiGetReservationsResponse[number]
+    reservation: ApiGetReservationsResponse[number],
   ) => {
     setReservations((res) =>
       res
         ? res.map((r) => (r.id == reservation.id ? reservation : r))
-        : undefined
+        : undefined,
     );
   };
 
@@ -119,7 +119,7 @@ export default function BackendReservationsPage({
               onClick={() => {
                 window.open(
                   `/api/eventDates/${selectedEventDate.id}/guestListPdf`,
-                  '_blank'
+                  '_blank',
                 );
               }}
             >
@@ -131,7 +131,7 @@ export default function BackendReservationsPage({
               onClick={() => {
                 window.open(
                   `/api/eventDates/${selectedEventDate.id}/tablesPdf`,
-                  '_blank'
+                  '_blank',
                 );
               }}
             >
@@ -216,14 +216,14 @@ export default function BackendReservationsPage({
                       .sort(
                         (a, b) =>
                           new Date(b.createdAt).getTime() -
-                          new Date(a.createdAt).getTime()
+                          new Date(a.createdAt).getTime(),
                       )
                       .map((reservation) => {
                         const doubleBooking = reservations.find(
                           (r) =>
                             r.id !== reservation.id &&
                             r.tableNumber == reservation.tableNumber &&
-                            reservation.tableNumber
+                            reservation.tableNumber,
                         );
                         return (
                           <ReservationCard

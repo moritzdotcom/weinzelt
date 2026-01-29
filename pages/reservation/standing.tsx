@@ -21,6 +21,13 @@ import { isValidEmail } from '@/lib/validator';
 import ReferralCodeField from '@/components/reservation/referralCodeField';
 import { ApiGetReferralCodeResponse } from '../api/referralCodes/getCode';
 import { SimpleOrderSummary } from '@/components/reservation/orderSummary';
+import { determineTableCount } from '@/lib/reservation';
+import AddressInput, {
+  Address,
+  defaultAddress,
+  validateAddress,
+} from '@/components/reservation/addressInput';
+import NewsletterConfirmation from '@/components/reservation/newsletterConfirmation';
 
 type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
@@ -38,8 +45,17 @@ export default function StandingReservationPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [fetchError, setFetchError] = useState<string>();
   const [argbChecked, setArgbChecked] = useState(false);
+  const [newsletterChecked, setNewsletterChecked] = useState(false);
   const [referralCode, setReferralCode] =
     useState<ApiGetReferralCodeResponse | null>(null);
+
+  const [billingAddress, setBillingAddress] = useState<Address>(() =>
+    defaultAddress('DE'),
+  );
+  const [shippingSameAsBilling, setShippingSameAsBilling] = useState(true);
+  const [shippingAddress, setShippingAddress] = useState<Address>(() =>
+    defaultAddress('DE'),
+  );
 
   const [submitted, setSubmitted] = useState(false);
   const [mailError, setMailError] = useState('');
@@ -58,11 +74,11 @@ export default function StandingReservationPage() {
         if (isAxiosError(e)) {
           if (e.status == 404) {
             setFetchError(
-              'Bald kannst du dein Erlebnis im Weinzelt reservieren. Wir freuen uns auf dich!'
+              'Bald kannst du dein Erlebnis im Weinzelt reservieren. Wir freuen uns auf dich!',
             );
           } else {
             setFetchError(
-              'Es ist ein unbekannter Fehler aufgetreten. Versuche es später nochmal.'
+              'Es ist ein unbekannter Fehler aufgetreten. Versuche es später nochmal.',
             );
           }
         }
@@ -75,28 +91,35 @@ export default function StandingReservationPage() {
 
     if (!selectedSlot) return;
     setLoading(true);
-    await axios.post('/api/reservationData', {
+    const finalShipping = shippingSameAsBilling
+      ? billingAddress
+      : shippingAddress;
+
+    const { data } = await axios.post('/api/stripe/checkout', {
       type: 'STANDING',
       name,
       email,
-      packageName: 'Stehtisch',
-      packageDescription: `Stehtisch für ${personCount} Personen`,
-      packagePrice: Number(personCount) * selectedSlot.minimumSpendStanding,
-      people: Number(personCount),
-      seatingId: selectedSlot?.id,
+      people: Math.min(Number(personCount), 20),
+      seatingId: selectedSlot.id,
       referralCodeId: referralCode?.id,
+      billingAddress,
+      shippingAddress: finalShipping,
+      shippingSameAsBilling,
+      newsletter: newsletterChecked,
     });
 
-    setSuccess(true);
-    setDialogOpen(true);
-    setLoading(false);
-    // Reset form
-    setSelectedDate(null);
-    setSelectedSlot(null);
-    setPersonCount('8');
-    setName('');
-    setEmail('');
-    setReferralCode(null);
+    window.location.href = data.url;
+
+    // setSuccess(true);
+    // setDialogOpen(true);
+    // setLoading(false);
+    // // Reset form
+    // setSelectedDate(null);
+    // setSelectedSlot(null);
+    // setPersonCount('8');
+    // setName('');
+    // setEmail('');
+    // setReferralCode(null);
   };
 
   const selectDate = (date: string) => {
@@ -120,10 +143,20 @@ export default function StandingReservationPage() {
 
   const validateInputs = () => {
     setMailError('');
+
     if (!isValidEmail(email)) {
       setMailError('Ungültige Email');
       return false;
     }
+
+    const bErr = validateAddress(billingAddress);
+    if (Object.keys(bErr).length) return false;
+
+    if (!shippingSameAsBilling) {
+      const sErr = validateAddress(shippingAddress);
+      if (Object.keys(sErr).length) return false;
+    }
+
     return true;
   };
 
@@ -143,9 +176,9 @@ export default function StandingReservationPage() {
                 d.reservations
                   .filter(({ type }) => type == 'STANDING')
                   .reduce((a, b) => a + b.tableCount, 0)),
-            0
+            0,
           ),
-        0
+        0,
       ) <= 0
     : false;
 
@@ -195,7 +228,7 @@ export default function StandingReservationPage() {
                             b.reservations
                               .filter(({ type }) => type == 'STANDING')
                               .reduce((a, b) => a + b.tableCount, 0)),
-                        0
+                        0,
                       ) <= 0
                     }
                     onClick={() => selectDate(date)}
@@ -253,7 +286,7 @@ export default function StandingReservationPage() {
           )}
 
           {selectedSlot && (
-            <Box id="contact" mt={6} className="space-y-6">
+            <Box id="contact" mt={6}>
               <Typography variant="h5" gutterBottom>
                 Anzahl Personen
               </Typography>
@@ -261,7 +294,7 @@ export default function StandingReservationPage() {
                 <button
                   onClick={() =>
                     setPersonCount((prev) =>
-                      Math.max(5, Math.min(16, parseInt(prev) - 1)).toString()
+                      Math.max(5, Math.min(20, parseInt(prev) - 1)).toString(),
                     )
                   }
                   disabled={Number(personCount) <= 5}
@@ -275,10 +308,10 @@ export default function StandingReservationPage() {
                 <button
                   onClick={() =>
                     setPersonCount((prev) =>
-                      Math.max(5, Math.min(16, parseInt(prev) + 1)).toString()
+                      Math.max(5, Math.min(20, parseInt(prev) + 1)).toString(),
                     )
                   }
-                  disabled={Number(personCount) >= 16}
+                  disabled={Number(personCount) >= 20}
                   className="w-12 h-12 text-lg font-bold rounded-full border border-gray-400 hover:bg-gray-100 transition disabled:opacity-50 flex items-center justify-center"
                 >
                   <Add />
@@ -287,12 +320,10 @@ export default function StandingReservationPage() {
 
               <p className="text-center text-gray-600 mb-16 sm:mb-8">
                 Mindestverzehr:{' '}
-                <b>{selectedSlot.minimumSpendStanding}€ pro Person</b>
+                <b>{selectedSlot.minimumSpendStanding}€ pro Tisch</b>
               </p>
 
-              <Typography variant="h5" gutterBottom>
-                Kontaktdaten
-              </Typography>
+              <Typography variant="h5">Kontaktdaten</Typography>
               <TextField
                 fullWidth
                 label="Name"
@@ -313,15 +344,25 @@ export default function StandingReservationPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 margin="normal"
               />
-              <ReferralCodeField onValidCode={setReferralCode} />
+              <AddressInput
+                submitted={submitted}
+                billingAddress={billingAddress}
+                onBillingAddressChange={setBillingAddress}
+                shippingSameAsBilling={shippingSameAsBilling}
+                onShippingSameAsBillingChange={setShippingSameAsBilling}
+                shippingAddress={shippingAddress}
+                onShippingAddressChange={setShippingAddress}
+              />
               {selectedSlot && (
-                <SimpleOrderSummary
-                  people={Number(personCount)}
-                  minimumSpend={selectedSlot.minimumSpendStanding}
-                  foodCount={0}
-                  menuPrice={0}
-                />
+                <Box mt={3} mb={1}>
+                  <SimpleOrderSummary
+                    personCount={Number(personCount)}
+                    tableCount={determineTableCount(Number(personCount))}
+                    minimumSpend={selectedSlot.minimumSpendStanding}
+                  />
+                </Box>
               )}
+              <ReferralCodeField onValidCode={setReferralCode} />
               <div className="rounded-md bg-emerald-50 border border-gray-300 p-4 my-4">
                 <Typography variant="body1" className="text-emerald-800">
                   Bitte hab Verständnis, dass die Tische pünktlich geräumt
@@ -333,6 +374,7 @@ export default function StandingReservationPage() {
                 </Typography>
               </div>
               <ARGBConfirmation onChecked={setArgbChecked} />
+              <NewsletterConfirmation onChecked={setNewsletterChecked} />
               <button
                 className="w-full rounded-full bg-black text-white py-3 font-semibold text-center hover:bg-gray-800 transition disabled:bg-gray-600"
                 onClick={handleSubmit}

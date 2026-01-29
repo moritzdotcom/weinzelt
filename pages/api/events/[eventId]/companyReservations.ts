@@ -5,7 +5,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handle(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const session = await getServerSession(req);
   if (!session) return res.status(401).json('Not authenticated');
@@ -18,7 +18,7 @@ export default async function handle(
     await handleGET(req, res, eventId);
   } else {
     throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
+      `The HTTP ${req.method} method is not supported at this route.`,
     );
   }
 }
@@ -41,7 +41,7 @@ export type ApiGetCompanyReservationsResponse =
 async function handleGET(
   req: NextApiRequest,
   res: NextApiResponse,
-  id: string
+  id: string,
 ) {
   const reservations = await prisma.companyReservation.findMany({
     include: {
@@ -51,7 +51,7 @@ async function handleGET(
           reservations: {
             select: { type: true, tableCount: true },
             where: {
-              confirmationState: 'ACCEPTED',
+              paymentStatus: 'PAID',
             },
           },
         },

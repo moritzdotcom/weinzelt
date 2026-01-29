@@ -1,12 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prismadb';
 import { Prisma } from '@prisma/client';
-import { validatePackage } from '@/lib/packages';
 import sendReservationConfirmationMail from '@/lib/mailer/reservationConfirmationMail';
 
 export default async function handle(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   if (req.method === 'GET') {
     await handleGET(req, res);
@@ -14,7 +13,7 @@ export default async function handle(
     await handlePOST(req, res);
   } else {
     throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
+      `The HTTP ${req.method} method is not supported at this route.`,
     );
   }
 }
@@ -31,9 +30,6 @@ export type ApiGetReservationDataResponse = Prisma.EventGetPayload<{
             availableVip: true;
             availableStanding: true;
             timeslot: true;
-            availablePackageIds: true;
-            foodRequired: true;
-            minimumSpend: true;
             minimumSpendVip: true;
             minimumSpendStanding: true;
             reservations: { select: { tableCount: true; type: true } };
@@ -58,14 +54,11 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
               availableVip: true,
               availableStanding: true,
               timeslot: true,
-              availablePackageIds: true,
-              foodRequired: true,
-              minimumSpend: true,
               minimumSpendVip: true,
               minimumSpendStanding: true,
               reservations: {
                 where: {
-                  confirmationState: 'ACCEPTED',
+                  paymentStatus: 'PAID',
                 },
                 select: { tableCount: true, type: true },
               },
@@ -82,21 +75,7 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
 }
 
 async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
-  const {
-    type,
-    name,
-    email,
-    packageName,
-    packageDescription,
-    packagePrice,
-    people,
-    seatingId,
-    foodCountMeat,
-    foodCountFish,
-    foodCountVegetarian,
-    totalFoodPrice,
-    referralCodeId,
-  } = req.body;
+  const { type, name, email, people, seatingId, referralCodeId } = req.body;
 
   const reservationType = type == 'STANDING' ? 'STANDING' : 'VIP';
   if (typeof name !== 'string' || name.length == 0)
@@ -115,15 +94,8 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
       type: reservationType,
       name,
       email,
-      packageName,
-      packageDescription,
-      packagePrice,
       people,
       seatingId,
-      foodCountMeat,
-      foodCountFish,
-      foodCountVegetarian,
-      totalFoodPrice,
       pageVisitId,
       referralCodeId,
     },
@@ -146,7 +118,7 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
     name,
     people,
     reservation.seating.eventDate.date,
-    reservation.seating.timeslot
+    reservation.seating.timeslot,
   );
 
   return res.json(reservation);

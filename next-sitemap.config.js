@@ -6,7 +6,15 @@ module.exports = {
   priority: 0.7,
   sitemapSize: 5000,
   generateRobotsTxt: true,
-  exclude: ['/backend', '/backend/*'],
+  exclude: [
+    '/backend',
+    '/backend/*',
+    '/api/*',
+    '/newsletter/confirm*',
+    '/newsletter/unsubscribe*',
+    '/reservation/success*',
+    '/reservation/cancel*',
+  ],
   robotsTxtOptions: {
     policies: [
       {

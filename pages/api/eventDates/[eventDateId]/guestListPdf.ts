@@ -7,7 +7,7 @@ import path from 'path';
 
 export default async function handle(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const session = await getServerSession(req);
   if (!session) return res.status(401).json('Not authenticated');
@@ -19,7 +19,7 @@ export default async function handle(
     await handleGET(req, res, eventDateId);
   } else {
     throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
+      `The HTTP ${req.method} method is not supported at this route.`,
     );
   }
 }
@@ -27,10 +27,10 @@ export default async function handle(
 async function handleGET(
   req: NextApiRequest,
   res: NextApiResponse,
-  id: string
+  id: string,
 ) {
   const reservations = await prisma.reservation.findMany({
-    where: { seating: { eventDateId: id }, confirmationState: 'ACCEPTED' },
+    where: { seating: { eventDateId: id }, paymentStatus: 'PAID' },
     select: {
       name: true,
       people: true,
@@ -42,12 +42,15 @@ async function handleGET(
   });
 
   // Gruppiere nach timeslot
-  const grouped = reservations.reduce((acc, res) => {
-    const slot = res.seating.timeslot;
-    if (!acc[slot]) acc[slot] = [];
-    acc[slot].push(res);
-    return acc;
-  }, {} as Record<string, typeof reservations>);
+  const grouped = reservations.reduce(
+    (acc, res) => {
+      const slot = res.seating.timeslot;
+      if (!acc[slot]) acc[slot] = [];
+      acc[slot].push(res);
+      return acc;
+    },
+    {} as Record<string, typeof reservations>,
+  );
 
   const doc = new PDFDocument({ margin: 40 });
 
@@ -74,7 +77,7 @@ async function handleGET(
     .forEach(([timeslot, list], timeslotIndex) => {
       // Sortiere innerhalb des Timeslots nach Tischnummer
       list.sort((a, b) =>
-        (a.tableNumber || '').localeCompare(b.tableNumber || '')
+        (a.tableNumber || '').localeCompare(b.tableNumber || ''),
       );
 
       doc.text('', 40);

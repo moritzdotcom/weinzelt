@@ -1,6 +1,5 @@
 import sendReservationMail from '@/lib/mailer/reservationMail';
 import prisma from '@/lib/prismadb';
-import { fullPrice } from '@/lib/reservation';
 import { getServerSession } from '@/lib/session';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -53,10 +52,7 @@ async function handlePOST(
     reservation.name,
     String(reservation.people),
     reservation.seating.eventDate.date,
-    reservation.seating.timeslot,
-    fullPrice(reservation),
-    reservation.packageName,
-    reservation.packageDescription
+    reservation.seating.timeslot
   );
 
   return res.json(reservation);

@@ -31,7 +31,7 @@ export default function BackendSearchReservationPage({
   const [selectedEvent, setSelectedEvent] =
     useState<ApiGetEventsResponse[number]>();
   const [reservations, setReservations] = useState<ApiGetReservationsResponse>(
-    []
+    [],
   );
   const [filteredReservations, setFilteredReservations] =
     useState<ApiGetReservationsResponse>([]);
@@ -56,7 +56,7 @@ export default function BackendSearchReservationPage({
 
   const fetchReservations = async () => {
     const res = await axios.get<ApiGetReservationsResponse>(
-      `/api/events/${selectedEvent?.id}/reservations`
+      `/api/events/${selectedEvent?.id}/reservations`,
     );
     setLoading(false);
     setReservations(sortReservations(res.data));
@@ -64,30 +64,30 @@ export default function BackendSearchReservationPage({
   };
 
   const handleSave = (
-    updatedReservation: ApiGetReservationsResponse[number]
+    updatedReservation: ApiGetReservationsResponse[number],
   ) => {
     axios
       .put<ApiGetReservationsResponse[number]>(
         `/api/reservations/${updatedReservation.id}`,
-        updatedReservation
+        updatedReservation,
       )
       .then(() => {
         setFilteredReservations((prev) =>
           prev.map((r) =>
-            r.id === updatedReservation.id ? updatedReservation : r
-          )
+            r.id === updatedReservation.id ? updatedReservation : r,
+          ),
         );
         setReservations((prev) =>
           prev.map((r) =>
-            r.id === updatedReservation.id ? updatedReservation : r
-          )
+            r.id === updatedReservation.id ? updatedReservation : r,
+          ),
         );
         setSelectedReservation(null);
       })
       .catch((error) => {
         console.error('Error updating reservation:', error);
         alert(
-          'Fehler beim Aktualisieren der Reservierung. Bitte versuche es später erneut.'
+          'Fehler beim Aktualisieren der Reservierung. Bitte versuche es später erneut.',
         );
       });
   };
@@ -102,15 +102,14 @@ export default function BackendSearchReservationPage({
       filtered = filtered.filter(
         (reservation) =>
           reservation.name.toLowerCase().includes(searchQuery) ||
-          reservation.email.toLowerCase().includes(searchQuery) ||
-          reservation.packageName.toLowerCase().includes(searchQuery)
+          reservation.email.toLowerCase().includes(searchQuery),
       );
     }
     if (filters.type || filters.state) {
       filtered = filtered.filter((reservation) => {
         const matchesType = !filters.type || reservation.type === filters.type;
         const matchesState =
-          !filters.state || reservation.confirmationState === filters.state;
+          !filters.state || reservation.paymentStatus === filters.state;
         return matchesType && matchesState;
       });
     }
@@ -193,9 +192,10 @@ export default function BackendSearchReservationPage({
                   }
                 >
                   <MenuItem value="">Alle</MenuItem>
-                  <MenuItem value="REQUESTED">Offen</MenuItem>
-                  <MenuItem value="ACCEPTED">Bestätigt</MenuItem>
-                  <MenuItem value="DECLINED">Abgelehnt</MenuItem>
+                  <MenuItem value="DRAFT">Offen</MenuItem>
+                  <MenuItem value="PENDING_PAYMENT">Ausstehend</MenuItem>
+                  <MenuItem value="PAID">Bezahlt</MenuItem>
+                  <MenuItem value="CANCELED">Storniert</MenuItem>
                 </TextField>
               </div>
               <TableContainer component={Paper}>
@@ -208,7 +208,6 @@ export default function BackendSearchReservationPage({
                       <TableCell>Typ</TableCell>
                       <TableCell>Status</TableCell>
                       <TableCell align="right">Gäste</TableCell>
-                      <TableCell>Package</TableCell>
                       <TableCell></TableCell>
                     </TableRow>
                   </TableHead>
@@ -231,12 +230,11 @@ export default function BackendSearchReservationPage({
                         </TableCell>
                         <TableCell>{translateType(reservation.type)}</TableCell>
                         <TableCell>
-                          {translateState(reservation.confirmationState)}
+                          {translateState(reservation.paymentStatus)}
                         </TableCell>
                         <TableCell align="right">
                           {reservation.people}
                         </TableCell>
-                        <TableCell>{reservation.packageName}</TableCell>
                         <TableCell>
                           <button
                             className="text-sky-700 hover:text-sky-900 transition underline"

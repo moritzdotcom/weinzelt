@@ -7,7 +7,7 @@ import path from 'path';
 
 export default async function handle(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const session = await getServerSession(req);
   if (!session) return res.status(401).json('Not authenticated');
@@ -19,7 +19,7 @@ export default async function handle(
     await handleGET(req, res, eventDateId);
   } else {
     throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
+      `The HTTP ${req.method} method is not supported at this route.`,
     );
   }
 }
@@ -27,10 +27,10 @@ export default async function handle(
 async function handleGET(
   req: NextApiRequest,
   res: NextApiResponse,
-  id: string
+  id: string,
 ) {
   const reservations = await prisma.reservation.findMany({
-    where: { seating: { eventDateId: id }, confirmationState: 'ACCEPTED' },
+    where: { seating: { eventDateId: id }, paymentStatus: 'PAID' },
     select: {
       type: true,
       payed: true,
@@ -38,12 +38,8 @@ async function handleGET(
       people: true,
       tableNumber: true,
       tableCount: true,
-      packageName: true,
-      packagePrice: true,
-      foodCountMeat: true,
-      foodCountVegetarian: true,
-      totalFoodPrice: true,
       internalNotes: true,
+      minimumSpend: true,
       seating: {
         select: {
           timeslot: true,
@@ -56,12 +52,15 @@ async function handleGET(
   });
 
   // Gruppiere nach timeslot
-  const grouped = reservations.reduce((acc, res) => {
-    const slot = res.seating.timeslot;
-    if (!acc[slot]) acc[slot] = [];
-    acc[slot].push(res);
-    return acc;
-  }, {} as Record<string, typeof reservations>);
+  const grouped = reservations.reduce(
+    (acc, res) => {
+      const slot = res.seating.timeslot;
+      if (!acc[slot]) acc[slot] = [];
+      acc[slot].push(res);
+      return acc;
+    },
+    {} as Record<string, typeof reservations>,
+  );
 
   const doc = new PDFDocument({ margin: 40 });
 
@@ -105,7 +104,7 @@ async function handleGET(
             .reduce((a, b) => a + b.tableCount, 0)} / ${
             list[0]?.seating.availableStanding
           }`,
-          { align: 'right' }
+          { align: 'right' },
         );
       doc.moveDown(1.5);
 
@@ -145,7 +144,7 @@ async function handleGET(
       let extraRowHeights = 0;
       list
         .sort((a, b) =>
-          (a.tableNumber || '').localeCompare(b.tableNumber || '')
+          (a.tableNumber || '').localeCompare(b.tableNumber || ''),
         )
         .forEach((r) => {
           let rowTop = tableTop + 20 + rowIndex * 38 + extraRowHeights; // 35pt Zeilenhöhe
@@ -182,16 +181,11 @@ async function handleGET(
           });
 
           // Zweite Zeile: PackageName (PackagePrice €), eingerückt unter Name-Spalte
-          const pkgText = `${r.packageName} (${r.packagePrice} €)`;
-          const foodText =
-            r.totalFoodPrice > 0
-              ? ` | ${r.foodCountMeat} x Fleisch, ${r.foodCountVegetarian} x Vegetarisch (${r.totalFoodPrice} €)`
-              : '';
           doc
             .font('Helvetica-Oblique')
             .fontSize(11)
             .fillColor('gray')
-            .text(`${pkgText}${foodText}`, 65, rowTop + 16, {
+            .text(`Mindestverzehr: ${r.minimumSpend}€`, 65, rowTop + 16, {
               // 10pt Einzug, 16pt unter der ersten Zeile
               width: colWidths[0] + colWidths[1] + colWidths[2] - 20,
               align: 'left',
@@ -202,7 +196,6 @@ async function handleGET(
             : 0;
 
           if (r.internalNotes) {
-            console.log(`Interne Notiz: ${r.internalNotes}`);
             // Zusätzliche Höhe für interne Notizen
             extraRowHeights += 16 * rowsNeeded;
             // Interne Notizen, eingerückt unter Package-Text
@@ -222,7 +215,7 @@ async function handleGET(
             .moveTo(40, rowTop + rowHeight)
             .lineTo(
               40 + colWidths.reduce((a, b) => a + b, 0),
-              rowTop + rowHeight
+              rowTop + rowHeight,
             )
             .strokeColor('#000000')
             .stroke();

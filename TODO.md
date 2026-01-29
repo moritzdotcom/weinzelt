@@ -1,5 +1,24 @@
 # TODO
 
-- Impressum aktualisieren sobald Gründung durch ist
-- Neue Bilder für Startseite
-- Essen in Company Reservations
+- Neuer Reservierungsflow
+  - VIP oder Stehtisch
+  - Tag auswählen
+    - Tagsüber: Dropdown "Ungefähre Ankunftszeit", Häckchen setzen: "Mir ist bewusst, dass der Tisch um 18:00 geräumt werden soll"
+  - Personenanzahl = x Tische
+  - Mindestverzehr pro Tisch (Nicht pro Person)
+  - Mindestverzehr abhängig von Timeslot
+    - Abends: 500€/Stehtisch
+    - Tagsüber: 200€/Stehtisch
+    - Abends: 800€/VIP
+    - Tagsüber: 300€/VIP
+    - MO/DO/FR/SA Abends: 1000€/VIP
+    - MO/DO/FR/SA Tagsüber: 400€/VIP
+  - Eingabe persönliche Daten
+    - Rechnungsadresse vs. Lieferadresse
+    - Ansprechpartner
+  - Zahlung mit Stripe
+    - Zwei Positionen: Mindestverzehr (pro Tisch) und Pfand (pro Person)
+    - Bei Pfand info anzeigen: Pfandrückgabe erfolgt vor Ort in Bar
+  - Buchungsbestätigung Email
+    - Abends: Kommen zwischen 19:00-20:00 Sonst wird der Tisch vergeben
+    - Tagsüber 14:00-18:00. TISCH MUSS UM 18:00 FREI SEIN

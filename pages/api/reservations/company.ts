@@ -1,13 +1,13 @@
 import sendReservationMail from '@/lib/mailer/reservationMail';
 import prisma from '@/lib/prismadb';
-import { fullPrice, translateType } from '@/lib/reservation';
+import { translateType } from '@/lib/reservation';
 import { getServerSession } from '@/lib/session';
 import { ReservationType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handle(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const session = await getServerSession(req);
   if (!session) return res.status(401).json('Not authenticated');
@@ -16,7 +16,7 @@ export default async function handle(
     await handlePOST(req, res, session.name);
   } else {
     throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
+      `The HTTP ${req.method} method is not supported at this route.`,
     );
   }
 }
@@ -29,31 +29,17 @@ export type ApiPostReservationResponse = {
   people: number;
   seatingId: string;
   confirmed: boolean;
-  packageName: string;
-  packageDescription: string;
-  packagePrice: number;
+  minimumSpend: number;
   tableNumber: string | null;
 };
 
 async function handlePOST(
   req: NextApiRequest,
   res: NextApiResponse,
-  userName: string
+  userName: string,
 ) {
-  const {
-    type,
-    name,
-    email,
-    packageName,
-    packageDescription,
-    packagePrice,
-    foodCountMeat,
-    foodCountVegetarian,
-    totalFoodPrice,
-    people,
-    tableCount,
-    seatingId,
-  } = req.body;
+  const { type, name, email, people, tableCount, minimumSpend, seatingId } =
+    req.body;
 
   const reservationType = type == 'STANDING' ? 'STANDING' : 'VIP';
   if (typeof name !== 'string' || name.length == 0)
@@ -70,21 +56,14 @@ async function handlePOST(
       type: reservationType,
       name,
       email,
-      packageName: packageName || 'Firmenreservierung',
-      packageDescription:
-        packageDescription ||
-        `${tableCount} ${translateType(reservationType)}${
-          tableCount == 1 ? '' : 'e'
-        } - Eingeladen von ${userName}`,
-      packagePrice,
-      foodCountMeat,
-      foodCountVegetarian,
       people,
       tableCount,
+      minimumSpend,
       seatingId,
-      confirmationState: 'ACCEPTED',
       notified: new Date(),
-      totalFoodPrice,
+      internalNotes: `${tableCount} ${translateType(reservationType)}${
+        tableCount == 1 ? '' : 'e'
+      } - Eingeladen von ${userName}`,
     },
     include: {
       seating: {
@@ -106,9 +85,6 @@ async function handlePOST(
     String(people),
     reservation.seating.eventDate.date,
     reservation.seating.timeslot,
-    fullPrice(reservation),
-    reservation.packageName,
-    reservation.packageDescription
   );
 
   return res.json(reservation);

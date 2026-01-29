@@ -6,7 +6,6 @@ import { Grid } from '@mui/material';
 import CelebrationRoundedIcon from '@mui/icons-material/CelebrationRounded';
 import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 import AssignmentIcon from '@mui/icons-material/Assignment';
-import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import Diversity1Icon from '@mui/icons-material/Diversity1';
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import LineAxisIcon from '@mui/icons-material/LineAxis';
@@ -48,11 +47,6 @@ export default function Backend({ session }: { session: Session }) {
           href="/backend/reservations"
           text="Bestätigte Reservierungen"
           Icon={AssignmentIcon}
-        />
-        <LinkItem
-          href="/backend/requests"
-          text="Reservierungsanfragen"
-          Icon={QuestionAnswerIcon}
         />
         <LinkItem
           href="/backend/search"

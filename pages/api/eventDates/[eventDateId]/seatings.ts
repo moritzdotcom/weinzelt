@@ -1,6 +1,5 @@
 import prisma from '@/lib/prismadb';
 import { getServerSession } from '@/lib/session';
-import { Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handle(
@@ -23,14 +22,11 @@ export default async function handle(
 }
 
 export type ApiPostSeatingResponse = {
-  eventDateId: string;
   id: string;
+  eventDateId: string;
   timeslot: string;
   availableVip: number;
   availableStanding: number;
-  foodRequired: boolean;
-  availablePackageIds: number[];
-  minimumSpend: number;
   minimumSpendVip: number;
   minimumSpendStanding: number;
 };
@@ -43,9 +39,7 @@ async function handlePOST(
   const {
     availableVip,
     availableStanding,
-    foodRequired,
     timeslot,
-    minimumSpend,
     minimumSpendVip,
     minimumSpendStanding,
   } = req.body;
@@ -53,8 +47,6 @@ async function handlePOST(
     return res.status(401).json('Availability Required');
   if (typeof availableStanding !== 'number')
     return res.status(401).json('Availability Required');
-  if (typeof foodRequired !== 'boolean')
-    return res.status(401).json('FoodRequired Required');
   if (typeof timeslot !== 'string')
     return res.status(401).json('Timeslot Required');
 
@@ -62,10 +54,8 @@ async function handlePOST(
     data: {
       availableVip,
       availableStanding,
-      foodRequired,
       timeslot,
       eventDateId: id,
-      minimumSpend,
       minimumSpendVip,
       minimumSpendStanding,
     },

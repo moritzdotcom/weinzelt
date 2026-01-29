@@ -216,7 +216,7 @@ export default function EventDashboard({ session }: { session: Session }) {
   const [events, setEvents] = useState<ApiGetEventsResponse>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [eventData, setEventData] = useState<ApiGetEventDataResponse | null>(
-    null
+    null,
   );
   const [pageVisitData, setPageVisitData] =
     useState<ApiGetPageVisitsResponse | null>(null);
@@ -226,12 +226,11 @@ export default function EventDashboard({ session }: { session: Session }) {
     setLoadingData(true);
     try {
       const eventResponse = await axios.get<ApiGetEventDataResponse>(
-        `/api/events/${eventId}/data`
+        `/api/events/${eventId}/data`,
       );
       setEventData(eventResponse.data);
-      const pageVisitResponse = await axios.get<ApiGetPageVisitsResponse>(
-        `/api/pageVisits`
-      );
+      const pageVisitResponse =
+        await axios.get<ApiGetPageVisitsResponse>(`/api/pageVisits`);
       setPageVisitData(pageVisitResponse.data);
     } catch (error) {
       console.error('Error fetching event data:', error);
@@ -312,49 +311,10 @@ export default function EventDashboard({ session }: { session: Session }) {
           <NumberChartCard title="VIP-Tische" number={metrics.vipCount} />
           <NumberChartCard title="Stehtische" number={metrics.standingCount} />
           <NumberChartCard
-            title="Bestätigte Reservierungen"
-            number={metrics.acceptedCount}
-          />
-          <NumberChartCard
-            title="Bezahlte Reservierungen"
-            number={metrics.paidCount}
-            percentage={metrics.paidPercentage}
-          />
-          <NumberChartCard
             title="Umsatz durch Reservierungen"
             number={metrics.revenue}
             type="CURRENCY"
           />
-          <NumberChartCard title="Seitenaufrufe" number={metrics.pageVisits} />
-          <NumberChartCard
-            title="Unique Visitors"
-            number={metrics.uniqueVisitors}
-          />
-          <Card className="col-span-12 lg:col-span-6 rounded-lg bg-white shadow-md p-6">
-            <h3 className="text-gray-600 text-center">
-              Unbezahlte Reservierungen
-            </h3>
-            <div className="max-h-60 overflow-y-auto rounded-md bg-gray-50 my-3 px-3 py-1">
-              {metrics.allUnpaidMails.map((email, index) => (
-                <p key={index}>{email}</p>
-              ))}
-            </div>
-            {metrics.allUnpaidMails.length > 0 && (
-              <button
-                className="w-full rounded bg-black text-white px-4 py-2 hover:bg-neutral-600 transition"
-                onClick={() => {
-                  navigator.clipboard.writeText(
-                    metrics.allUnpaidMails.join('; ')
-                  );
-                  alert(
-                    'Alle E-Mail-Adressen wurden in die Zwischenablage kopiert.'
-                  );
-                }}
-              >
-                Alle Mails kopieren
-              </button>
-            )}
-          </Card>
           {/* Diagramme */}
           <LineChartCard
             title="Reservierungsanfragen pro Tag"
@@ -362,7 +322,7 @@ export default function EventDashboard({ session }: { session: Session }) {
               x: date.date,
               y: date.seatings.reduce(
                 (acc, seating) => acc + seating.reservations.length,
-                0
+                0,
               ),
             }))}
             yLabel="Reservierungen"
@@ -374,17 +334,10 @@ export default function EventDashboard({ session }: { session: Session }) {
             y1Label="VIP"
             y2Label="Stehtisch"
           />
-          <MultiLineChartCard
+          <LineChartCard
             title="VIP-Personen pro Tag"
             data={metrics.vipCountByDay}
-            formatter={(value: number) => `${Math.round(value)}`}
-            y1Label="Gesamt"
-            y2Label="Essen gebucht"
-          />
-          <LineChartCard
-            title="Reservierungsanfragen pro Package"
-            data={metrics.packageCounts}
-            yLabel="Reservierungen"
+            yLabel="Personen"
           />
           <LineChartCard
             title="Reservierungen pro Referral Code"

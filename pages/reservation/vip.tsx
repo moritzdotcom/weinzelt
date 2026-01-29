@@ -16,13 +16,17 @@ import ReservationConfirmationDialog from '@/components/reservation/confirmation
 import ARGBConfirmation from '@/components/reservation/argbConfirmation';
 import { useRouter } from 'next/router';
 import ReservationCountdownSection from '@/components/reservation/countdown';
-import RestaurantIcon from '@mui/icons-material/Restaurant';
-import FoodOptionCard from '@/components/reservation/foodOptionCard';
 import { SimpleOrderSummary } from '@/components/reservation/orderSummary';
 import { isValidEmail } from '@/lib/validator';
 import ReferralCodeField from '@/components/reservation/referralCodeField';
 import { ApiGetReferralCodeResponse } from '../api/referralCodes/getCode';
-import Link from 'next/link';
+import { determineTableCount } from '@/lib/reservation';
+import AddressInput, {
+  Address,
+  defaultAddress,
+  validateAddress,
+} from '@/components/reservation/addressInput';
+import NewsletterConfirmation from '@/components/reservation/newsletterConfirmation';
 
 type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
@@ -41,12 +45,17 @@ export default function VipReservationPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [fetchError, setFetchError] = useState<string>();
   const [argbChecked, setArgbChecked] = useState(false);
+  const [newsletterChecked, setNewsletterChecked] = useState(false);
   const [referralCode, setReferralCode] =
     useState<ApiGetReferralCodeResponse | null>(null);
-  const [foodData, setFoodData] = useState({
-    meat: 8,
-    vegetarian: 0,
-  });
+
+  const [billingAddress, setBillingAddress] = useState<Address>(() =>
+    defaultAddress('DE'),
+  );
+  const [shippingSameAsBilling, setShippingSameAsBilling] = useState(true);
+  const [shippingAddress, setShippingAddress] = useState<Address>(() =>
+    defaultAddress('DE'),
+  );
 
   const [submitted, setSubmitted] = useState(false);
   const [mailError, setMailError] = useState('');
@@ -65,11 +74,11 @@ export default function VipReservationPage() {
         if (isAxiosError(e)) {
           if (e.status == 404) {
             setFetchError(
-              'Bald kannst du dein Erlebnis im Weinzelt reservieren. Wir freuen uns auf dich!'
+              'Bald kannst du dein Erlebnis im Weinzelt reservieren. Wir freuen uns auf dich!',
             );
           } else {
             setFetchError(
-              'Es ist ein unbekannter Fehler aufgetreten. Versuche es später nochmal.'
+              'Es ist ein unbekannter Fehler aufgetreten. Versuche es später nochmal.',
             );
           }
         }
@@ -82,43 +91,42 @@ export default function VipReservationPage() {
     if (!selectedSlot) return;
 
     setLoading(true);
-    await axios.post('/api/reservationData', {
+    const finalShipping = shippingSameAsBilling
+      ? billingAddress
+      : shippingAddress;
+
+    const { data } = await axios.post('/api/stripe/checkout', {
       type: 'VIP',
       name,
       email,
-      packageName: 'VIP Tisch mit Getränkeguthaben',
-      packageDescription: `${
-        selectedSlot.minimumSpendVip * Math.min(Number(personCount), 80)
-      }€ Getränkeguthaben`,
-      packagePrice:
-        selectedSlot.minimumSpendVip * Math.min(Number(personCount), 80),
       people: Math.min(Number(personCount), 80),
       seatingId: selectedSlot.id,
-      foodCountMeat: foodData.meat,
-      foodCountVegetarian: foodData.vegetarian,
-      totalFoodPrice: pricePerMenu * (foodData.meat + foodData.vegetarian),
       referralCodeId: referralCode?.id,
+      billingAddress,
+      shippingAddress: finalShipping,
+      shippingSameAsBilling,
+      newsletter: newsletterChecked,
     });
 
-    setSuccess(true);
-    setDialogOpen(true);
-    setLoading(false);
-    // Reset form
-    setSelectedDate(null);
-    setSelectedSlot(null);
-    setPersonCount('8');
-    setName('');
-    setEmail('');
-    setFoodData({ meat: 8, vegetarian: 0 });
-    setSubmitted(false);
-    setArgbChecked(false);
-    setReferralCode(null);
+    window.location.href = data.url;
+
+    // setSuccess(true);
+    // setDialogOpen(true);
+    // setLoading(false);
+    // // Reset form
+    // setSelectedDate(null);
+    // setSelectedSlot(null);
+    // setPersonCount('8');
+    // setName('');
+    // setEmail('');
+    // setSubmitted(false);
+    // setArgbChecked(false);
+    // setReferralCode(null);
   };
 
   const selectDate = (date: string) => {
     setSelectedDate(date);
     setSelectedSlot(null);
-    setFoodData({ meat: Number(personCount), vegetarian: 0 });
     setTimeout(() => {
       document
         .querySelector('#timeslots')
@@ -128,34 +136,31 @@ export default function VipReservationPage() {
 
   const selectTimeslot = (slot: SeatingType) => {
     setSelectedSlot(slot);
-    setFoodData({
-      meat: slot.foodRequired ? Number(personCount) : 0,
-      vegetarian: 0,
-    });
     setTimeout(() => {
       document
-        .querySelector(slot.foodRequired ? '#foodSelection' : '#contact')
+        .querySelector('#contact')
         ?.scrollIntoView({ behavior: 'smooth' });
     }, 300);
   };
 
   const validateInputs = () => {
     setMailError('');
+
     if (!isValidEmail(email)) {
       setMailError('Ungültige Email');
       return false;
     }
+
+    const bErr = validateAddress(billingAddress);
+    if (Object.keys(bErr).length) return false;
+
+    if (!shippingSameAsBilling) {
+      const sErr = validateAddress(shippingAddress);
+      if (Object.keys(sErr).length) return false;
+    }
+
     return true;
   };
-
-  useEffect(() => {
-    if (personCount.length > 0 && selectedSlot?.foodRequired) {
-      setFoodData({
-        meat: Number(personCount),
-        vegetarian: 0,
-      });
-    }
-  }, [personCount]);
 
   useEffect(() => {
     if (!submitted) return;
@@ -173,9 +178,9 @@ export default function VipReservationPage() {
                 d.reservations
                   .filter(({ type }) => type == 'VIP')
                   .reduce((a, b) => a + b.tableCount, 0)),
-            0
+            0,
           ),
-        0
+        0,
       ) <= 0
     : false;
 
@@ -225,7 +230,7 @@ export default function VipReservationPage() {
                             b.reservations
                               .filter(({ type }) => type == 'VIP')
                               .reduce((a, b) => a + b.tableCount, 0)),
-                        0
+                        0,
                       ) <= 0
                     }
                     onClick={() => selectDate(date)}
@@ -263,9 +268,6 @@ export default function VipReservationPage() {
                           disabled={tablesLeft <= 0}
                         >
                           <p>{seat.timeslot}</p>
-                          {seat.foodRequired && (
-                            <RestaurantIcon fontSize="inherit" />
-                          )}
                         </button>
                         <Typography
                           variant="body2"
@@ -282,51 +284,6 @@ export default function VipReservationPage() {
                     );
                   })}
               </Grid>
-            </Box>
-          )}
-
-          {selectedSlot && selectedSlot?.foodRequired && (
-            <Box id="foodSelection" mt={6} className="space-y-4">
-              <div className="flex flex-col gap-1">
-                <h5 className="text-2xl">Wähle dein Essen</h5>
-                <h5 className="text-lg text-neutral-500">
-                  (Essen im ausgewählten Timeslot verpflichtend)
-                </h5>
-                <Link
-                  href="/weincorner-food.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-neutral-400 hover:text-neutral-900 underline transition-all"
-                >
-                  Hier findest du unsere Speisekarte
-                </Link>
-              </div>
-              <div className="flex flex-col gap-5">
-                <FoodOptionCard
-                  title="3 Gänge Menu - Fleisch"
-                  value={foodData.meat}
-                  menuPrice={pricePerMenu}
-                  onChange={(count) =>
-                    setFoodData({
-                      vegetarian: Number(personCount) - count,
-                      meat: count,
-                    })
-                  }
-                  maxValue={Number(personCount)}
-                />
-                <FoodOptionCard
-                  title="3 Gänge Menu - Vegetarisch"
-                  value={foodData.vegetarian}
-                  menuPrice={pricePerMenu}
-                  onChange={(count) =>
-                    setFoodData({
-                      meat: Number(personCount) - count,
-                      vegetarian: count,
-                    })
-                  }
-                  maxValue={Number(personCount)}
-                />
-              </div>
             </Box>
           )}
 
@@ -368,19 +325,29 @@ export default function VipReservationPage() {
                 fullWidth
                 margin="normal"
               />
+              <AddressInput
+                submitted={submitted}
+                billingAddress={billingAddress}
+                onBillingAddressChange={setBillingAddress}
+                shippingSameAsBilling={shippingSameAsBilling}
+                onShippingSameAsBillingChange={setShippingSameAsBilling}
+                shippingAddress={shippingAddress}
+                onShippingAddressChange={setShippingAddress}
+              />
+
+              {selectedSlot && (
+                <Box mt={3} mb={1}>
+                  <SimpleOrderSummary
+                    personCount={Number(personCount)}
+                    tableCount={determineTableCount(Number(personCount))}
+                    minimumSpend={selectedSlot.minimumSpendStanding}
+                  />
+                </Box>
+              )}
 
               <ReferralCodeField onValidCode={setReferralCode} />
 
-              {selectedSlot && (
-                <SimpleOrderSummary
-                  people={Number(personCount)}
-                  minimumSpend={selectedSlot.minimumSpendVip}
-                  foodCount={foodData.meat + foodData.vegetarian}
-                  menuPrice={pricePerMenu}
-                />
-              )}
-
-              <div className="rounded-md bg-emerald-50 border border-gray-300 p-4 mb-4">
+              <div className="rounded-md bg-emerald-50 border border-gray-300 p-4 my-4">
                 <Typography variant="body1" className="text-emerald-800">
                   Bitte hab Verständnis, dass die Tische pünktlich geräumt
                   werden müssen. Selbstverständlich kannst du{' '}
@@ -399,7 +366,10 @@ export default function VipReservationPage() {
                 </Typography>
               </div>
 
-              <ARGBConfirmation onChecked={setArgbChecked} />
+              <div>
+                <ARGBConfirmation onChecked={setArgbChecked} />
+                <NewsletterConfirmation onChecked={setNewsletterChecked} />
+              </div>
               <button
                 className="w-full rounded-full bg-black text-white py-3 font-semibold text-center hover:bg-gray-800 transition disabled:bg-gray-600"
                 onClick={handleSubmit}

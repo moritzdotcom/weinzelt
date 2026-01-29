@@ -29,9 +29,6 @@ export type ApiPutSeatingResponse = {
   timeslot: string;
   availableVip: number;
   availableStanding: number;
-  foodRequired: boolean;
-  availablePackageIds: number[];
-  minimumSpend: number;
   minimumSpendVip: number;
   minimumSpendStanding: number;
 };
@@ -44,10 +41,7 @@ async function handlePUT(
   const {
     availableVip,
     availableStanding,
-    foodRequired,
     timeslot,
-    availablePackageIds,
-    minimumSpend,
     minimumSpendVip,
     minimumSpendStanding,
   } = req.body;
@@ -57,10 +51,7 @@ async function handlePUT(
     data: {
       availableVip,
       availableStanding,
-      foodRequired,
       timeslot,
-      availablePackageIds,
-      minimumSpend,
       minimumSpendVip,
       minimumSpendStanding,
     },

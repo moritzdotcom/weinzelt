@@ -5,16 +5,13 @@ export default function sendReservationMail(
   name: string,
   people: string,
   date: string,
-  timeslot: string,
-  price: number,
-  packageName: string,
-  packageDescription: string
+  timeslot: string
 ) {
   return sendMail({
     to: email,
     sendCopy: true,
     subject: 'Deine Reservierung wurde bestätigt',
-    text: `Hallo ${name},\n\ndeine Reservierung für ${people} Pers. am ${date} für den Zeitraum ${timeslot} ist bestätigt!\nBitte überweise ${price} € im Voraus auf das unten stehende Konto. Bei Nichtzahlung innerhalb einer Woche verfällt die Reservierung.\n\nLiebe Grüße,\nDas Weinzelt-Team`,
+    text: `Hallo ${name},\n\ndeine Reservierung für ${people} Pers. am ${date} für den Zeitraum ${timeslot} ist bestätigt!\n\nLiebe Grüße,\nDas Weinzelt-Team`,
     html: `<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -45,23 +42,8 @@ export default function sendReservationMail(
                 <p>Hallo <strong>${name}</strong>,</p>
                 <p>deine Reservierung für <strong>${people} Personen</strong> am <strong>${date}</strong> um <strong>${timeslot}</strong> Uhr ist bestätigt!</p>
                 <hr style="border:none; border-top:1px solid #cccccc; margin:16px 0;" />
-                <p><strong>Dein gebuchtes Package:</strong><br/>
-                  <strong>${packageName}</strong><br/>
-                  ${packageDescription}
-                  <br/>
-                  <br/>
+                <p>
                   Getränke können auch vorab bestellt werden. So sind sie bei deiner Ankunft bereits für dich bereit! Antworte dazu einfach auf diese E-Mail und teile uns deine Wünsche mit. Wir kümmern uns um den Rest!
-                </p>
-                <hr style="border:none; border-top:1px solid #cccccc; margin:16px 0;" />
-                <p><strong>Zahlungsdaten:</strong><br/>
-                  Bitte überweise <strong>${price} €</strong> im Voraus auf folgendes Konto:<br/>
-                  Name: Weinzelt GmbH<br/>
-                  IBAN: DE48 3004 0000 0155 5085 00<br/>
-                  BIC: COBADEFFXXX<br/>
-                  Verwendungszweck: Tischreservierung ${name} / ${date} ${timeslot}
-                </p>
-                <p style="color:#000000; font-weight:bold;">
-                  Zahlung innerhalb einer Woche erforderlich, sonst verfällt die Reservierung.
                 </p>
               </div>
             </td>

@@ -1,75 +1,121 @@
 import prisma from '@/lib/prismadb';
 import { getServerSession } from '@/lib/session';
-import { ReservationType } from '@prisma/client';
+import { Prisma, ReservationType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handle(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
-  const session = await getServerSession(req);
-  if (!session) return res.status(401).json('Not authenticated');
-
   const { reservationId } = req.query;
   if (typeof reservationId !== 'string')
     return res.status(401).json('Reservation required');
 
-  if (req.method === 'PUT') {
+  if (req.method === 'GET') {
+    await handleGET(req, res, reservationId);
+  } else if (req.method === 'PUT') {
+    const session = await getServerSession(req);
+    if (!session) return res.status(401).json('Not authenticated');
+
     await handlePUT(req, res, reservationId);
   } else {
     throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
+      `The HTTP ${req.method} method is not supported at this route.`,
     );
   }
 }
 
+export type ApiGetReservationResponse = Prisma.ReservationGetPayload<{
+  select: {
+    id: true;
+    paymentStatus: true;
+    type: true;
+    people: true;
+    tableCount: true;
+    minimumSpend: true;
+    paidAt: true;
+    seating: {
+      select: {
+        id: true;
+        timeslot: true;
+        eventDate: { select: { date: true } };
+      };
+    };
+  };
+}>;
+
+async function handleGET(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  id: string,
+) {
+  const reservation = await prisma.reservation.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      paymentStatus: true,
+      type: true,
+      people: true,
+      tableCount: true,
+      minimumSpend: true,
+      paidAt: true,
+      seating: {
+        select: {
+          id: true,
+          timeslot: true,
+          eventDate: { select: { date: true } },
+        },
+      },
+    },
+  });
+
+  if (!reservation) return res.status(404).json({ error: 'Not found' });
+  return res.status(200).json({ reservation });
+}
+
 export type ApiPutReservationResponse = {
-  type: ReservationType;
   name: string;
   id: string;
   email: string;
-  people: number;
+  createdAt: Date;
   seatingId: string;
-  confirmed: boolean;
-  packageName: string;
-  packageDescription: string;
-  packagePrice: number;
+  people: number;
+  type: ReservationType;
+  tableCount: number;
+  minimumSpend: number;
   tableNumber: string | null;
+  internalNotes: string | null;
+  notified: Date | null;
+  payed: boolean;
+  pageVisitId: string | null;
+  referralCodeId: string | null;
 };
 
 async function handlePUT(
   req: NextApiRequest,
   res: NextApiResponse,
-  id: string
+  id: string,
 ) {
   const {
-    confirmationState,
     tableNumber,
     payed,
     name,
     email,
     people,
     tableCount,
-    packagePrice,
-    foodCountMeat,
-    foodCountVegetarian,
-    totalFoodPrice,
+    minimumSpend,
     internalNotes,
   } = req.body;
 
   const reservation = await prisma.reservation.update({
     data: {
-      confirmationState,
       tableNumber,
       payed,
       name,
       email,
       people,
       tableCount,
-      packagePrice,
-      foodCountMeat,
-      foodCountVegetarian,
-      totalFoodPrice,
+      minimumSpend,
       internalNotes,
     },
     where: { id },

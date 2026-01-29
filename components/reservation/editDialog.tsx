@@ -6,7 +6,6 @@ import {
   TextField,
   Typography,
   Slide,
-  Box,
 } from '@mui/material';
 import { forwardRef, useEffect, useState } from 'react';
 import { TransitionProps } from '@mui/material/transitions';
@@ -33,10 +32,7 @@ export default function EditReservationDialog({
     email: '',
     people: '1',
     tableCount: '1',
-    packagePrice: '0',
-    foodCountMeat: '0',
-    foodCountVegetarian: '0',
-    totalFoodPrice: '0',
+    minimumSpend: '0',
     internalNotes: '',
   });
 
@@ -50,24 +46,13 @@ export default function EditReservationDialog({
         email: reservation.email,
         people: `${reservation.people}`,
         tableCount: `${reservation.tableCount}`,
-        packagePrice: `${reservation.packagePrice}`,
-        foodCountMeat: `${reservation.foodCountMeat}`,
-        foodCountVegetarian: `${reservation.foodCountVegetarian}`,
-        totalFoodPrice: `${reservation.totalFoodPrice}`,
+        minimumSpend: `${reservation.minimumSpend}`,
         internalNotes: reservation.internalNotes || '',
       });
       setPeopleChanged(false);
       setFoodMismatch(false);
     }
   }, [reservation]);
-
-  useEffect(() => {
-    if (reservation?.type == 'VIP' && reservation.seating.foodRequired) {
-      const totalFood =
-        Number(form.foodCountMeat) + Number(form.foodCountVegetarian);
-      setFoodMismatch(totalFood !== Number(form.people));
-    }
-  }, [form.people, form.foodCountMeat, form.foodCountVegetarian]);
 
   const handleChange = (key: string, value: string) => {
     setForm((prev) => ({
@@ -87,10 +72,7 @@ export default function EditReservationDialog({
       ...form,
       people: Number(form.people),
       tableCount: Number(form.tableCount),
-      packagePrice: Number(form.packagePrice),
-      foodCountMeat: Number(form.foodCountMeat),
-      foodCountVegetarian: Number(form.foodCountVegetarian),
-      totalFoodPrice: Number(form.totalFoodPrice),
+      minimumSpend: Number(form.minimumSpend),
     });
     setPeopleChanged(false);
   };
@@ -145,41 +127,12 @@ export default function EditReservationDialog({
           fullWidth
         />
         <TextField
-          label="Paketpreis (€)"
+          label="Mindestverzehr (€)"
           type="number"
-          value={form.packagePrice}
-          onChange={(e) => handleChange('packagePrice', e.target.value)}
+          value={form.minimumSpend}
+          onChange={(e) => handleChange('minimumSpend', e.target.value)}
           fullWidth
         />
-        {reservation?.type === 'VIP' && (
-          <>
-            <Box className="flex gap-2">
-              <TextField
-                label="Anzahl Fleisch"
-                type="number"
-                value={form.foodCountMeat}
-                onChange={(e) => handleChange('foodCountMeat', e.target.value)}
-                fullWidth
-              />
-              <TextField
-                label="Anzahl Vegetarisch"
-                type="number"
-                value={form.foodCountVegetarian}
-                onChange={(e) =>
-                  handleChange('foodCountVegetarian', e.target.value)
-                }
-                fullWidth
-              />
-            </Box>
-            <TextField
-              label="Essenspreis insgesamt (€)"
-              type="number"
-              value={form.totalFoodPrice}
-              onChange={(e) => handleChange('totalFoodPrice', e.target.value)}
-              fullWidth
-            />
-          </>
-        )}
         <TextField
           label="Interne Notizen"
           value={form.internalNotes}
@@ -192,15 +145,7 @@ export default function EditReservationDialog({
         {peopleChanged && (
           <Typography variant="body2" color="warning.main" mt={1}>
             Die Personenanzahl wurde von {reservation?.people} auf{' '}
-            {form?.people || '0'} geändert. Bitte überprüfe die{' '}
-            {reservation?.type == 'VIP' && 'Essensanzahl und '}
-            Preise!
-          </Typography>
-        )}
-        {foodMismatch && (
-          <Typography variant="body2" color="error" mt={1}>
-            Die Summe aus Fleisch und vegetarischen Gerichten muss der
-            Personenanzahl entsprechen.
+            {form?.people || '0'} geändert. Bitte überprüfe den Mindestverzehr!
           </Typography>
         )}
       </div>

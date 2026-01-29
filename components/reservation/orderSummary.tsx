@@ -65,23 +65,18 @@ export default function OrderSummary({
 }
 
 export function SimpleOrderSummary({
-  people,
+  personCount,
+  tableCount,
   minimumSpend,
-  foodCount,
-  menuPrice,
 }: {
-  people: number;
+  personCount: number;
+  tableCount: number;
   minimumSpend: number;
-  foodCount: number;
-  menuPrice: number;
 }) {
-  const drinksTotal = minimumSpend * people;
-  const foodTotal = foodCount * menuPrice;
-  const grandTotal = drinksTotal + foodTotal;
+  const drinksTotal = minimumSpend * tableCount;
 
   return (
     <Box
-      mt={4}
       p={3}
       sx={{
         backgroundColor: '#fafafa',
@@ -95,23 +90,19 @@ export function SimpleOrderSummary({
 
       <Box display="flex" justifyContent="space-between" gap={2} mb={1}>
         <Typography>
-          Getränkeguthaben ({people} × {minimumSpend} €)
+          {personCount} Personen &#8793; {tableCount} Tisch
+          {tableCount > 1 ? 'e' : ''}
+        </Typography>
+      </Box>
+
+      <Box display="flex" justifyContent="space-between" gap={2} mb={1}>
+        <Typography>
+          Getränkeguthaben ({tableCount} × {minimumSpend} €)
         </Typography>
         <Typography className="whitespace-nowrap">
           {drinksTotal.toLocaleString('de-DE')} €
         </Typography>
       </Box>
-
-      {foodTotal > 0 && (
-        <Box display="flex" justifyContent="space-between" gap={2} mb={1}>
-          <Typography>
-            Menu ({people} × {menuPrice} €)
-          </Typography>
-          <Typography className="whitespace-nowrap">
-            {foodTotal.toLocaleString('de-DE')} €
-          </Typography>
-        </Box>
-      )}
 
       <Divider sx={{ my: 1 }} />
 
@@ -120,7 +111,7 @@ export function SimpleOrderSummary({
           Gesamt
         </Typography>
         <Typography variant="subtitle1" fontWeight={600}>
-          {grandTotal.toLocaleString('de-DE')} €
+          {drinksTotal.toLocaleString('de-DE')} €
         </Typography>
       </Box>
     </Box>
