@@ -340,7 +340,7 @@ export default function VipReservationPage() {
                   <SimpleOrderSummary
                     personCount={Number(personCount)}
                     tableCount={determineTableCount(Number(personCount))}
-                    minimumSpend={selectedSlot.minimumSpendStanding}
+                    minimumSpend={selectedSlot.minimumSpendVip}
                   />
                 </Box>
               )}
