@@ -40,16 +40,16 @@ export default function ReservationPage() {
           >
             <Box className="rounded-lg overflow-hidden shadow-lg border border-gray-400 hover:shadow-xl hover:scale-105 transition cursor-pointer">
               <Image
-                src="/reservation/vip.png"
-                alt="VIP Tisch"
+                src="/reservation/vip.jpg"
+                alt="Tisch"
                 width={600}
-                height={400}
-                className="w-full h-64 object-cover"
+                height={600}
+                className="w-full h-80 object-cover"
               />
               <Box className="p-5">
-                <h6 className="text-lg font-cocogoose mb-2">VIP Tisch</h6>
+                <h6 className="text-lg font-cocogoose mb-2">Tisch</h6>
                 <Typography variant="body2" color="textSecondary">
-                  Unser exklusives Erlebnis für bis zu 8 Personen - perfekt für
+                  Unser exklusives Erlebnis für bis zu 10 Personen - perfekt für
                   Genießer und besondere Abende.
                 </Typography>
               </Box>
@@ -65,16 +65,16 @@ export default function ReservationPage() {
           >
             <Box className="rounded-lg overflow-hidden shadow-lg border border-gray-400 hover:shadow-xl hover:scale-105 transition cursor-pointer">
               <Image
-                src="/reservation/standing.png"
+                src="/reservation/standing.jpg"
                 alt="Stehtisch"
                 width={600}
-                height={400}
-                className="w-full h-64 object-cover"
+                height={600}
+                className="w-full h-80 object-cover"
               />
               <Box className="p-5">
                 <h6 className="text-lg font-cocogoose mb-2">Stehtisch</h6>
                 <Typography variant="body2" color="textSecondary">
-                  Die easy-going Variante für bis zu 16 Personen direkt im
+                  Die easy-going Variante für bis zu 10 Personen direkt im
                   Weinzelt - locker, gesellig, stimmungsvoll.
                 </Typography>
               </Box>

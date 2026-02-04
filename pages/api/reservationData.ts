@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prismadb';
 import { Prisma } from '@prisma/client';
-import sendReservationConfirmationMail from '@/lib/mailer/reservationConfirmationMail';
+import { getServerSession } from '@/lib/session';
 
 export default async function handle(
   req: NextApiRequest,
@@ -9,8 +9,6 @@ export default async function handle(
 ) {
   if (req.method === 'GET') {
     await handleGET(req, res);
-  } else if (req.method === 'POST') {
-    await handlePOST(req, res);
   } else {
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`,
@@ -69,57 +67,39 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
     },
   });
 
-  if (!reservations) return res.status(404).json('No Event Found');
+  if (!reservations) {
+    const session = await getServerSession(req);
+    if (!session) return res.status(404).json('No Event Found');
 
-  return res.json(reservations);
-}
-
-async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
-  const { type, name, email, people, seatingId, referralCodeId } = req.body;
-
-  const reservationType = type == 'STANDING' ? 'STANDING' : 'VIP';
-  if (typeof name !== 'string' || name.length == 0)
-    return res.status(401).json('Ungültiger Name');
-  if (typeof email !== 'string' || email.length == 0)
-    return res.status(401).json('Ungültige Email');
-  if (typeof people !== 'number' || people < 1)
-    return res.status(401).json('Ungültige Personenanzahl');
-  if (typeof seatingId !== 'string')
-    return res.status(401).json('Ungültiger Timeslot');
-
-  const pageVisitId = req.cookies.pageVisitId;
-
-  const reservation = await prisma.reservation.create({
-    data: {
-      type: reservationType,
-      name,
-      email,
-      people,
-      seatingId,
-      pageVisitId,
-      referralCodeId,
-    },
-    include: {
-      seating: {
-        select: {
-          timeslot: true,
-          eventDate: {
-            select: {
-              date: true,
+    const reservations = await prisma.event.findFirst({
+      select: {
+        eventDates: {
+          select: {
+            date: true,
+            dow: true,
+            seatings: {
+              select: {
+                id: true,
+                availableVip: true,
+                availableStanding: true,
+                timeslot: true,
+                minimumSpendVip: true,
+                minimumSpendStanding: true,
+                reservations: {
+                  where: {
+                    paymentStatus: 'PAID',
+                  },
+                  select: { tableCount: true, type: true },
+                },
+              },
             },
           },
         },
       },
-    },
-  });
+      orderBy: { createdAt: 'desc' },
+    });
+    return res.json(reservations);
+  }
 
-  await sendReservationConfirmationMail(
-    email,
-    name,
-    people,
-    reservation.seating.eventDate.date,
-    reservation.seating.timeslot,
-  );
-
-  return res.json(reservation);
+  return res.json(reservations);
 }
