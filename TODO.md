@@ -1,5 +1,8 @@
 # TODO
 
+- Auf Bestätigungsseite kleines Upselling Kästchen für VIP (seating.enableUpselling == true)
+  - Buche jetzt deinen Stehtisch für die Afterparty
+
 - Neuer Reservierungsflow
   - VIP oder Stehtisch
   - Tag auswählen

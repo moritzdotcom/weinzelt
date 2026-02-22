@@ -1,4 +1,5 @@
-import { Box, Typography, Divider } from '@mui/material';
+import { HelpOutline } from '@mui/icons-material';
+import { Box, Typography, Divider, Tooltip } from '@mui/material';
 
 export default function OrderSummary({
   people,
@@ -74,6 +75,7 @@ export function SimpleOrderSummary({
   minimumSpend: number;
 }) {
   const drinksTotal = minimumSpend * tableCount;
+  const deliveryFee = 5.9;
 
   return (
     <Box
@@ -100,7 +102,19 @@ export function SimpleOrderSummary({
           Getränkeguthaben ({tableCount} × {minimumSpend} €)
         </Typography>
         <Typography className="whitespace-nowrap">
-          {drinksTotal.toLocaleString('de-DE')} €
+          {drinksTotal.toFixed(2).replace('.', ',')} €
+        </Typography>
+      </Box>
+
+      <Box display="flex" justifyContent="space-between" gap={2} mb={1}>
+        <Box display="flex" gap="3px" alignItems="center">
+          <Typography>Versand</Typography>
+          <Tooltip title="Deine Einlassbändchen und Verzehrkarten werden dir vorab zugesandt">
+            <HelpOutline color="info" fontSize="small" />
+          </Tooltip>
+        </Box>
+        <Typography className="whitespace-nowrap">
+          {deliveryFee.toFixed(2).replace('.', ',')} €
         </Typography>
       </Box>
 
@@ -111,7 +125,7 @@ export function SimpleOrderSummary({
           Gesamt
         </Typography>
         <Typography variant="subtitle1" fontWeight={600}>
-          {drinksTotal.toLocaleString('de-DE')} €
+          {(drinksTotal + deliveryFee).toFixed(2).replace('.', ',')} €
         </Typography>
       </Box>
     </Box>

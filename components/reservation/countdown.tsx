@@ -37,7 +37,7 @@ export default function ReservationCountdownSection({
           </Link>
           {preMessage ?? (
             <p className="text-xl md:text-2xl">
-              Reservierungsanfragen können ab dem{' '}
+              Dein Erlebnis im Weinzelt kann ab dem{' '}
               <b>
                 {new Date(startDate).toLocaleString('de-DE', {
                   day: '2-digit',
@@ -47,7 +47,7 @@ export default function ReservationCountdownSection({
                   minute: '2-digit',
                 })}
               </b>{' '}
-              abgegeben werden.
+              gebucht werden.
             </p>
           )}
           <Countdown targetDate={startDate} />

@@ -274,11 +274,7 @@ export default function VipReservationPage() {
                           className="text-center"
                           color={tablesLeft === 1 ? 'error' : 'textSecondary'}
                         >
-                          {tablesLeft <= 0
-                            ? 'Sold Out'
-                            : `Noch ${tablesLeft} Tisch${
-                                tablesLeft === 1 ? '' : 'e'
-                              } verfügbar`}
+                          {tablesLeft <= 0 ? 'Sold Out' : ''}
                         </Typography>
                       </Grid>
                     );
@@ -377,7 +373,7 @@ export default function VipReservationPage() {
                   loading || !name.trim() || !email.trim() || !argbChecked
                 }
               >
-                Reservierung anfragen
+                Reservierung bestätigen
               </button>
             </Box>
           )}

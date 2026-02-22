@@ -171,15 +171,13 @@ export default function ReservationSuccessPage() {
             >
               <Row
                 label="Seating"
-                value={`${new Date(
-                  reservation.seating.eventDate.date,
-                ).toLocaleDateString('de-DE')} - ${
+                value={`${reservation.seating.eventDate.date} - ${
                   reservation.seating.timeslot
                 }`}
               />
               <Row
                 label="Typ"
-                value={reservation.type === 'VIP' ? 'VIP' : 'Stehtisch'}
+                value={reservation.type === 'VIP' ? 'Tisch' : 'Stehtisch'}
               />
               <Row label="Personen" value={String(reservation.people)} />
               <Row

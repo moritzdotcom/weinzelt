@@ -304,10 +304,7 @@ export default function EventDashboard({ session }: { session: Session }) {
       {metrics && eventData && pageVisitData && (
         <div className="grid grid-cols-12 gap-6 py-6">
           {/* Kennzahlen */}
-          <NumberChartCard
-            title="Reservierungsanfragen"
-            number={metrics.totalCount}
-          />
+          <NumberChartCard title="Reservierungen" number={metrics.totalCount} />
           <NumberChartCard title="VIP-Tische" number={metrics.vipCount} />
           <NumberChartCard title="Stehtische" number={metrics.standingCount} />
           <NumberChartCard
@@ -317,7 +314,7 @@ export default function EventDashboard({ session }: { session: Session }) {
           />
           {/* Diagramme */}
           <LineChartCard
-            title="Reservierungsanfragen pro Tag"
+            title="Reservierungen pro Tag"
             data={eventData.eventDates.map((date) => ({
               x: date.date,
               y: date.seatings.reduce(

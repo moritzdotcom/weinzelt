@@ -75,7 +75,6 @@ export default function FriendsFamilyReservationPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<SeatingType | null>(null);
   const [guestCount, setGuestCount] = useState<string>('1');
-  const [packagePrice, setPackagePrice] = useState<string>('0');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -83,6 +82,7 @@ export default function FriendsFamilyReservationPage() {
   const [success, setSuccess] = useState(false);
 
   const maxGuests = type === 'VIP' ? 10 : 20;
+  const packagePrice = type === 'VIP' ? 200 : 100;
 
   // Fetch or load from cache on type change
   useEffect(() => {
@@ -90,7 +90,6 @@ export default function FriendsFamilyReservationPage() {
     setSelectedDate(null);
     setSelectedSlot(null);
     setGuestCount('1');
-    setPackagePrice('0');
 
     setDataLoading(true);
     axios
@@ -124,20 +123,19 @@ export default function FriendsFamilyReservationPage() {
       }) ?? false;
 
   const selectedDateData = data?.eventDates.find(
-    (d) => d.date === selectedDate
+    (d) => d.date === selectedDate,
   );
 
   const selectDate = (date: string) => {
     setSelectedDate(date);
     setSelectedSlot(null);
     setGuestCount('1');
-    setPackagePrice('0');
     setTimeout(
       () =>
         document
           .querySelector('#timeslots')
           ?.scrollIntoView({ behavior: 'smooth' }),
-      200
+      200,
     );
   };
 
@@ -148,7 +146,7 @@ export default function FriendsFamilyReservationPage() {
         document
           .querySelector('#contact')
           ?.scrollIntoView({ behavior: 'smooth' }),
-      200
+      200,
     );
   };
 
@@ -162,7 +160,7 @@ export default function FriendsFamilyReservationPage() {
         email,
         people: Number(guestCount),
         seatingId: selectedSlot.id,
-        packagePrice: Number(packagePrice),
+        packagePrice,
       });
       setSuccess(true);
       setDialogOpen(true);
@@ -177,7 +175,6 @@ export default function FriendsFamilyReservationPage() {
     setName('');
     setEmail('');
     setGuestCount('1');
-    setPackagePrice('0');
     setSelectedDate(null);
     setSelectedSlot(null);
     setDialogOpen(false);
@@ -236,7 +233,7 @@ export default function FriendsFamilyReservationPage() {
                       s.reservations
                         .filter((r) => r.type == type)
                         .reduce((a, b) => a + b.tableCount, 0)),
-                  0
+                  0,
                 );
                 return (
                   <Grid key={date}>
@@ -331,7 +328,7 @@ export default function FriendsFamilyReservationPage() {
                   disabled={Number(guestCount) >= maxGuests}
                   onClick={() =>
                     setGuestCount((c) =>
-                      String(Math.min(maxGuests, Number(c) + 1))
+                      String(Math.min(maxGuests, Number(c) + 1)),
                     )
                   }
                 >
@@ -367,6 +364,7 @@ export default function FriendsFamilyReservationPage() {
                 <TextField
                   fullWidth
                   label="Mindestverzehr"
+                  disabled
                   value={packagePrice}
                   slotProps={{
                     input: {
@@ -375,7 +373,6 @@ export default function FriendsFamilyReservationPage() {
                       ),
                     },
                   }}
-                  onChange={(e) => setPackagePrice(e.target.value)}
                   margin="normal"
                 />
               </Box>
