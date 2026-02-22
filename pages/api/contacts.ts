@@ -82,7 +82,7 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
     sanitizeCSV(entry.contactType),
   ]);
 
-  const csvContent = [header, ...rows].map((row) => row.join(';')).join('\n');
+  const csvContent = [header, ...rows].map((row) => row.join(',')).join('\n');
 
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', 'attachment; filename="contacts.csv"');
