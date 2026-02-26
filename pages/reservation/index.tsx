@@ -17,7 +17,7 @@ export default function ReservationPage() {
   }, [router.isReady]);
 
   return (
-    <ReservationCountdownSection startDate="2025-05-23T16:00:00Z">
+    <ReservationCountdownSection startDate="2026-03-01T11:00:00Z">
       <Box className="max-w-4xl mx-auto px-4 py-16 font-sans text-gray-800">
         <ReservationHeader>
           Wähle deinen Tisch für das Weinzelt

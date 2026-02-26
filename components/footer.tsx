@@ -6,7 +6,7 @@ export default function Footer() {
     <footer className="bg-black text-white text-sm pt-6 pb-16 sm:pb-8 px-4">
       <div className="w-full max-w-6xl mx-auto flex gap-5 flex-col sm:flex-row items-center sm:justify-between">
         <div>
-          <p>&copy; 2025 Weinzelt GmbH</p>
+          <p>&copy; 2026 Weinzelt GmbH</p>
           <div className="mt-2">
             <Link href="/imprint" className="underline mr-2">
               Impressum

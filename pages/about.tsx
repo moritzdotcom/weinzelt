@@ -25,7 +25,7 @@ export default function AboutPage({ session }: { session: Session }) {
               height={600}
               className="rounded-2xl shadow-lg object-cover w-full h-auto"
             />
-            <cite className="text-sm">&copy; 2025 Weinzelt GmbH</cite>
+            <cite className="text-sm">&copy; 2026 Weinzelt GmbH</cite>
           </div>
 
           {/* Beschreibung */}

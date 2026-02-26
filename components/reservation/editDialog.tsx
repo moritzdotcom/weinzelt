@@ -13,7 +13,7 @@ import { ApiGetReservationsResponse } from '@/pages/api/events/[eventId]/reserva
 
 const Transition = forwardRef(function Transition(
   props: TransitionProps & { children: React.ReactElement },
-  ref: React.Ref<unknown>
+  ref: React.Ref<unknown>,
 ) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
@@ -37,7 +37,6 @@ export default function EditReservationDialog({
   });
 
   const [peopleChanged, setPeopleChanged] = useState(false);
-  const [foodMismatch, setFoodMismatch] = useState(false);
 
   useEffect(() => {
     if (reservation) {
@@ -50,7 +49,6 @@ export default function EditReservationDialog({
         internalNotes: reservation.internalNotes || '',
       });
       setPeopleChanged(false);
-      setFoodMismatch(false);
     }
   }, [reservation]);
 
@@ -163,7 +161,6 @@ export default function EditReservationDialog({
             color: '#fff',
             '&:hover': { background: '#222' },
           }}
-          disabled={foodMismatch}
           onClick={handleSubmit}
         >
           Speichern

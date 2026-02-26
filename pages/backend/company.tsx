@@ -7,6 +7,7 @@ import {
   Alert,
   Box,
   CircularProgress,
+  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
@@ -48,7 +49,7 @@ export default function BackendCompanyPage({ session }: { session: Session }) {
 
   function sortReservations(
     reservations: typeof filteredReservations,
-    sortBy: string
+    sortBy: string,
   ) {
     if (!reservations) return [];
     return [...reservations].sort((a, b) => {
@@ -73,13 +74,13 @@ export default function BackendCompanyPage({ session }: { session: Session }) {
 
   const selectedEvent = useMemo(
     () => events.filter((e) => e.id == selectedEventId)[0],
-    [selectedEventId, events]
+    [selectedEventId, events],
   );
 
   const sortedEventDates = useMemo(() => {
     if (!selectedEvent) return undefined;
     return selectedEvent.eventDates.sort((a, b) =>
-      a.date.localeCompare(b.date)
+      a.date.localeCompare(b.date),
     );
   }, [selectedEvent]);
 
@@ -90,7 +91,7 @@ export default function BackendCompanyPage({ session }: { session: Session }) {
 
   const filteredReservations = useMemo(() => {
     return reservations?.filter(
-      (r) => r.seating.eventDateId == selectedEventDate?.id
+      (r) => r.seating.eventDateId == selectedEventDate?.id,
     );
   }, [selectedEventDate, reservations]);
 
@@ -257,8 +258,8 @@ export default function BackendCompanyPage({ session }: { session: Session }) {
                               res?.map((r) =>
                                 r.id === updatedReservation.id
                                   ? updatedReservation
-                                  : r
-                              )
+                                  : r,
+                              ),
                             );
                           }}
                           session={session}
@@ -271,10 +272,10 @@ export default function BackendCompanyPage({ session }: { session: Session }) {
                             },
                           }}
                         />
-                      )
+                      ),
                     )}
                   </div>
-                )
+                ),
               )}
             </motion.div>
           )}
@@ -433,7 +434,7 @@ function ReservationCard({
 
 const Transition = forwardRef(function Transition(
   props: TransitionProps & { children: React.ReactElement },
-  ref: React.Ref<unknown>
+  ref: React.Ref<unknown>,
 ) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
@@ -456,9 +457,7 @@ function NewReservationDialog({
   const [tableCount, setTableCount] = useState('1');
   const [packageName, setPackageName] = useState('');
   const [packageDescription, setPackageDescription] = useState('');
-  const [packagePrice, setPackagePrice] = useState('1000');
-  const [foodCountMeat, setFoodCountMeat] = useState('0');
-  const [foodCountVegetarian, setFoodCountVegetarian] = useState('0');
+  const [minimumSpend, setMinimumSpend] = useState('1000');
 
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedSlot, setSelectedSlot] = useState<
@@ -478,7 +477,7 @@ function NewReservationDialog({
     setTableCount(
       reservation
         ? `${Math.ceil(reservation.people / (type === 'VIP' ? 8 : 16))}`
-        : '1'
+        : '1',
     );
 
     setDataLoading(true);
@@ -500,7 +499,7 @@ function NewReservationDialog({
   useEffect(() => {
     if (!guestCount) return;
     setTableCount(
-      `${Math.ceil(Number(guestCount) / (type === 'VIP' ? 8 : 16))}`
+      `${Math.ceil(Number(guestCount) / (type === 'VIP' ? 8 : 16))}`,
     );
   }, [type, guestCount]);
 
@@ -510,11 +509,11 @@ function NewReservationDialog({
     setEmail(reservation.email);
     setGuestCount(`${reservation.people}`);
     setTableCount(
-      `${Math.ceil(reservation.people / (type === 'VIP' ? 8 : 16))}`
+      `${Math.ceil(reservation.people / (type === 'VIP' ? 8 : 16))}`,
     );
     setSelectedDate(reservation.seating.eventDate.date);
     setSelectedSlot(reservation.seating);
-    setPackagePrice(`${reservation.budget * reservation.people}`);
+    setMinimumSpend(`${reservation.budget * reservation.people}`);
   }, [reservation]);
 
   // Wenn sich das Datum ändert, Timeslot zurücksetzen
@@ -533,13 +532,7 @@ function NewReservationDialog({
         people: Number(guestCount),
         tableCount: Number(tableCount),
         seatingId: selectedSlot.id,
-        packageName,
-        packageDescription,
-        packagePrice: Number(packagePrice),
-        foodCountMeat: Number(foodCountMeat),
-        foodCountVegetarian: Number(foodCountVegetarian),
-        totalFoodPrice:
-          65 * (Number(foodCountMeat) + Number(foodCountVegetarian)),
+        minimumSpend: Number(minimumSpend),
       });
       setSuccess(true);
       reservation && onDelete(reservation.id);
@@ -560,9 +553,7 @@ function NewReservationDialog({
     setTableCount('1');
     setPackageName('');
     setPackageDescription('');
-    setPackagePrice('1000');
-    setFoodCountMeat('0');
-    setFoodCountVegetarian('0');
+    setMinimumSpend('1000');
     setSelectedDate('');
     setSelectedSlot(null);
     onClose();
@@ -681,85 +672,70 @@ function NewReservationDialog({
               </div>
             )}
 
-            {/* Kontaktdaten */}
-            <TextField
-              label="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <TextField
-              label="E-Mail"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <Collapse in={Boolean(selectedSlot)}>
+              <Box
+                component="form"
+                sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+              >
+                {/* Kontaktdaten */}
+                <TextField
+                  label="Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <TextField
+                  label="E-Mail"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
 
-            {/* Personen & Tische */}
-            <TextField
-              label="Anzahl Personen"
-              type="number"
-              value={guestCount}
-              onChange={(e) =>
-                setGuestCount(
-                  e.target.value ? `${Math.max(1, Number(e.target.value))}` : ''
-                )
-              }
-            />
-            <TextField
-              label="Anzahl Tische"
-              type="number"
-              error={Number(tableCount || 0) > tablesAvailable}
-              helperText={
-                Number(tableCount || 0) > tablesAvailable
-                  ? 'Nicht genug Kapazität'
-                  : undefined
-              }
-              value={tableCount}
-              onChange={(e) =>
-                setTableCount(
-                  e.target.value ? `${Math.max(1, Number(e.target.value))}` : ''
-                )
-              }
-            />
-
-            {/* Package */}
-            <TextField
-              label="Package Name"
-              value={packageName}
-              onChange={(e) => setPackageName(e.target.value)}
-            />
-            <TextField
-              label="Package Beschreibung"
-              multiline
-              minRows={2}
-              value={packageDescription}
-              onChange={(e) => setPackageDescription(e.target.value)}
-            />
-            <TextField
-              label="Package Preis"
-              type="number"
-              value={packagePrice}
-              onChange={(e) => setPackagePrice(e.target.value)}
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">€</InputAdornment>
-                  ),
-                },
-              }}
-            />
-            <TextField
-              label="Menu Fleisch"
-              type="number"
-              value={foodCountMeat}
-              onChange={(e) => setFoodCountMeat(e.target.value)}
-            />
-            <TextField
-              label="Menu Vegetarisch"
-              type="number"
-              value={foodCountVegetarian}
-              onChange={(e) => setFoodCountVegetarian(e.target.value)}
-            />
+                {/* Personen & Tische */}
+                <TextField
+                  label="Anzahl Personen"
+                  type="number"
+                  value={guestCount}
+                  onChange={(e) =>
+                    setGuestCount(
+                      e.target.value
+                        ? `${Math.max(1, Number(e.target.value))}`
+                        : '',
+                    )
+                  }
+                />
+                <TextField
+                  label="Anzahl Tische"
+                  type="number"
+                  error={Number(tableCount || 0) > tablesAvailable}
+                  helperText={
+                    Number(tableCount || 0) > tablesAvailable
+                      ? 'Nicht genug Kapazität'
+                      : undefined
+                  }
+                  value={tableCount}
+                  onChange={(e) =>
+                    setTableCount(
+                      e.target.value
+                        ? `${Math.max(1, Number(e.target.value))}`
+                        : '',
+                    )
+                  }
+                />
+                <TextField
+                  label="Mindestverzehr"
+                  type="number"
+                  value={minimumSpend}
+                  onChange={(e) => setMinimumSpend(e.target.value)}
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">€</InputAdornment>
+                      ),
+                    },
+                  }}
+                />
+              </Box>
+            </Collapse>
           </Box>
         )}
       </DialogContent>

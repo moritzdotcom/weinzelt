@@ -58,6 +58,7 @@ async function handlePOST(
       people,
       minimumSpend,
       seatingId,
+      paymentStatus: 'PENDING_PAYMENT',
       notified: new Date(),
       internalNotes: `${translateType(
         reservationType,

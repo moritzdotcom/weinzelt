@@ -194,7 +194,7 @@ export default function VipReservationPage() {
     );
 
   return (
-    <ReservationCountdownSection startDate="2025-05-23T16:00:00Z">
+    <ReservationCountdownSection startDate="2026-03-01T11:00:00Z">
       {!data ? (
         fetchError ? (
           <ReservationError text={fetchError} />

@@ -59,6 +59,7 @@ async function handlePOST(
       people,
       tableCount,
       minimumSpend,
+      paymentStatus: 'PENDING_PAYMENT',
       seatingId,
       notified: new Date(),
       internalNotes: `${tableCount} ${translateType(reservationType)}${
@@ -78,14 +79,6 @@ async function handlePOST(
       },
     },
   });
-
-  await sendReservationMail(
-    email,
-    name,
-    String(people),
-    reservation.seating.eventDate.date,
-    reservation.seating.timeslot,
-  );
 
   return res.json(reservation);
 }
