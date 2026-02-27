@@ -192,7 +192,7 @@ export default function StandingReservationPage() {
     );
 
   return (
-    <ReservationCountdownSection startDate="2026-03-01T11:00:00Z">
+    <ReservationCountdownSection startDate="2026-02-27T11:00:00Z">
       {!data ? (
         fetchError ? (
           <ReservationError text={fetchError} />
