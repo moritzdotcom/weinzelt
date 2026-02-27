@@ -31,11 +31,12 @@ import { ReservationType } from '@prisma/client';
 import { ApiGetReservationDataResponse } from '../api/reservationData';
 import { translateType } from '@/lib/reservation';
 import { Close } from '@mui/icons-material';
+import EventSelector from '@/components/eventSelector';
 
 export default function BackendCompanyPage({ session }: { session: Session }) {
   const router = useRouter();
-  const [events, setEvents] = useState<ApiGetEventsResponse>([]);
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] =
+    useState<ApiGetEventsResponse[number]>();
   const [selectedEventDateIndex, setSelectedEventDateIndex] = useState<
     number | null
   >(null);
@@ -71,11 +72,6 @@ export default function BackendCompanyPage({ session }: { session: Session }) {
       }
     });
   }
-
-  const selectedEvent = useMemo(
-    () => events.filter((e) => e.id == selectedEventId)[0],
-    [selectedEventId, events],
-  );
 
   const sortedEventDates = useMemo(() => {
     if (!selectedEvent) return undefined;
@@ -121,30 +117,14 @@ export default function BackendCompanyPage({ session }: { session: Session }) {
   }, [session.status, router.isReady]);
 
   useEffect(() => {
-    axios
-      .get('/api/events')
-      .then(({ data }: { data: ApiGetEventsResponse }) => {
-        setEvents(data);
-        const preselect = router.query.eventId as string;
-        if (preselect) {
-          setSelectedEventId(preselect);
-          setSelectedEventDateIndex(0);
-        } else if (data.length == 1) {
-          setSelectedEventId(data[0].id);
-          setSelectedEventDateIndex(0);
-        }
-      });
-  }, [router.query.eventId]);
-
-  useEffect(() => {
-    if (selectedEventId) {
+    if (selectedEvent?.id) {
       axios
-        .get(`/api/events/${selectedEventId}/companyReservations`)
+        .get(`/api/events/${selectedEvent?.id}/companyReservations`)
         .then((res) => {
           setReservations(res.data);
         });
     }
-  }, [selectedEventId]);
+  }, [selectedEvent?.id]);
 
   return (
     <Box className="max-w-5xl mx-auto px-4 py-16 overflow-x-hidden">
@@ -153,23 +133,7 @@ export default function BackendCompanyPage({ session }: { session: Session }) {
       </Typography>
 
       <div className="my-7 flex items-center flex-col sm:flex-row justify-between gap-5">
-        <TextField
-          select
-          label="Veranstaltung wählen"
-          fullWidth
-          sx={{ maxWidth: 'var(--container-md)' }}
-          value={selectedEventId || ''}
-          onChange={(e) => {
-            setSelectedEventId(e.target.value);
-            setSelectedEventDateIndex(0);
-          }}
-        >
-          {events.map((event) => (
-            <MenuItem key={event.id} value={event.id}>
-              {event.name}
-            </MenuItem>
-          ))}
-        </TextField>
+        <EventSelector onChange={setSelectedEvent} />
         <button
           className="rounded-full bg-black text-white px-5 py-2 text-sm"
           onClick={() => setNewDialogOpen(true)}

@@ -16,6 +16,7 @@ import { motion } from 'framer-motion';
 import DownloadIcon from '@mui/icons-material/Download';
 import ReservationCard from '@/components/reservation/card';
 import useElementHeight from '@/hooks/useElementHeight';
+import EventSelector from '@/components/eventSelector';
 
 type PaymentStatusFilter = 'PAID' | 'PENDING_PAYMENT' | 'CANCELED';
 
@@ -25,19 +26,14 @@ export default function BackendReservationsPage({
   session: Session;
 }) {
   const router = useRouter();
-  const [events, setEvents] = useState<ApiGetEventsResponse>([]);
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] =
+    useState<ApiGetEventsResponse[number]>();
 
   const [paymentStatus, setPaymentStatus] =
     useState<PaymentStatusFilter>('PAID');
 
   const [reservations, setReservations] =
     useState<ApiGetReservationsResponse>();
-
-  const selectedEvent = useMemo(
-    () => events.find((e) => e.id === selectedEventId),
-    [selectedEventId, events],
-  );
 
   const sortedEventDates = useMemo(() => {
     if (!selectedEvent) return [];
@@ -111,27 +107,13 @@ export default function BackendReservationsPage({
   }, [session.status, router.isReady, router]);
 
   useEffect(() => {
-    axios
-      .get('/api/events')
-      .then(({ data }: { data: ApiGetEventsResponse }) => {
-        setEvents(data);
-        const preselect = router.query.eventId as string | undefined;
-        if (preselect) {
-          setSelectedEventId(preselect);
-        } else if (data.length === 1) {
-          setSelectedEventId(data[0].id);
-        }
-      });
-  }, [router.query.eventId]);
-
-  useEffect(() => {
-    if (selectedEventId) {
+    if (selectedEvent) {
       setReservations(undefined); // show loader on event change
-      axios.get(`/api/events/${selectedEventId}/reservations`).then((res) => {
+      axios.get(`/api/events/${selectedEvent.id}/reservations`).then((res) => {
         setReservations(res.data);
       });
     }
-  }, [selectedEventId]);
+  }, [selectedEvent]);
 
   return (
     <Box className="overflow-x-hidden overflow-y-auto h-screen">
@@ -141,25 +123,12 @@ export default function BackendReservationsPage({
         </Box>
 
         {/* Filters */}
-        <div className="my-7 flex flex-col md:flex-row gap-3 items-stretch md:items-center">
-          <TextField
-            select
-            label="Veranstaltung wählen"
-            sx={{ width: { xs: '100%', sm: '50%' } }}
-            value={selectedEventId || ''}
-            onChange={(e) => setSelectedEventId(e.target.value)}
-          >
-            {events.map((event) => (
-              <MenuItem key={event.id} value={event.id}>
-                {event.name}
-              </MenuItem>
-            ))}
-          </TextField>
+        <div className="my-7 grid grid-cols-1 md:grid-cols-2 gap-3 items-stretch md:items-center">
+          <EventSelector onChange={setSelectedEvent} />
 
           <TextField
             select
             label="Payment Status"
-            sx={{ width: { xs: '100%', sm: '50%' } }}
             value={paymentStatus}
             onChange={(e) =>
               setPaymentStatus(e.target.value as PaymentStatusFilter)
@@ -171,7 +140,7 @@ export default function BackendReservationsPage({
           </TextField>
         </div>
 
-        <Fade in={Boolean(selectedEventId)} timeout={300}>
+        <Fade in={Boolean(selectedEvent)} timeout={300}>
           <div>
             {!paymentFilteredReservations ? (
               <Box className="flex justify-center items-center">

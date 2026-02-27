@@ -30,8 +30,8 @@ export default function EventSelector({
         setSelectedEventId(
           data.sort(
             (a, b) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          )[0].id
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          )[0].id,
         );
       }
     });
@@ -42,7 +42,6 @@ export default function EventSelector({
       select
       label="Veranstaltung wählen"
       fullWidth
-      sx={{ maxWidth: 'var(--container-md)' }}
       value={selectedEventId || ''}
       onChange={(e) => setSelectedEventId(e.target.value)}
     >
