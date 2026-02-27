@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import prisma from '@/lib/prismadb';
 import sendReservationMail from '@/lib/mailer/reservationMail';
 import sendReservationCancelMail from '@/lib/mailer/reservationCancelMail';
+import { getShippingAddressFromReservation } from '@/lib/reservation';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-12-15.clover',
@@ -45,6 +46,9 @@ async function markPaidAndSendMail(
       seating: {
         select: { timeslot: true, eventDate: { select: { date: true } } },
       },
+      shippingAddress: true,
+      billingAddress: true,
+      shippingSameAsBilling: true,
     },
   });
 
@@ -69,6 +73,8 @@ async function markPaidAndSendMail(
     },
   });
 
+  const shippingAddress = getShippingAddressFromReservation(reservation);
+
   // Mail nur einmal (weil wir nur beim Statuswechsel senden)
   await sendReservationMail(
     reservation.email,
@@ -76,6 +82,7 @@ async function markPaidAndSendMail(
     String(reservation.people),
     reservation.seating.eventDate.date,
     reservation.seating.timeslot,
+    shippingAddress,
   );
 }
 

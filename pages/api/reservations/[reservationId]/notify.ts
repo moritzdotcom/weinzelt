@@ -1,11 +1,12 @@
 import sendReservationMail from '@/lib/mailer/reservationMail';
 import prisma from '@/lib/prismadb';
+import { getShippingAddressFromReservation } from '@/lib/reservation';
 import { getServerSession } from '@/lib/session';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handle(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const session = await getServerSession(req);
   if (!session) return res.status(401).json('Not authenticated');
@@ -18,7 +19,7 @@ export default async function handle(
     await handlePOST(req, res, reservationId);
   } else {
     throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
+      `The HTTP ${req.method} method is not supported at this route.`,
     );
   }
 }
@@ -26,7 +27,7 @@ export default async function handle(
 async function handlePOST(
   req: NextApiRequest,
   res: NextApiResponse,
-  id: string
+  id: string,
 ) {
   const reservation = await prisma.reservation.update({
     where: { id },
@@ -47,12 +48,15 @@ async function handlePOST(
     },
   });
 
+  const shippingAddress = getShippingAddressFromReservation(reservation);
+
   await sendReservationMail(
     reservation.email,
     reservation.name,
     String(reservation.people),
     reservation.seating.eventDate.date,
-    reservation.seating.timeslot
+    reservation.seating.timeslot,
+    shippingAddress,
   );
 
   return res.json(reservation);

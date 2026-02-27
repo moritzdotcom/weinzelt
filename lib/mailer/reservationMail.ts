@@ -1,17 +1,29 @@
+// lib/mailer/sendReservationMail.ts
 import { sendMail } from '@/lib/mailer';
+import { Address } from '../reservation';
+import { addressToHtml, addressToText } from './helpers/address';
 
 export default function sendReservationMail(
   email: string,
   name: string,
   people: string,
   date: string,
-  timeslot: string
+  timeslot: string,
+  shippingAddress: Address | null,
 ) {
+  const shippingText = shippingAddress
+    ? addressToText(shippingAddress)
+    : '— (keine Lieferadresse vorhanden)';
+
+  const shippingHtml = shippingAddress
+    ? addressToHtml(shippingAddress)
+    : '— (keine Lieferadresse vorhanden)';
+
   return sendMail({
     to: email,
     sendCopy: true,
     subject: 'Deine Reservierung wurde bestätigt',
-    text: `Hallo ${name},\n\ndeine Reservierung für ${people} Pers. am ${date} für den Zeitraum ${timeslot} ist bestätigt!\n\nLiebe Grüße,\nDas Weinzelt-Team`,
+    text: `Hallo ${name},\n\ndeine Reservierung für ${people} Pers. am ${date} für den Zeitraum ${timeslot} ist bestätigt!\n\nVERSAND\nEintrittsbändchen und Verzehrkarten senden wir ca. 6 Wochen vor dem Weinzelt an folgende Lieferadresse:\n\n${shippingText}\n\nBitte prüfe, ob die Adresse korrekt ist. Falls etwas nicht stimmt, antworte einfach auf diese E-Mail.\n\nLiebe Grüße,\nDas Weinzelt-Team`,
     html: `<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -29,15 +41,17 @@ export default function sendReservationMail(
               <img src="https://dasweinzelt.de/logo.png" alt="Weinzelt Logo" style="max-width:200px; height:auto;" />
             </td>
           </tr>
+
           <!-- Überschrift -->
           <tr>
             <td style="padding:0 20px 10px;">
               <h1 style="margin:0; font-size:24px; color:#333333; text-align:center;">Reservierung bestätigt</h1>
             </td>
           </tr>
-          <!-- Bestätigungs-Box mit Zahlungsdaten -->
+
+          <!-- Bestätigung -->
           <tr>
-            <td style="padding:0 20px 20px;">
+            <td style="padding:0 20px 16px;">
               <div style="background-color:#f0f0f0; padding:20px; border-radius:5px; color:#333333; font-size:16px; line-height:1.5;">
                 <p>Hallo <strong>${name}</strong>,</p>
                 <p>deine Reservierung für <strong>${people} Personen</strong> am <strong>${date}</strong> um <strong>${timeslot}</strong> Uhr ist bestätigt!</p>
@@ -48,12 +62,32 @@ export default function sendReservationMail(
               </div>
             </td>
           </tr>
+
+          <!-- Versand -->
+          <tr>
+            <td style="padding:0 20px 16px;">
+              <div style="background-color:#fff7e6; padding:16px; border-radius:5px; color:#333333; font-size:14px; line-height:1.5;">
+                <p style="margin:0 0 10px;"><strong>Versand von Eintrittsbändchen &amp; Verzehrkarten</strong></p>
+                <p style="margin:0 0 10px;">
+                  Wir senden dir deine Eintrittsbändchen und Verzehrkarten <strong>ca. 6 Wochen vor dem Weinzelt</strong> an folgende Lieferadresse:
+                </p>
+                <p style="margin:0; padding:10px 12px; background:#ffffff; border:1px solid #eee; border-radius:4px;">
+                  ${shippingHtml}
+                </p>
+                <p style="margin:10px 0 0;">
+                  Bitte prüfe, ob die Adresse korrekt ist. Falls etwas nicht stimmt, antworte einfach auf diese E-Mail.
+                </p>
+              </div>
+            </td>
+          </tr>
+
           <!-- Hinweis zur Pünktlichkeit -->
           <tr>
             <td style="padding:0 20px 20px; color:#333333; font-size:14px; line-height:1.4;">
               Bitte erscheine pünktlich: Nach 15 Minuten ab deiner gebuchten Zeit können wir leider keinen Eintritt mehr gewähren.
             </td>
           </tr>
+
           <!-- Rechtlicher Hinweis -->
           <tr>
             <td style="padding:0 20px 20px; font-size:12px; font-style:italic; color:#666666; line-height:1.4;">
@@ -61,6 +95,7 @@ export default function sendReservationMail(
               <a href="https://dasweinzelt.de/argb" style="color:#666666; text-decoration:underline;">Allgemeinen Reservierungs- und Geschäftsbedingungen</a>.
             </td>
           </tr>
+
           <!-- Abschiedsfloskel -->
           <tr>
             <td style="padding:0 20px 20px; color:#333333; font-size:14px; line-height:1.5;">
@@ -69,6 +104,7 @@ export default function sendReservationMail(
               Dein Weinzelt-Team
             </td>
           </tr>
+
           <!-- Footer -->
           <tr>
             <td style="background-color:#000000; padding:15px; text-align:center;">

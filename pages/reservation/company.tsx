@@ -16,6 +16,10 @@ import ReservationConfirmationDialog from '@/components/reservation/confirmation
 import ARGBConfirmation from '@/components/reservation/argbConfirmation';
 import { ApiGetReservationDatesResponse } from '../api/reservationDates';
 import { isValidEmail } from '@/lib/validator';
+import AddressInput, {
+  defaultAddress,
+} from '@/components/reservation/addressInput';
+import { Address } from '@/lib/reservation';
 
 type SeatingType =
   ApiGetReservationDatesResponse['eventDates'][number]['seatings'][number];
@@ -39,6 +43,14 @@ export default function CompanyReservationPage() {
   const [submitted, setSubmitted] = useState(false);
   const [mailError, setMailError] = useState('');
 
+  const [billingAddress, setBillingAddress] = useState<Address>(() =>
+    defaultAddress('DE'),
+  );
+  const [shippingSameAsBilling, setShippingSameAsBilling] = useState(true);
+  const [shippingAddress, setShippingAddress] = useState<Address>(() =>
+    defaultAddress('DE'),
+  );
+
   // Lade verfügbare Termine
   useEffect(() => {
     axios
@@ -47,11 +59,11 @@ export default function CompanyReservationPage() {
       .catch((e) => {
         if (isAxiosError(e) && e.response?.status === 404) {
           setFetchError(
-            'Bald kannst du dein Erlebnis im Weinzelt reservieren. Wir freuen uns auf dich!'
+            'Bald kannst du dein Erlebnis im Weinzelt reservieren. Wir freuen uns auf dich!',
           );
         } else {
           setFetchError(
-            'Es ist ein unbekannter Fehler aufgetreten. Versuche es später nochmal.'
+            'Es ist ein unbekannter Fehler aufgetreten. Versuche es später nochmal.',
           );
         }
       });
@@ -71,6 +83,9 @@ export default function CompanyReservationPage() {
         people: Number(personCount),
         budget: Number(budget),
         text,
+        shippingAddress,
+        billingAddress,
+        shippingSameAsBilling,
       });
       setSuccess(true);
       setDialogOpen(true);
@@ -84,6 +99,9 @@ export default function CompanyReservationPage() {
       setBudget('');
       setText('');
       setArgbChecked(false);
+      setShippingSameAsBilling(true);
+      setBillingAddress(defaultAddress('DE'));
+      setShippingAddress(defaultAddress('DE'));
     } catch (error) {
       console.error(error);
       alert('Beim Senden deiner Anfrage ist ein Fehler aufgetreten.');
@@ -163,7 +181,7 @@ export default function CompanyReservationPage() {
           value={selectedSlot?.timeslot || ''}
           onChange={(e) => {
             const slot = currentSlots.find(
-              (s) => s.timeslot === e.target.value
+              (s) => s.timeslot === e.target.value,
             );
             setSelectedSlot(slot || null);
           }}
@@ -242,6 +260,15 @@ export default function CompanyReservationPage() {
             minRows={2}
           />
         </div>
+        <AddressInput
+          submitted={submitted}
+          billingAddress={billingAddress}
+          onBillingAddressChange={setBillingAddress}
+          shippingSameAsBilling={shippingSameAsBilling}
+          onShippingSameAsBillingChange={setShippingSameAsBilling}
+          shippingAddress={shippingAddress}
+          onShippingAddressChange={setShippingAddress}
+        />
 
         <ARGBConfirmation onChecked={setArgbChecked} />
 

@@ -90,7 +90,7 @@ export default function AddressInput({
 }: Props) {
   const computedBillingErrors = useMemo(
     () => billingErrors ?? (submitted ? validateAddress(billingAddress) : {}),
-    [billingErrors, submitted, billingAddress]
+    [billingErrors, submitted, billingAddress],
   );
 
   const computedShippingErrors = useMemo(
@@ -99,7 +99,7 @@ export default function AddressInput({
       (submitted && !shippingSameAsBilling
         ? validateAddress(shippingAddress)
         : {}),
-    [shippingErrors, submitted, shippingSameAsBilling, shippingAddress]
+    [shippingErrors, submitted, shippingSameAsBilling, shippingAddress],
   );
 
   // UX: Wenn "gleich" aktiv -> shipping automatisch mitziehen
@@ -211,6 +211,10 @@ export default function AddressInput({
           <Checkbox
             checked={shippingSameAsBilling}
             onChange={(e) => onToggleSame(e.target.checked)}
+            sx={{
+              color: 'black',
+              '&.Mui-checked': { color: 'black' },
+            }}
           />
         }
         label="Lieferadresse ist identisch zur Rechnungsadresse"

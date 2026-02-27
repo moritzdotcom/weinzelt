@@ -96,15 +96,20 @@ model Reservation {
 }
 
 model CompanyReservation {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   seatingId   String
-  seating     Seating  @relation(fields: [seatingId], references: [id])
+  seating     Seating @relation(fields: [seatingId], references: [id])
   name        String
   companyName String?
   email       String
   people      Int
   budget      Int
   text        String?
+
+  billingAddress        Json?
+  shippingAddress       Json?
+  shippingSameAsBilling Boolean @default(true)
+
   createdAt   DateTime @default(now())
   userId      String?
   responsible User?    @relation(fields: [userId], references: [id])
