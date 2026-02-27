@@ -69,6 +69,17 @@ export default async function handler(
         },
         quantity: r.tableCount,
       },
+      {
+        price_data: {
+          currency: 'eur',
+          product_data: {
+            name: 'Versand',
+            description: 'Für Einlassbändchen und Verzehrkarte',
+          },
+          unit_amount: 590, // Gesamtbetrag für Mindesverzehr
+        },
+        quantity: 1,
+      },
     ],
     customer_email: r.email,
     metadata: {
