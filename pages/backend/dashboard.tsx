@@ -26,7 +26,6 @@ import { ApiGetEventDataResponse } from '../api/events/[eventId]/data';
 import { Session } from '@/hooks/useSession';
 import axios from 'axios';
 import { Refresh } from '@mui/icons-material';
-import { ApiGetPageVisitsResponse } from '../api/pageVisits';
 import { calculateMetrics, Metrics } from '@/lib/dashboard';
 
 // ----- Typdefinitionen -----
@@ -218,8 +217,6 @@ export default function EventDashboard({ session }: { session: Session }) {
   const [eventData, setEventData] = useState<ApiGetEventDataResponse | null>(
     null,
   );
-  const [pageVisitData, setPageVisitData] =
-    useState<ApiGetPageVisitsResponse | null>(null);
   const [loadingData, setLoadingData] = useState(false);
 
   const fetchData = async (eventId: string) => {
@@ -229,9 +226,6 @@ export default function EventDashboard({ session }: { session: Session }) {
         `/api/events/${eventId}/data`,
       );
       setEventData(eventResponse.data);
-      const pageVisitResponse =
-        await axios.get<ApiGetPageVisitsResponse>(`/api/pageVisits`);
-      setPageVisitData(pageVisitResponse.data);
     } catch (error) {
       console.error('Error fetching event data:', error);
       setEventData(null);
@@ -267,9 +261,9 @@ export default function EventDashboard({ session }: { session: Session }) {
   }, [selectedEventId]);
 
   const metrics: Metrics | null = useMemo(() => {
-    if (!eventData || !pageVisitData) return null;
-    return calculateMetrics(eventData, pageVisitData);
-  }, [eventData, pageVisitData]);
+    if (!eventData) return null;
+    return calculateMetrics(eventData);
+  }, [eventData]);
 
   return (
     <div className="px-6 py-16 bg-gray-50">
@@ -301,7 +295,7 @@ export default function EventDashboard({ session }: { session: Session }) {
           {loadingData ? 'Aktualisiert...' : 'Aktualisieren'}
         </button>
       </div>
-      {metrics && eventData && pageVisitData && (
+      {metrics && eventData && (
         <div className="grid grid-cols-12 gap-6 py-6">
           {/* Kennzahlen */}
           <NumberChartCard title="Reservierungen" number={metrics.totalCount} />
@@ -340,16 +334,6 @@ export default function EventDashboard({ session }: { session: Session }) {
             title="Reservierungen pro Referral Code"
             data={metrics.referralCodes}
             yLabel="Reservierungen"
-          />
-          <LineChartCard
-            title="Seitenaufrufe pro Tag"
-            data={metrics.dailyPageVisitData}
-            yLabel="Seitenaufrufe"
-          />
-          <LineChartCard
-            title="Seitenaufrufe nach REF"
-            data={metrics.pageVisitsBySource}
-            yLabel="Seitenaufrufe"
           />
           <TableChartCard
             title="Neuste Reservierungen"

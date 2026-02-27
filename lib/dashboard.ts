@@ -1,5 +1,4 @@
 import { ApiGetEventDataResponse } from '@/pages/api/events/[eventId]/data';
-import { ApiGetPageVisitsResponse } from '@/pages/api/pageVisits';
 import { translateState, translateType } from './reservation';
 
 // types.ts
@@ -12,8 +11,6 @@ export interface Metrics {
   capacity: { x: string; y1: number; y2: number }[];
   vipCountByDay: { x: string; y: number }[];
   referralCodes: { x: string; y: number }[];
-  dailyPageVisitData: { x: string; y: number }[];
-  pageVisitsBySource: { x: string; y: number }[];
   lastTenReservations: {
     Name: string;
     Typ: string;
@@ -25,10 +22,7 @@ export interface Metrics {
   }[];
 }
 
-export function calculateMetrics(
-  eventData: ApiGetEventDataResponse,
-  pageVisits: ApiGetPageVisitsResponse,
-): Metrics {
+export function calculateMetrics(eventData: ApiGetEventDataResponse): Metrics {
   // flatten alle Reservierungen
   const allReservations = eventData.eventDates.flatMap((d) =>
     d.seatings.flatMap((s) =>
@@ -118,27 +112,6 @@ export function calculateMetrics(
       y: count,
     }));
 
-  const dailyPageVisits: { [key: string]: number } = {};
-  const pageVisitsBySource: { [key: string]: number } = {};
-  pageVisits.forEach((visit) => {
-    const date = new Date(visit.createdAt).toLocaleDateString('en-US');
-    dailyPageVisits[date] = (dailyPageVisits[date] || 0) + 1;
-    pageVisitsBySource[visit.source] =
-      (pageVisitsBySource[visit.source] || 0) + 1;
-  });
-  const dailyPageVisitData = Object.entries(dailyPageVisits)
-    .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
-    .map(([date, count]) => ({
-      x: new Date(date).toLocaleDateString('de-DE'),
-      y: count,
-    }));
-  const sortedPageVisitsBySource = Object.entries(pageVisitsBySource)
-    .sort(([, countA], [, countB]) => countB - countA)
-    .map(([source, count]) => ({
-      x: source,
-      y: count,
-    }));
-
   const lastTenReservations = allReservations
     .sort(
       (a, b) =>
@@ -167,8 +140,6 @@ export function calculateMetrics(
     capacity: sortedCapacity,
     vipCountByDay: sortedVipCountByDay,
     referralCodes: sortedreferralCodes,
-    dailyPageVisitData,
-    pageVisitsBySource: sortedPageVisitsBySource,
     lastTenReservations,
   };
 }
