@@ -3,9 +3,9 @@ import prisma from '@/lib/prismadb';
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
-  const id = String(req.query.id || '');
+  const id = String(req.query.reservationId || '');
   if (!id) return res.status(400).json({ error: 'Missing id' });
 
   if (req.method !== 'POST')
