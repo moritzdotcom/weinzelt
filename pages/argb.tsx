@@ -168,7 +168,7 @@ export default function ARGBPage() {
             die vom Kunden angegebene postalische Adresse versendet.
           </p>
           <p>
-            Für den Versand wird eine Versandkostenpauschale in Höhe von 6,90
+            Für den Versand wird eine Versandkostenpauschale in Höhe von 5,90
             EUR berechnet.
           </p>
         </div>

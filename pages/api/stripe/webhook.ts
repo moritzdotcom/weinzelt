@@ -70,6 +70,7 @@ async function markPaidAndSendMail(
       payed: true,
       paidAt: new Date(),
       stripePaymentIntentId: stripePaymentIntentId ?? undefined,
+      notified: new Date(),
     },
   });
 

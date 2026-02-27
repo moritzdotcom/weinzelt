@@ -55,10 +55,6 @@ export default function sendReservationMail(
               <div style="background-color:#f0f0f0; padding:20px; border-radius:5px; color:#333333; font-size:16px; line-height:1.5;">
                 <p>Hallo <strong>${name}</strong>,</p>
                 <p>deine Reservierung für <strong>${people} Personen</strong> am <strong>${date}</strong> um <strong>${timeslot}</strong> Uhr ist bestätigt!</p>
-                <hr style="border:none; border-top:1px solid #cccccc; margin:16px 0;" />
-                <p>
-                  Getränke können auch vorab bestellt werden. So sind sie bei deiner Ankunft bereits für dich bereit! Antworte dazu einfach auf diese E-Mail und teile uns deine Wünsche mit. Wir kümmern uns um den Rest!
-                </p>
               </div>
             </td>
           </tr>
