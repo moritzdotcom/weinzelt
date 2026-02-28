@@ -268,6 +268,7 @@ export default function CompanyReservationPage() {
           onShippingSameAsBillingChange={setShippingSameAsBilling}
           shippingAddress={shippingAddress}
           onShippingAddressChange={setShippingAddress}
+          subtitle="Eintrittsbändchen und Verzehrgutscheine werden an diese Adresse geschickt"
         />
 
         <ARGBConfirmation onChecked={setArgbChecked} />

@@ -35,7 +35,7 @@ export function SimpleOrderSummary({
 
       <Box display="flex" justifyContent="space-between" gap={2} mb={1}>
         <Typography>
-          Getränkeguthaben ({tableCount} × {minimumSpend} €)
+          Verzehrkarten ({tableCount} × {minimumSpend} €)
         </Typography>
         <Typography className="whitespace-nowrap">
           {drinksTotal.toFixed(2).replace('.', ',')} €

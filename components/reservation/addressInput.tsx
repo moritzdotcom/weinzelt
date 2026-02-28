@@ -66,6 +66,7 @@ type Props = {
 
   // Optional: Texte
   title?: string;
+  subtitle?: string;
   billingTitle?: string;
   shippingTitle?: string;
 
@@ -84,6 +85,7 @@ export default function AddressInput({
   billingErrors,
   shippingErrors,
   title = 'Adresse',
+  subtitle,
   billingTitle = 'Rechnungsadresse',
   shippingTitle = 'Lieferadresse',
   countryLabel = 'Land',
@@ -124,9 +126,14 @@ export default function AddressInput({
   return (
     <Box mt={4}>
       <Divider className="my-6" />
-      <Typography variant="h5" gutterBottom mt={3}>
+      <Typography variant="h5" mt={3}>
         {title}
       </Typography>
+      {subtitle && (
+        <Typography variant="caption" gutterBottom>
+          {subtitle}
+        </Typography>
+      )}
 
       <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: 700 }}>
         {billingTitle}

@@ -348,6 +348,7 @@ export default function StandingReservationPage() {
                 onShippingSameAsBillingChange={setShippingSameAsBilling}
                 shippingAddress={shippingAddress}
                 onShippingAddressChange={setShippingAddress}
+                subtitle="Deine Eintrittsbändchen und Verzehrgutscheine werden an diese Adresse geschickt"
               />
               {selectedSlot && (
                 <Box mt={3} mb={1}>

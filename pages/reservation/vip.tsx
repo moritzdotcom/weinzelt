@@ -329,6 +329,7 @@ export default function VipReservationPage() {
                 onShippingSameAsBillingChange={setShippingSameAsBilling}
                 shippingAddress={shippingAddress}
                 onShippingAddressChange={setShippingAddress}
+                subtitle="Deine Eintrittsbändchen und Verzehrgutscheine werden an diese Adresse geschickt"
               />
 
               {selectedSlot && (
@@ -350,14 +351,6 @@ export default function VipReservationPage() {
                   <b>
                     nach der Reservierung mit deiner Gruppe im Weinzelt bleiben
                   </b>
-                  .<br /> Getränke können auch per Mail vorbestellt werden.
-                  Bitte kontaktiere uns dafür unter{' '}
-                  <a
-                    href="mailto:reservierung@dasweinzelt.de"
-                    className="font-bold hover:underline"
-                  >
-                    reservierung@dasweinzelt.de
-                  </a>
                   .
                 </Typography>
               </div>
