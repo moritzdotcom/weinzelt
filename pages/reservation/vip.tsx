@@ -27,6 +27,7 @@ import AddressInput, {
   validateAddress,
 } from '@/components/reservation/addressInput';
 import NewsletterConfirmation from '@/components/reservation/newsletterConfirmation';
+import { ConfirmationNumber } from '@mui/icons-material';
 
 type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
@@ -269,9 +270,10 @@ export default function VipReservationPage() {
                         >
                           <p>{seat.timeslot}</p>
                         </button>
-                        {seat.externalTicketConfig ? (
-                          <div className="text-amber-900 text-xs text-center">
-                            Externer Veranstalter
+                        {seat.externalTicketConfig && tablesLeft > 0 ? (
+                          <div className="text-amber-900 text-xs flex items-center justify-center gap-1">
+                            <ConfirmationNumber fontSize="small" />
+                            {seat.externalTicketConfig.name}
                           </div>
                         ) : null}
                         <Typography
@@ -301,13 +303,14 @@ export default function VipReservationPage() {
                   }}
                 >
                   <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
-                    Hinweis: Externer Veranstalter an diesem Tag
+                    Hinweis zu diesem Veranstaltungstag
                   </Typography>
                   <Typography variant="body2">
-                    An diesem Veranstaltungstag ist ein externer Veranstalter im
-                    Weinzelt. Für Timeslots mit Ticketpflicht kommt zusätzlich
-                    zur Reservierung eine Ticketgebühr hinzu. Du siehst die
-                    genaue Ticketgebühr direkt unter dem jeweiligen Timeslot.
+                    An diesem Tag findet im Weinzelt ein besonderes
+                    Veranstaltungsprogramm statt. Für ausgewählte Timeslots ist
+                    daher zusätzlich zur Reservierung ein Veranstaltungsticket
+                    erforderlich. Die entsprechende Ticketgebühr wird
+                    automatisch in der Bestellzusammenfassung angezeigt.
                   </Typography>
                 </Alert>
               ) : null}

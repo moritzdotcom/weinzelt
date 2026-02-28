@@ -105,10 +105,11 @@ model Reservation {
   stripePaymentIntentId   String?   @unique
   paidAt                  DateTime?
 
-  stripeRefundId String?   @unique
+  stripeRefundId String?             @unique
   refundedAmount Int?
   refundReason   String?
   canceledAt     DateTime?
+  invoice        ReservationInvoice?
 }
 
 model CompanyReservation {
@@ -129,6 +130,40 @@ model CompanyReservation {
   createdAt   DateTime @default(now())
   userId      String?
   responsible User?    @relation(fields: [userId], references: [id])
+}
+
+model ReservationInvoice {
+  id            String      @id @default(uuid())
+  reservationId String      @unique
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  // Rechnungsdaten (Snapshot)
+  invoiceNumber String    @unique
+  issuedAt      DateTime  @default(now())
+  sentAt        DateTime?
+
+  // Summen in CENT (sauber, kein Float)
+  currency      String @default("EUR")
+  subtotalCents Int
+  vat7Cents     Int    @default(0)
+  vat19Cents    Int    @default(0)
+  totalCents    Int
+
+  // optionale Detailzeilen (Snapshot)
+  lineItems Json // [{name, qty, unitCents, vatRate, totalCents}...]
+
+  // Empfänger (Snapshot)
+  customerName   String
+  customerEmail  String
+  billingAddress Json?
+
+  createdAt DateTime @default(now())
+}
+
+model InvoiceSequence {
+  year      Int      @id
+  seq       Int
+  updatedAt DateTime @updatedAt
 }
 
 model PageVisit {

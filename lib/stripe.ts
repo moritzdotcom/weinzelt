@@ -8,7 +8,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 function createLineItems(
   people: number,
-  type: ReservationType,
   seating: {
     eventDate: { date: Date | string };
     timeslot: string;
@@ -35,10 +34,7 @@ function createLineItems(
       price_data: {
         currency: 'eur',
         product_data: {
-          name:
-            type === 'VIP'
-              ? 'Weinzelt VIP Mindestverzehr'
-              : 'Weinzelt Mindestverzehr',
+          name: 'Mindestverzehr',
           description: `${tableCount} Tisch${tableCount > 1 ? 'e' : ''} · Seating ${
             seating.eventDate.date
           } ${seating.timeslot}`,
@@ -116,7 +112,6 @@ export async function createStripeSession(
 
     line_items: createLineItems(
       people,
-      type,
       seating,
       ticketCfg,
       minimumSpend,

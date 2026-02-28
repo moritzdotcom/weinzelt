@@ -3,6 +3,10 @@ import { Session } from '@/hooks/useSession';
 import {
   Box,
   Divider,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
   MenuItem,
   Paper,
   Table,
@@ -21,6 +25,8 @@ import { ApiGetReservationsResponse } from '../api/events/[eventId]/reservations
 import axios from 'axios';
 import { translateState, translateType } from '@/lib/reservation';
 import EditReservationDialog from '@/components/reservation/editDialog';
+import { Edit, MoreVert, ReceiptLong } from '@mui/icons-material';
+import { ReservationPaymentStatus } from '@prisma/client';
 
 export default function BackendSearchReservationPage({
   session,
@@ -45,6 +51,40 @@ export default function BackendSearchReservationPage({
     type?: string;
     state?: string;
   }>({});
+
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [menuReservationId, setMenuReservationId] = useState<string | null>(
+    null,
+  );
+  const [menuReservationPaymentStatus, setMenuReservationPaymentStatus] =
+    useState<ReservationPaymentStatus>();
+
+  const menuOpen = Boolean(menuAnchorEl);
+
+  const openMenu = (
+    e: React.MouseEvent<HTMLElement>,
+    reservationId: string,
+    paymentStatus: ReservationPaymentStatus,
+  ) => {
+    setMenuAnchorEl(e.currentTarget);
+    setMenuReservationId(reservationId);
+    setMenuReservationPaymentStatus(paymentStatus);
+  };
+
+  const closeMenu = () => {
+    setMenuAnchorEl(null);
+    setMenuReservationId(null);
+    setMenuReservationPaymentStatus(undefined);
+  };
+
+  const showInvoice = (reservationId: string) => {
+    // passe den Pfad an deinen Endpoint an
+    window.open(
+      `/api/reservations/${reservationId}/invoice`,
+      '_blank',
+      'noopener,noreferrer',
+    );
+  };
 
   const sortReservations = (reservations: ApiGetReservationsResponse) => {
     return reservations.sort((a, b) => {
@@ -131,7 +171,7 @@ export default function BackendSearchReservationPage({
 
   return (
     <Box className="mx-auto px-4 py-16">
-      <Box className="flex flex-col sm:flex-row gap-3 justify-between items-center mb-12">
+      <Box className="grid grid-cols-1 sm:grid-cols-3 gap-3 justify-between items-center mb-12">
         <Typography
           variant="h4"
           className="text-center"
@@ -139,6 +179,7 @@ export default function BackendSearchReservationPage({
         >
           Reservierung suchen
         </Typography>
+        <div />
 
         <EventSelector onChange={setSelectedEvent} />
       </Box>
@@ -235,13 +276,20 @@ export default function BackendSearchReservationPage({
                         <TableCell align="right">
                           {reservation.people}
                         </TableCell>
-                        <TableCell>
-                          <button
-                            className="text-sky-700 hover:text-sky-900 transition underline"
-                            onClick={() => setSelectedReservation(reservation)}
+                        <TableCell align="right">
+                          <IconButton
+                            size="small"
+                            onClick={(e) =>
+                              openMenu(
+                                e,
+                                reservation.id,
+                                reservation.paymentStatus,
+                              )
+                            }
+                            aria-label="Optionen"
                           >
-                            Bearbeiten
-                          </button>
+                            <MoreVert fontSize="small" />
+                          </IconButton>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -256,6 +304,41 @@ export default function BackendSearchReservationPage({
           )}
         </>
       )}
+      <Menu
+        anchorEl={menuAnchorEl}
+        open={menuOpen}
+        onClose={closeMenu}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MenuItem
+          onClick={() => {
+            if (menuReservationId) showInvoice(menuReservationId);
+            closeMenu();
+          }}
+          disabled={menuReservationPaymentStatus !== 'PAID'}
+        >
+          <ListItemIcon>
+            <ReceiptLong fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Rechnung anzeigen</ListItemText>
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => {
+            const r = filteredReservations.find(
+              (x) => x.id === menuReservationId,
+            );
+            if (r) setSelectedReservation(r);
+            closeMenu();
+          }}
+        >
+          <ListItemIcon>
+            <Edit fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Bearbeiten</ListItemText>
+        </MenuItem>
+      </Menu>
       <EditReservationDialog
         reservation={selectedReservation}
         onClose={() => setSelectedReservation(null)}

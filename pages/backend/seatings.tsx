@@ -192,8 +192,9 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
         Seatings & Timeslots verwalten
       </Typography>
 
-      <div className="my-7 flex items-center flex-col sm:flex-row justify-between gap-5">
+      <div className="my-7 grid grid-cols-1 sm:grid-cols-3 gap-2">
         <EventSelector onChange={setSelectedEvent} />
+        <div />
         <button
           className="rounded-full bg-black text-white px-5 py-2 text-sm"
           onClick={() => setCreateDateDialogOpen(true)}
