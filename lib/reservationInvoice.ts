@@ -62,13 +62,12 @@ export async function createReservationInvoice(reservationId: string) {
 
   const lineItems = [
     {
-      name:
-        reservation.type === 'VIP' ? 'Mindestverzehr VIP' : 'Mindestverzehr',
+      name: 'Mindestverzehr',
       qty: reservation.tableCount,
       unitCents: Math.round(
         minimumSpendCents / Math.max(1, reservation.tableCount),
       ),
-      vatRate: 19 as const,
+      vatRate: 0 as const,
       totalCents: minimumSpendCents,
     },
     ...(ticketCents > 0
@@ -92,9 +91,7 @@ export async function createReservationInvoice(reservationId: string) {
   ];
 
   const vat7Cents = ticketCents > 0 ? calcVatFromGross(ticketCents, 7) : 0;
-  const vat19Cents =
-    calcVatFromGross(minimumSpendCents, 19) +
-    calcVatFromGross(shippingCents, 19);
+  const vat19Cents = calcVatFromGross(shippingCents, 19);
 
   const totalCents = minimumSpendCents + ticketCents + shippingCents;
 
@@ -192,13 +189,12 @@ export async function createAndSendReservationInvoice(reservationId: string) {
 
   const lineItems = [
     {
-      name:
-        reservation.type === 'VIP' ? 'Mindestverzehr VIP' : 'Mindestverzehr',
+      name: 'Mindestverzehr',
       qty: reservation.tableCount,
       unitCents: Math.round(
         minimumSpendCents / Math.max(1, reservation.tableCount),
       ),
-      vatRate: 19 as const,
+      vatRate: 0 as const,
       totalCents: minimumSpendCents,
     },
     ...(ticketCents > 0
@@ -222,9 +218,7 @@ export async function createAndSendReservationInvoice(reservationId: string) {
   ];
 
   const vat7Cents = ticketCents > 0 ? calcVatFromGross(ticketCents, 7) : 0;
-  const vat19Cents =
-    calcVatFromGross(minimumSpendCents, 19) +
-    calcVatFromGross(shippingCents, 19);
+  const vat19Cents = calcVatFromGross(shippingCents, 19);
 
   const totalCents = minimumSpendCents + ticketCents + shippingCents;
 

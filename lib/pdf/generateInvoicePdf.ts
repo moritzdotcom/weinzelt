@@ -244,8 +244,43 @@ export async function generateInvoicePDF(opts: {
       align: 'right',
     });
 
-  doc.moveDown(2);
+  doc.moveDown(0.8);
 
+  // leichte Box-Optik
+  const noteX = 48;
+  const noteW = tableRight - 48;
+  const noteY = doc.y;
+  const padding = 10;
+
+  const noteText1 = 'Hinweis: Das Verzehrguthaben ist ein Mehrzweckgutschein.';
+  const noteText2 =
+    'Die Umsatzsteuer entsteht erst bei Einlösung vor Ort und wird dann auf dem Kassenbeleg ausgewiesen.';
+
+  // Hintergrund/Border (dezenter)
+  doc
+    .save()
+    .rect(noteX, noteY, noteW, 40)
+    .fillColor('#f5f5f5')
+    .fill()
+    .restore();
+
+  doc
+    .font('Helvetica')
+    .fontSize(9)
+    .fillColor('#333')
+    .text(noteText1, noteX + padding, noteY + padding, {
+      width: noteW - padding * 2,
+      align: 'left',
+    })
+    .text(noteText2, noteX + padding, noteY + padding + 13, {
+      width: noteW - padding * 2,
+      align: 'left',
+    });
+
+  // Cursor unter die Box setzen
+  doc.y = noteY + 40;
+
+  doc.moveDown(2);
   doc
     .font('Helvetica')
     .fontSize(9)
