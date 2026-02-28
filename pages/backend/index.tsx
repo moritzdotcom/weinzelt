@@ -45,7 +45,7 @@ export default function Backend({ session }: { session: Session }) {
         />
         <LinkItem
           href="/backend/reservations"
-          text="Bestätigte Reservierungen"
+          text="Reservierungen"
           Icon={AssignmentIcon}
         />
         <LinkItem

@@ -5,12 +5,17 @@ export function SimpleOrderSummary({
   personCount,
   tableCount,
   minimumSpend,
+  externalTicketConfig,
 }: {
   personCount: number;
   tableCount: number;
   minimumSpend: number;
+  externalTicketConfig: { name: string; ticketPrice: number } | null;
 }) {
   const drinksTotal = minimumSpend * tableCount;
+  const ticketsTotal = externalTicketConfig
+    ? personCount * externalTicketConfig.ticketPrice
+    : 0;
   const deliveryFee = 5.9;
 
   return (
@@ -42,6 +47,18 @@ export function SimpleOrderSummary({
         </Typography>
       </Box>
 
+      {externalTicketConfig && (
+        <Box display="flex" justifyContent="space-between" gap={2} mb={1}>
+          <Typography>
+            Tickets {externalTicketConfig.name} ({personCount} ×{' '}
+            {externalTicketConfig.ticketPrice} €)
+          </Typography>
+          <Typography className="whitespace-nowrap">
+            {ticketsTotal.toFixed(2).replace('.', ',')} €
+          </Typography>
+        </Box>
+      )}
+
       <Box display="flex" justifyContent="space-between" gap={2} mb={1}>
         <Box display="flex" gap="3px" alignItems="center">
           <Typography>Versand</Typography>
@@ -61,7 +78,10 @@ export function SimpleOrderSummary({
           Gesamt
         </Typography>
         <Typography variant="subtitle1" fontWeight={600}>
-          {(drinksTotal + deliveryFee).toFixed(2).replace('.', ',')} €
+          {(drinksTotal + deliveryFee + ticketsTotal)
+            .toFixed(2)
+            .replace('.', ',')}{' '}
+          €
         </Typography>
       </Box>
     </Box>

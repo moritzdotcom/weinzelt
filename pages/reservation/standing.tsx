@@ -267,6 +267,11 @@ export default function StandingReservationPage() {
                         >
                           {seat.timeslot}
                         </button>
+                        {seat.externalTicketConfig ? (
+                          <div className="text-amber-900 text-xs text-center">
+                            Externer Veranstalter
+                          </div>
+                        ) : null}
                         <Typography
                           variant="body2"
                           className="text-center"
@@ -283,6 +288,27 @@ export default function StandingReservationPage() {
 
           {selectedSlot && (
             <Box id="contact" mt={6}>
+              {selectedSlot.externalTicketConfig ? (
+                <Alert
+                  severity="warning"
+                  variant="outlined"
+                  sx={{
+                    mb: 4,
+                    borderRadius: 2,
+                    '& .MuiAlert-message': { width: '100%' },
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
+                    Hinweis: Externer Veranstalter an diesem Tag
+                  </Typography>
+                  <Typography variant="body2">
+                    An diesem Veranstaltungstag ist ein externer Veranstalter im
+                    Weinzelt. Für Timeslots mit Ticketpflicht kommt zusätzlich
+                    zur Reservierung eine Ticketgebühr hinzu. Du siehst die
+                    genaue Ticketgebühr direkt unter dem jeweiligen Timeslot.
+                  </Typography>
+                </Alert>
+              ) : null}
               <Typography variant="h5" gutterBottom>
                 Anzahl Personen
               </Typography>
@@ -356,6 +382,7 @@ export default function StandingReservationPage() {
                     personCount={Number(personCount)}
                     tableCount={determineTableCount(Number(personCount))}
                     minimumSpend={selectedSlot.minimumSpendStanding}
+                    externalTicketConfig={selectedSlot.externalTicketConfig}
                   />
                 </Box>
               )}

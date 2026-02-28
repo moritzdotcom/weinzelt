@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import {
   Box,
   Typography,
@@ -9,15 +9,20 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Checkbox,
-  FormControlLabel,
   Button,
   Tooltip,
   InputAdornment,
+  Stack,
+  Collapse,
+  Alert,
+  Chip,
+  CardContent,
+  Card,
+  Divider,
+  IconButton,
 } from '@mui/material';
 import { ApiGetEventDatesResponse } from '../api/events/[eventId]/eventDates';
 import { ApiPostSeatingResponse } from '../api/eventDates/[eventDateId]/seatings';
-import { Seating } from '@prisma/client';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditIcon from '@mui/icons-material/Edit';
@@ -28,12 +33,22 @@ import { ApiPutSeatingResponse } from '../api/seatings/[seatingId]';
 import ConfirmDialog from '@/components/confirmDialog';
 import { ApiDeleteEventDateResponse } from '../api/eventDates/[eventDateId]';
 import EventSelector from '@/components/eventSelector';
+import {
+  ConfirmationNumberOutlined,
+  EventSeatOutlined,
+  LocalBarOutlined,
+} from '@mui/icons-material';
+import { ApiPutExternalTicketConfigResponse } from '../api/seatings/[seatingId]/externalTicketConfig';
+
+type EventDate = ApiGetEventDatesResponse[number];
+type Seating = EventDate['seatings'][number];
+type ExternalTicketConfig = Seating['externalTicketConfig'];
 
 export default function BackendSeatingsPage({ session }: { session: Session }) {
   const router = useRouter();
   const [selectedEvent, setSelectedEvent] =
     useState<ApiGetEventsResponse[number]>();
-  const [eventDates, setEventDates] = useState<ApiGetEventDatesResponse>();
+  const [eventDates, setEventDates] = useState<EventDate[]>();
   const [newDate, setNewDate] = useState('');
   const [newDow, setNewDow] = useState('');
   const [createDateDialogOpen, setCreateDateDialogOpen] = useState(false);
@@ -41,7 +56,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
   const [deleteDateDialogOpen, setDeleteDateDialogOpen] = useState(false);
   const [createSeatingDialogOpen, setCreateSeatingDialogOpen] = useState(false);
   const [selectedEventDateId, setSelectedEventDateId] = useState<string | null>(
-    null
+    null,
   );
   const [seatingData, setSeatingData] = useState({
     timeslot: '',
@@ -72,7 +87,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
       {
         date: newDate,
         dow: newDow,
-      }
+      },
     );
     setCreateDateDialogOpen(false);
     setNewDate('');
@@ -87,7 +102,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
       {
         date: newDate,
         dow: newDow,
-      }
+      },
     );
     setDuplicateDateDialogOpen(false);
     setNewDate('');
@@ -98,7 +113,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
   const handleDeleteDate = async () => {
     if (!selectedEventDateId) return;
     const { data }: { data: ApiDeleteEventDateResponse } = await axios.delete(
-      `/api/eventDates/${selectedEventDateId}`
+      `/api/eventDates/${selectedEventDateId}`,
     );
     setDeleteDateDialogOpen(false);
     setEventDates((prev) => (prev ? prev.filter((p) => p.id !== data.id) : []));
@@ -114,7 +129,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
         minimumSpendStanding: Number(seatingData.minimumSpendStanding),
         availableVip: Number(seatingData.availableVip),
         availableStanding: Number(seatingData.availableStanding),
-      }
+      },
     );
     setCreateSeatingDialogOpen(false);
     setSeatingData({
@@ -129,25 +144,33 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
       prev
         ? prev.map((p) =>
             p.id == data.eventDateId
-              ? { ...p, seatings: [...p.seatings, data] }
-              : p
+              ? {
+                  ...p,
+                  seatings: [
+                    ...p.seatings,
+                    { ...data, externalTicketConfig: null },
+                  ],
+                }
+              : p,
           )
-        : undefined
+        : undefined,
     );
   };
 
-  const handleUpdateSeating = (data: ApiPutSeatingResponse) => {
+  const handleUpdateSeating = (data: Partial<Seating>) => {
     setEventDates((prev) =>
       prev
         ? prev.map((p) =>
             p.id == data.eventDateId
               ? {
                   ...p,
-                  seatings: p.seatings.map((s) => (s.id == data.id ? data : s)),
+                  seatings: p.seatings.map((s) =>
+                    s.id == data.id ? { ...s, ...data } : s,
+                  ),
                 }
-              : p
+              : p,
           )
-        : undefined
+        : undefined,
     );
   };
 
@@ -157,9 +180,9 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
         ? prev.map((p) =>
             p.id == eventDateId
               ? { ...p, seatings: p.seatings.filter((s) => s.id !== seatingId) }
-              : p
+              : p,
           )
-        : undefined
+        : undefined,
     );
   };
 
@@ -340,21 +363,8 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
             }
             margin="normal"
           />
-          {/* <TextField
-            label="Reservierungs Schwelle"
-            type="number"
-            fullWidth
-            value={seatingData.minimumSpend}
-            onChange={(e) =>
-              setSeatingData({
-                ...seatingData,
-                minimumSpend: e.target.value,
-              })
-            }
-            margin="normal"
-          /> */}
           <TextField
-            label="Getränkeguthaben VIP"
+            label="Mindestverzehr VIP"
             type="number"
             fullWidth
             value={seatingData.minimumSpendVip}
@@ -374,7 +384,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
             margin="normal"
           />
           <TextField
-            label="Getränkeguthaben Stehtisch"
+            label="Mindestverzehr Stehtisch"
             type="number"
             fullWidth
             value={seatingData.minimumSpendStanding}
@@ -422,10 +432,16 @@ function SeatingCard({
 }: {
   seating: Seating;
   onDelete: () => void;
-  onUpdate: (data: ApiPutSeatingResponse) => void;
+  onUpdate: (data: Partial<Seating>) => void;
 }) {
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const [ticketDialogOpen, setTicketDialogOpen] = useState(false);
+  const [ticketDeleteOpen, setTicketDeleteOpen] = useState(false);
+
+  const [error, setError] = useState<string | null>(null);
+
   const [seatingData, setSeatingData] = useState({
     timeslot: seating.timeslot,
     availableVip: `${seating.availableVip}`,
@@ -434,70 +450,309 @@ function SeatingCard({
     minimumSpendStanding: `${seating.minimumSpendStanding}`,
   });
 
+  const [ticketData, setTicketData] = useState({
+    name: seating.externalTicketConfig?.name ?? '',
+    ticketPrice: seating.externalTicketConfig
+      ? `${seating.externalTicketConfig.ticketPrice}`
+      : '',
+    required: seating.externalTicketConfig?.required ?? true,
+    ticketPerPerson: seating.externalTicketConfig?.ticketPerPerson ?? true,
+  });
+
+  const hasTicket = !!seating.externalTicketConfig;
+
+  const ticketAddOnText = useMemo(() => {
+    if (!hasTicket) return null;
+    const cfg = seating.externalTicketConfig!;
+    const mode = cfg.ticketPerPerson ? 'pro Person' : 'pro Reservierung';
+    const req = cfg.required ? 'Pflicht' : 'Optional';
+    return `${cfg.ticketPrice} € • ${mode} • ${req}`;
+  }, [hasTicket, seating.externalTicketConfig]);
+
   const handleUpdate = async () => {
-    const { data }: { data: ApiPutSeatingResponse } = await axios.put(
-      `/api/seatings/${seating.id}`,
-      {
-        ...seatingData,
-        availableVip: Number(seatingData.availableVip),
-        minimumSpendVip: Number(seatingData.minimumSpendVip),
-        minimumSpendStanding: Number(seatingData.minimumSpendStanding),
-        availableStanding: Number(seatingData.availableStanding),
-      }
-    );
-    setUpdateDialogOpen(false);
-    onUpdate(data);
+    setError(null);
+    try {
+      const { data }: { data: ApiPutSeatingResponse } = await axios.put(
+        `/api/seatings/${seating.id}`,
+        {
+          ...seatingData,
+          availableVip: Number(seatingData.availableVip),
+          minimumSpendVip: Number(seatingData.minimumSpendVip),
+          minimumSpendStanding: Number(seatingData.minimumSpendStanding),
+          availableStanding: Number(seatingData.availableStanding),
+        },
+      );
+      setUpdateDialogOpen(false);
+      onUpdate(data);
+    } catch (e) {
+      setError(
+        isAxiosError(e)
+          ? (e.response?.data?.error ?? e.message)
+          : 'Unbekannter Fehler',
+      );
+    }
   };
 
   const handleDelete = async () => {
-    await axios.delete(`/api/seatings/${seating.id}`);
-    onDelete();
+    setError(null);
+    try {
+      await axios.delete(`/api/seatings/${seating.id}`);
+      onDelete();
+    } catch (e) {
+      setError(
+        isAxiosError(e)
+          ? (e.response?.data?.error ?? e.message)
+          : 'Unbekannter Fehler',
+      );
+    }
+  };
+
+  // --- ExternalTicketConfig actions ---
+  const handleUpsertTicket = async () => {
+    setError(null);
+    try {
+      const payload = {
+        name: ticketData.name.trim(),
+        ticketPrice: Number(ticketData.ticketPrice),
+        required: ticketData.required,
+        ticketPerPerson: ticketData.ticketPerPerson,
+      };
+
+      // Empfehlung: upsert endpoint
+      const { data }: { data: ApiPutExternalTicketConfigResponse } =
+        await axios.put(
+          `/api/seatings/${seating.id}/externalTicketConfig`,
+          payload,
+        );
+
+      setTicketDialogOpen(false);
+
+      // Sitzplatz neu in Parent-State updaten:
+      onUpdate({
+        ...seating,
+        externalTicketConfig: data,
+      });
+    } catch (e) {
+      setError(
+        isAxiosError(e)
+          ? (e.response?.data?.error ?? e.message)
+          : 'Unbekannter Fehler',
+      );
+    }
+  };
+
+  const handleDeleteTicket = async () => {
+    setError(null);
+    try {
+      await axios.delete(`/api/seatings/${seating.id}/externalTicketConfig`);
+      setTicketDeleteOpen(false);
+
+      onUpdate({
+        ...seating,
+        externalTicketConfig: null,
+      });
+    } catch (e) {
+      setError(
+        isAxiosError(e)
+          ? (e.response?.data?.error ?? e.message)
+          : 'Unbekannter Fehler',
+      );
+    }
   };
 
   return (
-    <Box className="mb-4 p-3 border rounded-md bg-gray-50">
-      <div className="flex flex-row justify-between">
-        <div className="flex flex-col md:flex-row font-semibold text-lg">
-          <p>
-            Timeslot: {seating.timeslot}
-            <span className="hidden md:inline mr-1">,</span>
-          </p>
-          <p>
-            Tische: {seating.availableVip}
-            <span className="hidden md:inline mr-1">,</span>
-          </p>
-          <p>
-            Stehtische: {seating.availableStanding}
-            <span className="hidden md:inline mr-1">,</span>
-          </p>
-          <p>
-            MVZ VIP: {seating.minimumSpendVip} €
-            <span className="hidden md:inline mr-1">,</span>
-          </p>
-          <p>MVZ Stehtisch: {seating.minimumSpendStanding} €</p>
-        </div>
-        <div className="flex gap-3">
-          <Tooltip title="Bearbeiten">
-            <button
-              className="rounded border border-sky-600 text-sky-600 w-6 h-6 text-sm flex items-center justify-center"
-              onClick={() => setUpdateDialogOpen(true)}
+    <Card
+      variant="outlined"
+      sx={{
+        mb: 2,
+        borderRadius: 3,
+        overflow: 'hidden',
+      }}
+    >
+      <CardContent sx={{ p: 2.25 }}>
+        <Stack
+          direction="row"
+          alignItems="flex-start"
+          justifyContent="space-between"
+          gap={2}
+        >
+          <Box sx={{ minWidth: 0 }}>
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              sx={{ mb: 1 }}
             >
-              <EditIcon fontSize="inherit" />
-            </button>
-          </Tooltip>
-          <Tooltip title="Löschen">
-            <button
-              className="rounded border border-red-600 text-red-600 w-6 h-6 text-sm flex items-center justify-center"
-              onClick={() => setDeleteDialogOpen(true)}
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                {seating.timeslot}
+              </Typography>
+
+              <Chip size="small" label={`${seating.availableVip} Tische`} />
+              <Chip
+                size="small"
+                label={`${seating.availableStanding} Stehtische`}
+              />
+
+              {hasTicket ? (
+                <Chip
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                  icon={<ConfirmationNumberOutlined />}
+                  label="Externes Ticket"
+                />
+              ) : null}
+            </Stack>
+
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1.5}
+              sx={{ mt: 0.5 }}
             >
-              <DeleteOutlineIcon fontSize="inherit" />
-            </button>
-          </Tooltip>
-        </div>
-      </div>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Getränkeguthaben VIP
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 650 }}>
+                  {seating.minimumSpendVip} €{' '}
+                  <Typography
+                    component="span"
+                    variant="body2"
+                    color="text.secondary"
+                  >
+                    / Tisch
+                  </Typography>
+                </Typography>
+              </Box>
+
+              <Divider
+                flexItem
+                orientation="vertical"
+                sx={{ display: { xs: 'none', sm: 'block' } }}
+              />
+
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Getränkeguthaben Stehtisch
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 650 }}>
+                  {seating.minimumSpendStanding} €{' '}
+                  <Typography
+                    component="span"
+                    variant="body2"
+                    color="text.secondary"
+                  >
+                    / Tisch
+                  </Typography>
+                </Typography>
+              </Box>
+            </Stack>
+
+            <Collapse in={!!error}>
+              <Alert severity="error" sx={{ mt: 1.5 }}>
+                {error}
+              </Alert>
+            </Collapse>
+          </Box>
+
+          <Stack direction="row" spacing={1}>
+            <Tooltip title="Bearbeiten">
+              <IconButton
+                size="small"
+                onClick={() => setUpdateDialogOpen(true)}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Löschen">
+              <IconButton
+                size="small"
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                <DeleteOutlineIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        </Stack>
+
+        {/* External ticket block */}
+        <Divider sx={{ my: 2 }} />
+
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          alignItems={{ xs: 'stretch', sm: 'center' }}
+          justifyContent="space-between"
+          gap={1.5}
+        >
+          <Box sx={{ minWidth: 0 }}>
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              sx={{ mb: 0.25 }}
+            >
+              <ConfirmationNumberOutlined fontSize="small" />
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                Externe Veranstaltung
+              </Typography>
+            </Stack>
+
+            {hasTicket ? (
+              <>
+                <Typography variant="body2" sx={{ fontWeight: 650 }}>
+                  {seating.externalTicketConfig!.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {ticketAddOnText}
+                </Typography>
+              </>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                Kein Ticket konfiguriert.
+              </Typography>
+            )}
+          </Box>
+
+          <Stack direction="row" spacing={1}>
+            <Button
+              size="small"
+              variant={hasTicket ? 'outlined' : 'contained'}
+              startIcon={hasTicket ? <EditIcon /> : <AddIcon />}
+              onClick={() => {
+                setTicketData({
+                  name: seating.externalTicketConfig?.name ?? '',
+                  ticketPrice: seating.externalTicketConfig
+                    ? `${seating.externalTicketConfig.ticketPrice}`
+                    : '',
+                  required: seating.externalTicketConfig?.required ?? true,
+                  ticketPerPerson:
+                    seating.externalTicketConfig?.ticketPerPerson ?? true,
+                });
+                setTicketDialogOpen(true);
+              }}
+            >
+              {hasTicket ? 'Ticket bearbeiten' : 'Ticket hinzufügen'}
+            </Button>
+
+            {hasTicket ? (
+              <Button
+                size="small"
+                color="error"
+                variant="text"
+                onClick={() => setTicketDeleteOpen(true)}
+              >
+                Entfernen
+              </Button>
+            ) : null}
+          </Stack>
+        </Stack>
+      </CardContent>
+
+      {/* Seating edit dialog */}
       <Dialog
         open={updateDialogOpen}
         onClose={() => setUpdateDialogOpen(false)}
+        fullWidth
       >
         <DialogTitle>Seating bearbeiten</DialogTitle>
         <DialogContent>
@@ -516,10 +771,7 @@ function SeatingCard({
             fullWidth
             value={seatingData.availableVip}
             onChange={(e) =>
-              setSeatingData({
-                ...seatingData,
-                availableVip: e.target.value,
-              })
+              setSeatingData({ ...seatingData, availableVip: e.target.value })
             }
             margin="normal"
           />
@@ -585,6 +837,64 @@ function SeatingCard({
         </DialogActions>
       </Dialog>
 
+      {/* Ticket config dialog */}
+      <Dialog
+        open={ticketDialogOpen}
+        onClose={() => setTicketDialogOpen(false)}
+        fullWidth
+      >
+        <DialogTitle>Externes Ticket konfigurieren</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Name (z. B. Konzertticket)"
+            fullWidth
+            value={ticketData.name}
+            onChange={(e) =>
+              setTicketData({ ...ticketData, name: e.target.value })
+            }
+            margin="normal"
+          />
+
+          <TextField
+            label="Ticketpreis"
+            type="number"
+            fullWidth
+            value={ticketData.ticketPrice}
+            onChange={(e) =>
+              setTicketData({ ...ticketData, ticketPrice: e.target.value })
+            }
+            slotProps={{
+              input: {
+                endAdornment: <InputAdornment position="end">€</InputAdornment>,
+              },
+            }}
+            margin="normal"
+          />
+
+          <Button
+            size="small"
+            variant={ticketData.required ? 'contained' : 'outlined'}
+            color="info"
+            onClick={() =>
+              setTicketData({ ...ticketData, required: !ticketData.required })
+            }
+          >
+            {ticketData.required ? 'Pflicht' : 'Optional'}
+          </Button>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setTicketDialogOpen(false)}>Abbrechen</Button>
+          <Button
+            onClick={handleUpsertTicket}
+            variant="contained"
+            disabled={!ticketData.name.trim() || !ticketData.ticketPrice}
+          >
+            Speichern
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirm dialogs (deine existierenden) */}
       <ConfirmDialog
         open={deleteDialogOpen}
         title="Dieses Seating wirklich löschen?"
@@ -592,6 +902,14 @@ function SeatingCard({
         onCancel={() => setDeleteDialogOpen(false)}
         onConfirm={() => handleDelete()}
       />
-    </Box>
+
+      <ConfirmDialog
+        open={ticketDeleteOpen}
+        title="Externes Ticket entfernen?"
+        description="Die Ticket-Konfiguration wird entfernt. Bestehende Reservierungen bleiben unverändert."
+        onCancel={() => setTicketDeleteOpen(false)}
+        onConfirm={() => handleDeleteTicket()}
+      />
+    </Card>
   );
 }

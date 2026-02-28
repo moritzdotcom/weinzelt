@@ -48,38 +48,54 @@ model EventDate {
 }
 
 model Seating {
-  id                   String               @id @default(uuid())
-  eventDate            EventDate            @relation(fields: [eventDateId], references: [id])
+  id                   String                @id @default(uuid())
+  eventDate            EventDate             @relation(fields: [eventDateId], references: [id])
   eventDateId          String
   timeslot             String
-  availableVip         Int                  @default(10)
-  availableStanding    Int                  @default(10)
-  minimumSpendVip      Int                  @default(0)
-  minimumSpendStanding Int                  @default(0)
+  availableVip         Int                   @default(10)
+  availableStanding    Int                   @default(10)
+  minimumSpendVip      Int                   @default(0)
+  minimumSpendStanding Int                   @default(0)
   reservations         Reservation[]
   companyReservations  CompanyReservation[]
+  externalTicketConfig ExternalTicketConfig?
+}
+
+model ExternalTicketConfig {
+  id        String  @id @default(uuid())
+  seatingId String  @unique
+  seating   Seating @relation(fields: [seatingId], references: [id])
+
+  name        String
+  ticketPrice Int // in Cent
+  required    Boolean @default(true)
+
+  // optional, aber praktisch:
+  ticketPerPerson Boolean  @default(true) // wenn z.B. 1 Ticket pro Gast
+  createdAt       DateTime @default(now())
 }
 
 model Reservation {
-  id             String                   @id @default(uuid())
-  type           ReservationType          @default(VIP)
-  name           String
-  email          String
-  people         Int
-  seatingId      String
-  seating        Seating                  @relation(fields: [seatingId], references: [id])
-  paymentStatus  ReservationPaymentStatus @default(DRAFT)
-  tableCount     Int                      @default(1)
-  minimumSpend   Int                      @default(0)
-  tableNumber    String?
-  internalNotes  String?
-  notified       DateTime?
-  payed          Boolean                  @default(false)
-  pageVisitId    String?
-  pageVisit      PageVisit?               @relation(fields: [pageVisitId], references: [id])
-  referralCodeId String?
-  referralCode   ReferralCode?            @relation(fields: [referralCodeId], references: [id])
-  createdAt      DateTime                 @default(now())
+  id                  String                   @id @default(uuid())
+  type                ReservationType          @default(VIP)
+  name                String
+  email               String
+  people              Int
+  seatingId           String
+  seating             Seating                  @relation(fields: [seatingId], references: [id])
+  paymentStatus       ReservationPaymentStatus @default(DRAFT)
+  tableCount          Int                      @default(1)
+  minimumSpend        Int                      @default(0)
+  externalTicketPrice Int                      @default(0)
+  tableNumber         String?
+  internalNotes       String?
+  notified            DateTime?
+  payed               Boolean                  @default(false)
+  pageVisitId         String?
+  pageVisit           PageVisit?               @relation(fields: [pageVisitId], references: [id])
+  referralCodeId      String?
+  referralCode        ReferralCode?            @relation(fields: [referralCodeId], references: [id])
+  createdAt           DateTime                 @default(now())
 
   billingAddress        Json?
   shippingAddress       Json?

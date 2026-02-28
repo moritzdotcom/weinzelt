@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import prisma from '@/lib/prismadb';
 import { determineMinimumSpend, determineTableCount } from '@/lib/reservation';
 import { createNewsletterSubscription } from '@/lib/newsletter';
+import { createStripeSession } from '@/lib/stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-12-15.clover',
@@ -51,6 +52,7 @@ export default async function handler(
         eventDate: {
           select: { date: true },
         },
+        externalTicketConfig: true,
       },
     });
 
@@ -58,6 +60,12 @@ export default async function handler(
 
     const tableCount = determineTableCount(people);
     const minimumSpend = determineMinimumSpend(type, people, seating);
+    const ticketCfg = seating.externalTicketConfig;
+    const ticketFeeEuro = ticketCfg
+      ? ticketCfg.ticketPerPerson
+        ? people * ticketCfg.ticketPrice
+        : ticketCfg.ticketPrice
+      : 0;
 
     // Reservation anlegen (oder du nutzt ein bestehendes Draft)
     const reservation = await prisma.reservation.create({
@@ -72,6 +80,7 @@ export default async function handler(
         tableCount,
         paymentStatus: 'PENDING_PAYMENT',
         minimumSpend,
+        externalTicketPrice: ticketFeeEuro,
         billingAddress,
         shippingAddress,
         shippingSameAsBilling: Boolean(shippingSameAsBilling),
@@ -94,61 +103,13 @@ export default async function handler(
       await createNewsletterSubscription(email, name);
     }
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card'],
-      locale: 'de',
-
-      line_items: [
-        {
-          price_data: {
-            currency: 'eur',
-            product_data: {
-              name:
-                type === 'VIP'
-                  ? 'Weinzelt VIP Mindesverzehr'
-                  : 'Weinzelt Mindesverzehr',
-              description: `${tableCount} Tisch${
-                tableCount > 1 ? 'e' : ''
-              } · Seating ${seating.eventDate.date} ${seating.timeslot}`,
-            },
-            unit_amount: (minimumSpend / tableCount) * 100, // Gesamtbetrag für Mindesverzehr
-          },
-          quantity: tableCount,
-        },
-        {
-          price_data: {
-            currency: 'eur',
-            product_data: {
-              name: 'Versand',
-              description: 'Für Einlassbändchen und Verzehrkarte',
-            },
-            unit_amount: 590, // Gesamtbetrag für Mindesverzehr
-          },
-          quantity: 1,
-        },
-      ],
-
-      // Wenn du Email hast, füllen (sonst sammelt Stripe sie ein)
-      customer_email: email || undefined,
-
-      // sehr wichtig fürs Mapping im Webhook
-      metadata: {
-        reservationId: reservation.id,
-        seatingId,
-        type,
-        people: String(people),
-        expectedTotalCents: minimumSpend * 100,
-      },
-      payment_intent_data: {
-        metadata: {
-          reservationId: reservation.id,
-        },
-      },
-
-      success_url: `${process.env.APP_URL}/reservation/success?rid=${reservation.id}`,
-      cancel_url: `${process.env.APP_URL}/reservation/cancel?rid=${reservation.id}`,
-    });
+    const session = await createStripeSession(
+      people,
+      type,
+      seating,
+      email,
+      reservation.id,
+    );
 
     // Session ID speichern (optional aber hilfreich)
     await prisma.reservation.update({

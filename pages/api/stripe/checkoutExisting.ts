@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import prisma from '@/lib/prismadb';
+import { createStripeSession } from '@/lib/stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-12-15.clover',
@@ -31,6 +32,10 @@ export default async function handler(
       email: true,
       seating: {
         select: {
+          id: true,
+          minimumSpendVip: true,
+          minimumSpendStanding: true,
+          externalTicketConfig: true,
           timeslot: true,
           eventDate: {
             select: {
@@ -46,54 +51,13 @@ export default async function handler(
   if (r.paymentStatus === 'PAID')
     return res.status(409).json({ error: 'Already paid' });
 
-  const session = await stripe.checkout.sessions.create({
-    mode: 'payment',
-    payment_method_types: ['card'],
-    locale: 'de',
-    line_items: [
-      {
-        price_data: {
-          currency: 'eur',
-          product_data: {
-            name:
-              r.type === 'VIP'
-                ? 'Weinzelt VIP Mindestverzehr'
-                : 'Weinzelt Mindestverzehr',
-            description: `${r.tableCount} Tisch${
-              r.tableCount > 1 ? 'e' : ''
-            } · Seating ${new Date(r.seating.eventDate.date).toLocaleDateString(
-              'de-DE',
-            )} ${r.seating.timeslot}`,
-          },
-          unit_amount: (r.minimumSpend / r.tableCount) * 100,
-        },
-        quantity: r.tableCount,
-      },
-      {
-        price_data: {
-          currency: 'eur',
-          product_data: {
-            name: 'Versand',
-            description: 'Für Einlassbändchen und Verzehrkarte',
-          },
-          unit_amount: 590, // Gesamtbetrag für Mindesverzehr
-        },
-        quantity: 1,
-      },
-    ],
-    customer_email: r.email,
-    metadata: {
-      reservationId: r.id,
-      expectedTotalCents: r.minimumSpend * 100,
-    },
-    payment_intent_data: {
-      metadata: {
-        reservationId: r.id,
-      },
-    },
-    success_url: `${process.env.APP_URL}/reservation/success?rid=${r.id}`,
-    cancel_url: `${process.env.APP_URL}/reservation/cancel?rid=${r.id}`,
-  });
+  const session = await createStripeSession(
+    r.people,
+    r.type,
+    r.seating,
+    r.email,
+    r.id,
+  );
 
   return res.status(200).json({ url: session.url });
 }

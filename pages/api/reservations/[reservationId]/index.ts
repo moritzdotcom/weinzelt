@@ -33,6 +33,7 @@ export type ApiGetReservationResponse = Prisma.ReservationGetPayload<{
     people: true;
     tableCount: true;
     minimumSpend: true;
+    externalTicketPrice: true;
     paidAt: true;
     seating: {
       select: {
@@ -58,6 +59,7 @@ async function handleGET(
       people: true,
       tableCount: true,
       minimumSpend: true,
+      externalTicketPrice: true,
       paidAt: true,
       seating: {
         select: {

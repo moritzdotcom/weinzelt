@@ -5,7 +5,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handle(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const session = await getServerSession(req);
   if (!session) return res.status(401).json('Not authenticated');
@@ -20,23 +20,23 @@ export default async function handle(
     await handlePOST(req, res, eventId);
   } else {
     throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
+      `The HTTP ${req.method} method is not supported at this route.`,
     );
   }
 }
 
 export type ApiGetEventDatesResponse = Prisma.EventDateGetPayload<{
-  include: { seatings: true };
+  include: { seatings: { include: { externalTicketConfig: true } } };
 }>[];
 
 async function handleGET(
   req: NextApiRequest,
   res: NextApiResponse,
-  id: string
+  id: string,
 ) {
   const eventDates = await prisma.eventDate.findMany({
     where: { eventId: id },
-    include: { seatings: true },
+    include: { seatings: { include: { externalTicketConfig: true } } },
   });
   return res.json(eventDates);
 }
@@ -44,7 +44,7 @@ async function handleGET(
 async function handlePOST(
   req: NextApiRequest,
   res: NextApiResponse,
-  id: string
+  id: string,
 ) {
   const { date, dow } = req.body;
   if (typeof date !== 'string') return res.status(401).json('Date Required');
@@ -53,7 +53,7 @@ async function handlePOST(
 
   const eventDate = await prisma.eventDate.create({
     data: { date, dow, eventId: id },
-    include: { seatings: true },
+    include: { seatings: { include: { externalTicketConfig: true } } },
   });
   return res.json(eventDate);
 }

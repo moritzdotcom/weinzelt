@@ -30,6 +30,9 @@ export type ApiGetCompanyReservationsResponse =
         include: {
           eventDate: { select: { date: true } };
           reservations: { select: { type: true; tableCount: true } };
+          externalTicketConfig: {
+            select: { name: true; ticketPrice: true };
+          };
         };
       };
       responsible: {
@@ -53,6 +56,9 @@ async function handleGET(
             where: {
               paymentStatus: 'PAID',
             },
+          },
+          externalTicketConfig: {
+            select: { name: true, ticketPrice: true },
           },
         },
       },

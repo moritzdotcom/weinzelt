@@ -31,6 +31,9 @@ export type ApiGetReservationDataResponse = Prisma.EventGetPayload<{
             minimumSpendVip: true;
             minimumSpendStanding: true;
             reservations: { select: { tableCount: true; type: true } };
+            externalTicketConfig: {
+              select: { name: true; ticketPrice: true };
+            };
           };
         };
       };
@@ -59,6 +62,9 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
                   paymentStatus: 'PAID',
                 },
                 select: { tableCount: true, type: true },
+              },
+              externalTicketConfig: {
+                select: { name: true, ticketPrice: true },
               },
             },
           },

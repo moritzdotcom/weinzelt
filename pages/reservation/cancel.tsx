@@ -7,7 +7,7 @@ export default function ReservationCancelPage() {
   const router = useRouter();
   const rid = useMemo(
     () => (typeof router.query.rid === 'string' ? router.query.rid : ''),
-    [router.query.rid]
+    [router.query.rid],
   );
 
   const [reservation, setReservation] =
@@ -64,7 +64,7 @@ export default function ReservationCancelPage() {
             const updated = await cancelReservation(rid);
             if (cancelled) return;
             setReservation((prev) =>
-              prev ? { ...prev, paymentStatus: updated.paymentStatus } : prev
+              prev ? { ...prev, paymentStatus: updated.paymentStatus } : prev,
             );
           } catch (e: any) {
             // nicht hart failen, UI trotzdem anzeigen
@@ -131,15 +131,19 @@ export default function ReservationCancelPage() {
               </div>
               <div>
                 Seating:{' '}
-                <strong>{`${new Date(
-                  reservation.seating.eventDate.date
-                ).toLocaleString('de-DE')} - ${
+                <strong>{`${reservation.seating.eventDate.date} - ${
                   reservation.seating.timeslot
                 }`}</strong>
               </div>
               <div>
-                Summe: <strong>{reservation.minimumSpend} €</strong> ·{' '}
-                {reservation.people} Personen ·{' '}
+                Summe:{' '}
+                <strong>
+                  {reservation.minimumSpend +
+                    reservation.externalTicketPrice +
+                    5.9}{' '}
+                  €
+                </strong>{' '}
+                · {reservation.people} Personen ·{' '}
                 {reservation.type === 'VIP' ? 'VIP' : 'Standing'}
               </div>
               <div>
