@@ -53,10 +53,20 @@ export async function generateInvoicePDF(opts: {
   doc
     .fontSize(10)
     .fillColor('#111')
+    .font('Helvetica-Bold')
     .text('Weinzelt GmbH', 0, 44, { align: 'right' })
-    .text('Düsseldorf', { align: 'right' })
     .moveDown(0.2)
+    .font('Helvetica')
+    .text('Heesenstraße 74, Halle 7f', { align: 'right' })
+    .moveDown(0.2)
+    .text('40549 Düsseldorf', { align: 'right' })
+    .moveDown(0.2)
+    .text('Ust.-Idnr: 103/5741/1849', { align: 'right' })
+    .moveDown(0.7)
+    .font('Helvetica-Bold')
     .text(`Rechnung: ${opts.invoiceNumber}`, { align: 'right' })
+    .moveDown(0.2)
+    .font('Helvetica')
     .text(`Datum: ${formatDate(opts.issuedAt)}`, { align: 'right' });
 
   doc.moveDown(3);
@@ -65,10 +75,8 @@ export async function generateInvoicePDF(opts: {
   doc
     .fontSize(11)
     .fillColor('#111')
-    .text('Rechnung an:', 48)
-    .moveDown(0.4)
     .font('Helvetica-Bold')
-    .text(opts.customerName)
+    .text(opts.customerName, 48)
     .font('Helvetica')
     .text(opts.customerEmail);
 

@@ -6,11 +6,10 @@ export default function sendReservationInvoiceMail(opts: {
   invoiceNumber: string;
   invoicePdf: Buffer;
 }) {
-  const subject = `Deine Rechnung ${opts.invoiceNumber} – Weinzelt`;
+  const subject = `Deine Rechnung ${opts.invoiceNumber} - Weinzelt`;
 
   return sendMail({
     to: opts.to,
-    sendCopy: true,
     subject,
     text: `Hallo ${opts.name},\n\nanbei findest du deine Rechnung (${opts.invoiceNumber}).\n\nLiebe Grüße\nDas Weinzelt-Team`,
     html: `<!DOCTYPE html>

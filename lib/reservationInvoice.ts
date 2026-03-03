@@ -73,7 +73,7 @@ export async function createReservationInvoice(reservationId: string) {
     ...(ticketCents > 0
       ? [
           {
-            name: `Ticketgebühr – ${ticketCfg!.name}`,
+            name: `Ticketgebühr - ${ticketCfg!.name}`,
             qty: ticketCfg!.ticketPerPerson ? reservation.people : 1,
             unitCents: ticketCfg!.ticketPrice * 100,
             vatRate: 7 as const,
@@ -200,7 +200,7 @@ export async function createAndSendReservationInvoice(reservationId: string) {
     ...(ticketCents > 0
       ? [
           {
-            name: `Ticketgebühr – ${ticketCfg!.name}`,
+            name: `Ticketgebühr - ${ticketCfg!.name}`,
             qty: ticketCfg!.ticketPerPerson ? reservation.people : 1,
             unitCents: ticketCfg!.ticketPrice * 100,
             vatRate: 7 as const,
