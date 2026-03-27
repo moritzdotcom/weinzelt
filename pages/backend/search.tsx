@@ -249,6 +249,7 @@ export default function BackendSearchReservationPage({
                       <TableCell>Typ</TableCell>
                       <TableCell>Status</TableCell>
                       <TableCell align="right">Gäste</TableCell>
+                      <TableCell>Rechnung</TableCell>
                       <TableCell></TableCell>
                     </TableRow>
                   </TableHead>
@@ -275,6 +276,13 @@ export default function BackendSearchReservationPage({
                         </TableCell>
                         <TableCell align="right">
                           {reservation.people}
+                        </TableCell>
+                        <TableCell>
+                          {reservation.invoice?.sentAt
+                            ? new Date(
+                                reservation.invoice?.sentAt,
+                              ).toLocaleDateString('de')
+                            : '-'}
                         </TableCell>
                         <TableCell align="right">
                           <IconButton
