@@ -90,7 +90,6 @@ model Reservation {
   tableNumber         String?
   internalNotes       String?
   notified            DateTime?
-  payed               Boolean                  @default(false)
   pageVisitId         String?
   pageVisit           PageVisit?               @relation(fields: [pageVisitId], references: [id])
   referralCodeId      String?
@@ -104,6 +103,7 @@ model Reservation {
   stripeCheckoutSessionId String?   @unique
   stripePaymentIntentId   String?   @unique
   paidAt                  DateTime?
+  manualPaymentTrackedBy  String?
 
   stripeRefundId String?             @unique
   refundedAmount Int?

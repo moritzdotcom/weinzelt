@@ -59,7 +59,14 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
               minimumSpendStanding: true,
               reservations: {
                 where: {
-                  paymentStatus: 'PAID',
+                  OR: [
+                    {
+                      paymentStatus: 'PENDING_PAYMENT',
+                    },
+                    {
+                      paymentStatus: 'PAID',
+                    },
+                  ],
                 },
                 select: { tableCount: true, type: true },
               },

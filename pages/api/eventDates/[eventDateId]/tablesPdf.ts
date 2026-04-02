@@ -33,7 +33,7 @@ async function handleGET(
     where: { seating: { eventDateId: id }, paymentStatus: 'PAID' },
     select: {
       type: true,
-      payed: true,
+      paymentStatus: true,
       name: true,
       people: true,
       tableNumber: true,
@@ -162,7 +162,7 @@ async function handleGET(
           let xPos = 40;
           const values = [
             r.type == 'VIP' ? 'VIP' : 'ST',
-            `${r.name} (${r.payed ? 'bezahlt' : 'offen'})`,
+            `${r.name} (${r.paymentStatus == 'PAID' ? 'bezahlt' : 'offen'})`,
             `${r.people.toString()}${
               r.tableCount > 1 ? ` (${r.tableCount} Tische)` : ''
             }`,

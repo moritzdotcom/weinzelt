@@ -20,6 +20,7 @@ import {
 import { motion } from 'framer-motion';
 import { translateType } from '@/lib/reservation';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import { Reservation } from '@prisma/client';
 
 export default function ReservationCard({
   reservation,
@@ -58,6 +59,17 @@ export default function ReservationCard({
       await axios.put(`/api/reservations/${reservation.id}`, { tableNumber });
       setSavingTableNumber(false);
     }, 1000);
+  };
+
+  const handleMarkAsPaid = async () => {
+    const { data } = await axios.post<Reservation>(
+      `/api/reservations/${reservation.id}/trackManualPayment`,
+    );
+    onUpdate({
+      ...reservation,
+      paymentStatus: 'PAID',
+      manualPaymentTrackedBy: data.manualPaymentTrackedBy,
+    });
   };
 
   return (
@@ -102,14 +114,20 @@ export default function ReservationCard({
           {reservation.minimumSpend}€
         </Typography>
         <Tooltip
-          title={reservation.payed ? 'Zahlung erhalten' : 'Zahlung ausstehend'}
+          title={
+            reservation.paymentStatus === 'PAID'
+              ? `Zahlung erhalten${reservation.manualPaymentTrackedBy ? ` (Bestätigt von ${reservation.manualPaymentTrackedBy})` : ''}`
+              : 'Zahlung ausstehend'
+          }
         >
           <p
             className={`${
-              reservation.payed ? 'text-emerald-600' : 'text-amber-600'
+              reservation.paymentStatus === 'PAID'
+                ? 'text-emerald-600'
+                : 'text-amber-600'
             }`}
           >
-            {reservation.payed ? 'Bezahlt' : 'Nix Geld'}
+            {reservation.paymentStatus === 'PAID' ? 'Bezahlt' : 'Unbezahlt'}
           </p>
         </Tooltip>
       </div>
@@ -158,8 +176,21 @@ export default function ReservationCard({
         <MenuItem
           onClick={() => {
             setAnchorEl(null);
+            handleMarkAsPaid();
+          }}
+          disabled={
+            reservation.paymentStatus === 'CANCELED' ||
+            reservation.paymentStatus === 'PAID'
+          }
+        >
+          Zahlungseingang bestätigen
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            setAnchorEl(null);
             setCancelDialogOpen(true);
           }}
+          disabled={reservation.paymentStatus === 'CANCELED'}
         >
           Stornieren & benachrichtigen
         </MenuItem>

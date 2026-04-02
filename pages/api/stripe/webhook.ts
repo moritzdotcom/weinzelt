@@ -68,7 +68,6 @@ async function markPaidAndSendMail(
     where: { id: reservationId },
     data: {
       paymentStatus: 'PAID',
-      payed: true,
       paidAt: new Date(),
       stripePaymentIntentId: stripePaymentIntentId ?? undefined,
       notified: new Date(),

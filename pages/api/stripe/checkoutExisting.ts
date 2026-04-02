@@ -1,11 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import Stripe from 'stripe';
 import prisma from '@/lib/prismadb';
 import { createStripeSession } from '@/lib/stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-12-15.clover',
-});
 
 type Body = { reservationId: string };
 

@@ -1,7 +1,7 @@
 import { Session } from '@/hooks/useSession';
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ApiGetEventsResponse } from '../api/events';
 import { ApiGetReservationsResponse } from '../api/events/[eventId]/reservations';
 import {
@@ -17,8 +17,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import ReservationCard from '@/components/reservation/card';
 import useElementHeight from '@/hooks/useElementHeight';
 import EventSelector from '@/components/eventSelector';
-
-type PaymentStatusFilter = 'PAID' | 'PENDING_PAYMENT' | 'CANCELED';
+import { ReservationPaymentStatus } from '@prisma/client';
 
 export default function BackendReservationsPage({
   session,
@@ -30,7 +29,7 @@ export default function BackendReservationsPage({
     useState<ApiGetEventsResponse[number]>();
 
   const [paymentStatus, setPaymentStatus] =
-    useState<PaymentStatusFilter>('PAID');
+    useState<ReservationPaymentStatus>('PAID');
 
   const [reservations, setReservations] =
     useState<ApiGetReservationsResponse>();
@@ -131,7 +130,7 @@ export default function BackendReservationsPage({
             label="Payment Status"
             value={paymentStatus}
             onChange={(e) =>
-              setPaymentStatus(e.target.value as PaymentStatusFilter)
+              setPaymentStatus(e.target.value as ReservationPaymentStatus)
             }
           >
             <MenuItem value="PAID">Bezahlt</MenuItem>

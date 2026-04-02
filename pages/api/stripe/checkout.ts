@@ -1,13 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import Stripe from 'stripe';
 import prisma from '@/lib/prismadb';
 import { determineMinimumSpend, determineTableCount } from '@/lib/reservation';
 import { createNewsletterSubscription } from '@/lib/newsletter';
 import { createStripeSession } from '@/lib/stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-12-15.clover',
-});
 
 export default async function handler(
   req: NextApiRequest,
@@ -78,7 +73,7 @@ export default async function handler(
         pageVisitId,
         referralCodeId,
         tableCount,
-        paymentStatus: 'PENDING_PAYMENT',
+        paymentStatus: 'DRAFT',
         minimumSpend,
         externalTicketPrice: ticketFeeEuro,
         billingAddress,

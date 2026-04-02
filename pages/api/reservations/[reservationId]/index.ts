@@ -88,7 +88,6 @@ export type ApiPutReservationResponse = {
   tableNumber: string | null;
   internalNotes: string | null;
   notified: Date | null;
-  payed: boolean;
   pageVisitId: string | null;
   referralCodeId: string | null;
 };
@@ -100,7 +99,7 @@ async function handlePUT(
 ) {
   const {
     tableNumber,
-    payed,
+    paymentStatus,
     name,
     email,
     people,
@@ -112,7 +111,7 @@ async function handlePUT(
   const reservation = await prisma.reservation.update({
     data: {
       tableNumber,
-      payed,
+      paymentStatus,
       name,
       email,
       people,
