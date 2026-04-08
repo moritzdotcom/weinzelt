@@ -1,5 +1,3 @@
-import { events } from '@/lib/events';
-
 export default function LocalBusiness() {
   const localBusinessWithHoursAndEvents = {
     '@context': 'https://schema.org',
@@ -105,24 +103,6 @@ export default function LocalBusiness() {
           },
         ],
       },
-      ...events.map((e) => ({
-        '@type': 'Event',
-        name: e.title,
-        startDate: e.startDate,
-        endDate: e.endDate,
-        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-        location: {
-          '@type': 'Place',
-          name: 'Weinzelt',
-          address: {
-            '@type': 'PostalAddress',
-            addressLocality: 'Düsseldorf',
-            addressCountry: 'DE',
-          },
-        },
-        image: `https://dasweinzelt.de${e.image}`,
-        description: e.description,
-      })),
     ],
   };
 

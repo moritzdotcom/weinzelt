@@ -4,13 +4,13 @@ import { Divider } from '@mui/material';
 import Countdown from '@/components/countdown';
 import { Session } from '@/hooks/useSession';
 import { KeyboardArrowRight } from '@mui/icons-material';
-import { events } from '@/lib/events';
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
 import SpecialEventRegistrationDialog from '@/components/specialEventRegistrationDialog';
 import FoodGrid from '@/components/foodGrid';
 import { InstagramReel } from '@/components/instagramReel';
 import HeroFade from '@/components/heroFade';
+import EventDaysSection from '@/components/home/eventDaysSection';
 
 export default function Home({ session }: { session: Session }) {
   return (
@@ -261,7 +261,7 @@ export default function Home({ session }: { session: Session }) {
           </div>
         </div> */}
       </section>
-
+      <EventDaysSection />
       {/* Speisen & Getränke */}
       <section id="gastro" className="py-20 px-4 bg-white">
         <div className="max-w-6xl mx-auto grid md:grid-cols-[2fr_1fr] gap-12 items-center">

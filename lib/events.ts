@@ -1,313 +1,374 @@
-export const events = [
+export type EventDay = {
+  id: string;
+  date: string;
+  weekday: string;
+  motto: string;
+  subtitle: string;
+  vibeText: string;
+  image: string;
+  highlights: string[];
+  reservationLink?: string;
+  accentClassName?: string;
+  djs: {
+    headliner?: Array<{
+      name: string;
+      genre?: string;
+      instagramUrl?: string;
+    }>;
+    support?: Array<{
+      name: string;
+      genre?: string;
+      instagramUrl?: string;
+    }>;
+  };
+  specials: Array<{
+    title: string;
+    time?: string;
+    badge?: string;
+    description: string;
+    link?: string;
+    ctaLabel?: string;
+  }>;
+};
+
+const JHEEZ = {
+  name: 'JHEEZ',
+  genre: 'Afro House',
+  instagramUrl: 'https://www.instagram.com/jheez.dj/',
+};
+
+const HOODDIVER = {
+  name: 'Hooddiver',
+  genre: 'Afro House',
+  instagramUrl: 'https://www.instagram.com/hooddiver/',
+};
+
+const AUDIOKITCHEN = {
+  name: 'Audio Kitchen',
+  genre: 'House',
+  instagramUrl: 'https://www.instagram.com/_audiokitchen_/',
+};
+
+const BASST = {
+  name: 'BassT',
+  genre: 'Open Format',
+  instagramUrl: 'https://www.instagram.com/iambastii/',
+};
+
+const ARDEE = {
+  name: 'Ardee',
+  genre: 'Open Format',
+  instagramUrl: 'https://www.instagram.com/ardeeatnite/',
+};
+
+const KENNETHB = {
+  name: 'Kenneth B',
+  genre: 'After-Show',
+  instagramUrl: 'https://www.instagram.com/kennethb.ofc/',
+};
+
+const RIZZY = {
+  name: 'RIZZY',
+  genre: 'House',
+  instagramUrl: 'https://www.instagram.com/rizzy.ofc/',
+};
+
+const SALVA = {
+  name: 'Salvatore Mancuso',
+  genre: 'EDM & House',
+  instagramUrl: 'https://www.instagram.com/salvatoremancuso_official/',
+};
+
+const ANGELA = {
+  name: 'Angela Kutscher',
+  genre: 'Melodic Techno',
+  instagramUrl: 'https://www.instagram.com/angela_kutscher/',
+};
+
+const LAURA = {
+  name: 'Laura Zimmermann',
+  genre: 'Electric Violinist',
+  instagramUrl: 'https://www.instagram.com/laurazimmermann_violin/',
+};
+
+const MBP = {
+  name: 'MBP',
+  genre: 'House',
+  instagramUrl: 'https://www.instagram.com/mbp.official/',
+};
+
+const KEVIN = {
+  name: 'Kevin Albrecht',
+  genre: 'Afro House',
+  instagramUrl: 'https://www.instagram.com/kevin_albrecht_/',
+};
+
+const MAXNIKLAS = {
+  name: 'Max Niklas',
+  genre: 'EDM',
+  instagramUrl: 'https://www.instagram.com/maxniklasmusic/',
+};
+
+const NICK = {
+  name: 'NICK SELBMANN',
+  genre: 'House',
+  instagramUrl: 'https://www.instagram.com/nickselbmann/',
+};
+
+const RELOVA = {
+  name: 'RELOVA',
+  genre: 'House',
+  instagramUrl: 'https://www.instagram.com/relova.official/',
+};
+const JASONWATS = {
+  name: 'Jason Wats',
+  genre: 'Techno',
+  instagramUrl: 'https://www.instagram.com/jasonwats.ofc/',
+};
+
+export const eventDays: EventDay[] = [
   {
-    date: 'FR, 11.07.25',
-    from: '16:00',
-    startDate: '2025-07-11T16:00',
-    endDate: '2025-07-11T17:00',
-    image: '/events/winetasting-diehl.jpg',
-    title: 'Das größte Winetasting Düsseldorfs',
-    fullName:
-      'Weintasting im Weinzelt by Weingut Diehl & Concept Riesling - Der Auftakt',
-    description:
-      'Sei dabei beim exklusiven Opening des Weinzelt! Gemeinsam mit dem renommierten Weingut Diehl und Concept Riesling starten wir die Rheinkirmes mit einem besonderen Tasting, das dich in die Welt der edelsten Weine entführt. Lass uns gemeinsam den Sommer und den Startschuss für eine genussvolle Zeit feiern!',
-    button: {
-      text: 'Kostenfrei registrieren!',
-      specialEventId: '9d97c662-83ab-4732-bab7-20d467edd950',
-    },
-  },
-  {
-    date: 'FR, 11.07.25',
-    from: '20:00',
-    startDate: '2025-07-11T20:00',
-    endDate: '2025-07-11T22:00',
+    id: '2026-07-17',
+    date: '17.07.2026',
+    weekday: 'Freitag',
+    motto: 'Opening AUDIO KITCHEN',
+    subtitle: 'Der Auftakt ins Weinzelt 2026.',
+    vibeText:
+      'Zum Opening wird direkt klar, wohin die Reise geht: gute Weine, volle Energie und ein musikalischer Start mit echtem Nightlife-Charakter. Perfekt für alle, die den ersten Freitag direkt mitnehmen wollen.',
+    highlights: ['Opening', 'Audio Kitchen'],
+    reservationLink: '/reservation',
     image: '/events/audiokitchen.jpg',
-    title: 'HEAT UP! Audiokitchen X Weinzelt',
-    fullName: 'HEAT UP! Audiokitchen bringt die Stimmung zum kochen',
-    description:
-      'Lass dir die Stimmung nicht entgehen, wenn Audiokitchen beim Opening im Weinzelt für den perfekten musikalischen Auftakt sorgt! Mit ihren heißen Beats bringen sie die Menge zum Kochen - ein Abend voller Energie und unvergesslicher Momente!',
-    button: {
-      text: 'Jetzt reservieren',
-      link: '/reservation?date=11.07.25',
+    accentClassName: 'from-blue-50 via-white to-purple-50 border-blue-800/70',
+    djs: {
+      support: [JHEEZ, HOODDIVER, BASST, ARDEE],
+      headliner: [AUDIOKITCHEN],
     },
+    specials: [],
   },
   {
-    date: 'SA, 12.07.25',
-    from: '14:00',
-    startDate: '2025-07-12T14:00',
-    endDate: '2025-07-12T15:00',
-    image: '/events/winetasting-pfalz.jpg',
-    title: 'Das größte Winetasting Düsseldorfs',
-    fullName:
-      'Weintasting im Weinzelt by "die PFALZ" & Concept Riesling - Das größte Winetasting Düsseldorfs',
-    description:
-      'Tauche ein in eine Welt erlesener Tropfen - Powered by "die PFALZ" & Concept Riesling - und entdecke bei sommerlicher Zeltromantik deinen neuen Lieblingswein. Cheers auf genussvolle Stunden!',
-    button: {
-      text: 'Kostenfrei registrieren',
-      specialEventId: '9c5024b8-b4f0-44f7-9241-8ee78b519131',
-    },
-  },
-  {
-    date: 'SA, 12.07.25',
-    from: '20:00',
-    startDate: '2025-07-12T20:00',
-    endDate: '2025-07-13T02:00',
-    image: '/events/relova.jpg',
-    title: 'Opening Weekend',
-    fullName: 'RELOVA @ Weinzelt - Opening Weekend',
-    description:
-      "Feiere mit uns die große Premiere von RELOVA: House-Beats, coole Drinks und jede Menge Vibes unter dem Sternenzelt - Let's get the party started!",
-    button: {
-      text: 'Jetzt reservieren',
-      link: '/reservation?date=12.07.25',
-    },
-  },
-  {
-    date: 'SO, 13.07.25',
-    from: '11:00',
-    startDate: '2025-07-13T11:00',
-    endDate: '2025-07-13T13:00',
-    image: '/events/sunday-morning-pilates.jpg',
-    title: 'Sunday Morning Pilates',
-    fullName: 'Weinzelt X égoïste Studios - Sunday Morning Pilates',
-    description:
-      'Starte deinen Sonntag mit einem dynamischen Pilates Workout vom gehypten égoïste Pilates Studio aus Düsseldorf. Danach genießt du coole Beats bei einem Glas Weißwein oder Matcha und connectest mit der Community.',
-    button: {
-      text: 'Ticket kaufen',
-      link: 'https://backoffice.bsport.io/m/%C3%A9go%C3%AFste%20Pilates%20&%20Yoga%20Studio/3150/calendar?tabSelected=0&date=2025-07-13',
-      external: true,
-    },
-  },
-  {
-    date: 'SO, 13.07.25',
-    from: '12:00',
-    startDate: '2025-07-13T12:00',
-    endDate: '2025-07-13T17:00',
-    image: '/events/winewalk.jpg',
-    title: 'WineWalk by Schlumberger',
-    fullName: 'Rheinkirmes WineWalk by Schlumberger',
-    description:
-      'Wir treffen uns um 12 Uhr bei Concept Riesling auf dem Carlsplatz, genießen Champagner und gehen dann mit Sommelier-Begleitung über die Rheinbrücke ins Weinzelt auf der Rheinkirmes, wo euch ein Don Carne Steak Sandwich erwartet.',
-    button: {
-      text: 'Zum Ticketshop',
-      link: 'https://www.conceptrieslingshop.com/collections/wine-walk-rheinkirmes/products/winewalk1?variant=53210776174915',
-      external: true,
-    },
-  },
-  {
-    date: 'SO, 13.07.25',
-    from: '14:00',
-    startDate: '2025-07-13T14:00',
-    endDate: '2025-07-13T15:00',
-    image: '/events/winetasting-schlumberger.jpg',
-    title: 'Das größte Winetasting Düsseldorfs',
-    fullName:
-      'Weintasting im Weinzelt by Schlumberger & Concept Riesling - Das größte Winetasting Düsseldorfs',
-    description:
-      'Tauche ein in eine Welt erlesener Tropfen - Powered by Schlumberger & Concept Riesling - und entdecke bei sommerlicher Zeltromantik deinen neuen Lieblingswein. Moderiert wird das größte Winetasting von Star Sommelier Nico von der Ohe. Cheers auf genussvolle Stunden!',
-    button: {
-      text: 'Kostenfrei registrieren',
-      specialEventId: '781f66f9-e8de-4759-bf5a-eed8208af1a5',
-    },
-  },
-  {
-    date: 'SO, 13.07.25',
-    from: '20:00',
-    startDate: '2025-07-13T20:00',
-    endDate: '2025-07-13T00:00',
-    image: '/events/asry.jpg',
-    title: 'ASRŸ x Weinzelt',
-    fullName: 'ASRŸ x Weinzelt',
-    description:
-      'Am 13. Juli wird das Weinzelt zur Bühne für ASRŸ - den Berliner DJ und Producer, der weltweit für Furore sorgt: Warm-up für Black Coffee, Sets auf Travis Scotts Yacht in Monaco, Gigs in Miami, Tulum, Beirut & Mykonos - und jetzt mitten in Düsseldorf.',
-    button: {
-      text: 'Jetzt reservieren',
-      link: '/reservation?date=13.07.25',
-    },
-  },
-  {
-    date: 'MO, 14.07.25',
-    from: '19:00',
-    startDate: '2025-07-14T19:00',
-    endDate: '2025-07-14T24:00',
-    image: '/events/kliff.jpg',
-    title: 'Kampen meets DUS',
-    fullName: 'Weinzelt X Club Rotes Kliff - Kampen meets DUS',
-    description:
-      'Wenn friesische Meeresbrise auf rheinische Lebensfreude trifft: Kulinarische Duette, prickelnde Weine & Peter Kliem an den Decks, der mit seinen Kampen-Beats das Weinzelt zum Kochen bringt!',
-    button: {
-      text: 'Jetzt reservieren',
-      link: '/reservation?date=14.07.25',
-    },
-  },
-  {
-    date: 'DI, 15.07.25',
-    from: '19:00',
-    startDate: '2025-07-15T19:00',
-    endDate: '2025-07-15T21:00',
-    image: '/events/angelakutscher.jpg',
-    title: 'Angela Kutscher @ Weinzelt',
-    fullName: 'Angela Kutscher @ Weinzelt',
-    description:
-      'Erlebe einen unvergesslichen Abend mit Angela Kutscher, die mit ihrem einzigartigen Afro House Set das Weinzelt zum Beben bringt. Tanz und feiere mit, während Angela die Stimmung mit ihren heißesten Beats auf das nächste Level bringt!',
-    button: {
-      text: 'Jetzt reservieren',
-      link: '/reservation?date=15.07.25',
-    },
-  },
-  // {
-  //   date: 'MI, 16.07.25',
-  //   from: '15:00',
-  //   startDate: '2025-07-16T15:00',
-  //   endDate: '2025-07-16T17:00',
-  //   image: '/events/winetasting.jpg',
-  //   title: 'Das größte Winetasting Düsseldorfs',
-  //   fullName:
-  //     'Weintasting im Weinzelt by Concept Riesling - Das größte Winetasting Düsseldorfs',
-  //   description:
-  //     'Weinmittwoch im Zelt: Powered by Concept Riesling - entdecke spannende Newcomer-Weingüter und profitiere von Tipps unserer Sommeliers beim genüsslichen Degustieren.',
-  //   button: {
-  //     text: 'Kostenfrei registrieren',
-  //     specialEventId: '33affbe5-11f2-4b8c-82a2-07bcb9a751c9',
-  //   },
-  // },
-  {
-    date: 'MI, 16.07.25',
-    from: '19:00',
-    startDate: '2025-07-16T19:00',
-    endDate: '2025-07-16T24:00',
-    image: '/events/mrdusxmbp.jpg',
-    title: 'Weinzelt Takeover',
-    fullName: 'Mr. Düsseldorf & MBP present: Weinzelt Takeover',
-    description:
-      'Mr. Düsseldorf und MBP (Must Be Played) übernehmen für einen Abend das Weinzelt: House Musik, die anschiebt & prickelnde Tropfen für deinen perfekten Sommerabend!',
-    button: {
-      text: 'Jetzt reservieren',
-      link: '/reservation?date=16.07.25',
-    },
-  },
-  {
-    date: 'DO, 17.07.25',
-    from: '19:00',
-    startDate: '2025-07-17T19:00',
-    endDate: '2025-07-17T24:00',
-    image: '/events/salva.jpg',
-    title: 'Salvatore Mancuso @ Weinzelt',
-    fullName: 'Salvatore Mancuso @ Weinzelt',
-    description:
-      'House & Tech-House pur unterm Zeltdach: Salvatore Mancuso liefert knallharte Grooves, die das Weinzelt beben lassen!',
-    button: {
-      text: 'Jetzt reservieren',
-      link: '/reservation?date=17.07.25',
-    },
-  },
-  {
-    date: 'FR, 18.07.25',
-    from: '15:00',
-    startDate: '2025-07-18T15:00',
-    endDate: '2025-07-18T16:00',
-    image: '/events/winetasting-reidemeister.jpg',
-    title: 'Das größte Winetasting Düsseldorfs',
-    fullName:
-      'Weintasting im Weinzelt by Reidemeister & Concept Riesling - Entdecke die Welt des Weins',
-    description:
-      'Tauche ein in die Welt edelster Weine: Reidemeister & Concept Riesling präsentieren dir im Weinzelt ein exklusives Tasting-Erlebnis mit edelsten Tropfen, perfektem Ambiente und einer Atmosphäre zum Genießen und Entspannen.',
-    button: {
-      text: 'Kostenfrei registrieren',
-      specialEventId: '0de58c53-50d4-4957-9eaa-921b6b0d1051',
-    },
-  },
-  {
-    date: 'FR, 18.07.25',
-    from: '18:00',
-    startDate: '2025-07-18T18:00',
-    endDate: '2025-07-19T02:00',
-    image: '/events/jochens.jpg',
-    title: 'Three of a Kind - Serviert wird nur Premium Sound',
-    fullName: 'Three of a Kind - Serviert wird nur Premium Sound',
-    description:
-      'Drei DJs, ein Zelt, keine Gnade für ruhige Füße: BassT, G-Diamond & Salvatore Mancuso verwandeln das Weinzelt in einen vibenden Dancefloor - mit heißen Beats zwischen House, Afro-House & Club Sounds. Freitagabend wird laut, wild und tanzbar bis tief in die Nacht. Komm vorbei, tanz dich frei und genieße dazu ein Glas vom Feinsten!',
-    button: {
-      text: 'Jetzt reservieren',
-      link: '/reservation?date=18.07.25',
-    },
-  },
-  {
-    date: 'SA, 19.07.25',
-    from: '14:00',
-    startDate: '2025-07-19T14:00',
-    endDate: '2025-07-19T15:00',
-    image: '/events/winetasting-messing.jpg',
-    title: 'Das größte Winetasting Düsseldorfs',
-    fullName:
-      'Weintasting im Weinzelt by Messing & Concept Riesling - Das größte Winetasting Düsseldorfs',
-    description:
-      'Das Wochenende feiert mit dir: Powered by Messing & Concept Riesling - noch mehr Premium-Weine, lockere Atmosphäre und natürlich jede Menge guter Laune.',
-    button: {
-      text: 'Kostenfrei registrieren',
-      specialEventId: '9b4d3cc6-b859-4729-81cd-fda660f3ff15',
-    },
-  },
-  {
-    date: 'SA, 19.07.25',
-    from: '18:00',
-    startDate: '2025-07-19T18:00',
-    endDate: '2025-07-20T02:00',
+    id: '2026-07-18',
+    date: '18.07.2026',
+    weekday: 'Samstag',
+    motto: 'Weindampfer Night',
+    subtitle: 'Samstagabend mit bekanntem Vibe und viel Energie.',
+    vibeText:
+      'Die Weindampfer Night bringt genau den Mix, den man sich für einen Samstag auf der Rheinkirmes wünscht: tagsüber entspanntes Daydrinking, und in der Nacht sorgen die besten DJs vom Weindampfer für ein unvergessliches Erlebnis.',
+    highlights: ['Weindampfer Night', 'Public Viewing'],
+    reservationLink: '/reservation/standing',
     image: '/events/weindampfer.jpg',
-    title: 'Weindampfer Night',
-    fullName: 'Weindampfer Night - Das Weinzelt wird zum Dampfer',
-    description:
-      'Erlebe die Weindampfer Night im Weinzelt: Ein Abend voller Genuss, Musik und guter Laune. Lass dich von der einzigartigen Atmosphäre mitreißen und genieße die besten Weine der Stadt.',
-    button: {
-      text: 'Jetzt reservieren',
-      link: '/reservation?date=19.07.25',
+    accentClassName:
+      'from-stone-100 via-stone-300 to-stone-50 border-stone-800/70',
+    djs: {
+      support: [JHEEZ, HOODDIVER, BASST, ARDEE, KENNETHB],
     },
+    specials: [
+      {
+        title: 'Spiel um dritten Platz',
+        time: '23:00',
+        description:
+          'Der Abend wird durch das Spiel um dritten Platz der Fußball WM zusätzlich aufgeladen und sorgt für besondere Stimmung im Zelt.',
+      },
+    ],
   },
   {
-    date: 'SO, 20.07.25',
-    from: '12:00',
-    startDate: '2025-07-20T12:00',
-    endDate: '2025-07-20T17:00',
+    id: '2026-07-19',
+    date: '19.07.2026',
+    weekday: 'Sonntag',
+    motto: 'Kiesgrube im Weinzelt',
+    subtitle: 'Sonntag mit Kultstatus, Clubkultur und echtem Kiesgrube-Vibe.',
+    vibeText:
+      'Wenn die Kiesgrube ins Weinzelt kommt, wird der Sonntag nicht leise, sondern legendär. Seit Jahrzehnten steht Kiesgrube für Freiheit, Haltung, kompromisslosen Sound und genau diese besondere Energie zwischen Exzess, Ritual und Ausnahmezustand. Ein Tag für alle, die Sonntage nicht absitzen, sondern feiern wollen.',
+    highlights: ['Kiesgrube', 'Tickets coming soon', 'WM Finale'],
+    reservationLink: '/reservation',
+    image: '/events/keezy.webp',
+    djs: {
+      headliner: [{ name: 'Kiesgrube', genre: 'TBA' }],
+    },
+    accentClassName: 'from-red-100 via-white to-orange-50 border-red-800/70',
+    specials: [
+      {
+        title: 'Kiesgrube im Weinzelt',
+        time: 'ab 11:00',
+        description:
+          'Kiesgrube bringt ihren unverwechselbaren Sunday-Spirit ins Weinzelt: starke Musik, besondere Atmosphäre und ein Tag mit echtem Kultcharakter.',
+      },
+      {
+        title: 'WM Finale',
+        time: '21:00',
+        description:
+          'Gemeinsam schauen, anstoßen und den Abend mit besonderer Stimmung im Weinzelt erleben.',
+      },
+    ],
+  },
+  {
+    id: '2026-07-20',
+    date: '20.07.2026',
+    weekday: 'Montag',
+    motto: 'PINK MONDAY',
+    subtitle:
+      'Pink Monday mit Angela Kutscher, Laura Zimmermann und einem musikalischen Highlight, das man so nicht jeden Tag erlebt.',
+    vibeText:
+      'Pink Monday steht für Offenheit, Lebensfreude und ein Weinzelt voller Energie. Mit Angela Kutscher steht eine bekannte Düsseldorfer Techno-DJane am Pult, während Star-Violinistin Laura Zimmermann klassische Eleganz mit elektronischen Beats verbindet und mit ihrer Performance besondere Live-Momente schafft. Das Ergebnis ist ein Abend mit klarer Haltung, starker Präsenz und einer Atmosphäre, die sich spürbar von allen anderen Tagen unterscheidet.',
+    highlights: [
+      'Pink Monday',
+      'Angela Kutscher',
+      'Laura Zimmermann',
+      'Live Music',
+    ],
+    reservationLink: '/reservation/vip',
+    accentClassName: 'from-rose-100 via-white to-orange-50 border-rose-300/70',
+    image: '/events/laurazimmermann.jpg',
+    djs: {
+      support: [MBP],
+      headliner: [ANGELA, LAURA],
+    },
+    specials: [],
+  },
+  {
+    id: '2026-07-21',
+    date: '21.07.2026',
+    weekday: 'Dienstag',
+    motto: 'MR. DÜSSELDORF',
+    subtitle:
+      'Lokaler Szeneabend mit Salvatore Mancuso und jeder Menge Düsseldorf.',
+    vibeText:
+      'Mr. Düsseldorf bringt lokalen Glamour, Szene-Publikum und genau die besondere Energie ins Weinzelt, die diesen Tag jedes Jahr so besonders macht. Mit Salvatore Mancuso rückt 2026 ein Headliner in den Fokus, der schon im letzten Jahr bei unseren Gästen extrem gut angekommen ist und mit seinen Sets voller überraschender Momente, starker Spannungsbögen und genreübergreifender Energie perfekt zu diesem Abend passt. Vielleicht wartet für alle Mr. Düsseldorf Karteninhaber an diesem Tag auch noch eine kleine Überraschung. Mehr dazu verraten wir bald.',
+    highlights: ['Mr. Düsseldorf', 'Salvatore Mancuso'],
+    reservationLink: '/reservation/vip',
+    image: '/events/mrdus.jpg',
+    djs: {
+      support: [JHEEZ, HOODDIVER, RIZZY, BASST],
+      headliner: [SALVA],
+    },
+    specials: [],
+  },
+  {
+    id: '2026-07-22',
+    date: '22.07.2026',
+    weekday: 'Mittwoch',
+    motto: 'Kiesgrube presents: Palmenmarkt',
+    subtitle:
+      'Kiesgrube bringt mit Palmenmarkt einen einzigartigen Vibe ins Weinzelt.',
+    vibeText:
+      'Mit Palmenmarkt kommt am Mittwoch ein ganz besonderer Kiesgrube-Vibe ins Weinzelt. Zwischen guter Musik, sommerlicher Energie und einer Atmosphäre, die sich deutlich von den anderen Tagen abhebt, entsteht ein Abend mit ganz eigener Handschrift. Perfekt für alle, die unter der Woche Lust auf etwas Besonderes haben.',
+    highlights: ['Kiesgrube', 'Palmenmarkt'],
+    reservationLink: '/reservation',
+    image: '/events/keezy.webp',
+    djs: {
+      support: [],
+      headliner: [{ name: 'Kiesgrube', genre: 'TBA' }],
+    },
+    specials: [],
+  },
+  {
+    id: '2026-07-23',
+    date: '23.07.2026',
+    weekday: 'Donnerstag',
+    motto: 'LUNARO @ Weinzelt',
+    subtitle: 'Die gehypte Eventreihe LUNARO bringt ihren Vibe ins Weinzelt.',
+    vibeText:
+      'Mit LUNARO kommt am Donnerstag eine Eventreihe ins Weinzelt, die in Düsseldorf längst für volle Abende und starken Sound bekannt ist. Viele kennen den Vibe aus den monatlichen Nächten im Hotel Hotel und dieses Jahr gibt es ihn auf der Rheinkirmes.',
+    highlights: ['LUNARO'],
+    reservationLink: '/reservation/vip',
+    accentClassName:
+      'from-amber-900/10 via-orange-900/10 to-amber-800/20 border-amber-900/70',
+    image: '/events/lunaro.jpg',
+    djs: {
+      support: [MAXNIKLAS],
+      headliner: [KEVIN],
+    },
+    specials: [],
+  },
+  {
+    id: '2026-07-24',
+    date: '24.07.2026',
+    weekday: 'Freitag',
+    motto: 'AUDIO KITCHEN',
+    subtitle: 'Der zweite große Freitag für alle, die es musikalisch lieben.',
+    vibeText:
+      'Am zweiten Freitag übernimmt erneut AUDIO KITCHEN und macht das Weinzelt zur Bühne. Wer elektronische Sets, gute Energie und spätes Weiterfeiern mag, ist hier genau richtig.',
+    highlights: ['Audio Kitchen'],
+    reservationLink: '/reservation',
+    accentClassName:
+      'from-blue-800/10 via-white to-purple-50 border-blue-800/70',
+    image: '/events/audiokitchen.jpg',
+    djs: {
+      support: [KENNETHB, NICK],
+      headliner: [AUDIOKITCHEN],
+    },
+    specials: [],
+  },
+  {
+    id: '2026-07-25',
+    date: '25.07.2026',
+    weekday: 'Samstag',
+    motto: 'CLOSING Saturday',
+    subtitle:
+      'Der letzte Samstag mit RELOVA als Headliner und maximaler Wochenendenergie.',
+    vibeText:
+      'Der letzte Samstag bündelt alles, was das Weinzelt über die Woche ausmacht: gute Leute, volle Tische, starke Musik und genau dieser letzte-Samstag-Vibe, bei dem niemand zu früh nach Hause will. Mit RELOVA steht dabei ein Headliner-Duo im Fokus, das mit eigenen Releases, starken Remixen und viel Momentum gerade richtig Fahrt aufgenommen hat. Ein perfekter Abschluss für alle, die den letzten Samstag nochmal voll mitnehmen wollen.',
+    highlights: ['Closing Saturday', 'RELOVA'],
+    reservationLink: '/reservation/standing',
+    image: '/events/relova.jpg',
+    djs: {
+      support: [ARDEE, JASONWATS],
+      headliner: [RELOVA],
+    },
+    specials: [],
+  },
+  {
+    id: '2026-07-26',
+    date: '26.07.2026',
+    weekday: 'Sonntag',
+    motto: 'APERO @ WEINZELT',
+    subtitle:
+      'Der entspannte Abschluss mit Fokus auf Genuss, Sommer und Ausklang.',
+    vibeText:
+      'Apero @ Weinzelt eignet sich perfekt für alle, die die letzten Stunden der Kirmes stilvoll ausklingen lassen wollen. Und ja, auch dieses Jahr sind die legendären WINE WALKS wieder mit im Programm: gemeinsam mit Sommelier, ausgewählten Weinen und dem perfekten Sonntag zwischen Carlsplatz, Rheinbrücke und Weinzelt.',
+    highlights: ['Closing', 'WINE WALK'],
+    reservationLink: '/reservation',
     image: '/events/winewalk.jpg',
-    title: 'WineWalk by Schlumberger',
-    fullName: 'Rheinkirmes WineWalk by Schlumberger',
-    description:
-      'Wir treffen uns um 12 Uhr bei Concept Riesling auf dem Carlsplatz, genießen Champagner und gehen dann mit Sommelier-Begleitung über die Rheinbrücke ins Weinzelt auf der Rheinkirmes, wo euch ein Don Carne Steak Sandwich erwartet.',
-    button: {
-      text: 'Zum Ticketshop',
-      link: 'https://www.conceptrieslingshop.com/collections/wine-walk-rheinkirmes/products/winewalk2?variant=53210778272067',
-      external: true,
+    djs: {
+      support: [],
+      headliner: [],
     },
-  },
-  {
-    date: 'SO, 20.07.25',
-    from: '15:00',
-    startDate: '2025-07-20T15:00',
-    endDate: '2025-07-20T16:00',
-    image: '/events/winetasting-pfalz.jpg',
-    title: 'Das größte Winetasting Düsseldorfs',
-    fullName:
-      'Weintasting im Weinzelt by "die PFALZ" & Concept Riesling - Das große Finale',
-    description:
-      'Feiere das große Finale der Kirmes mit einem exklusiven Weintasting! "die PFALZ" & Concept Riesling lassen den Sommer ausklingen - genieße edelste Weine und die unverwechselbare Atmosphäre im Weinzelt, bevor wir uns verabschieden.',
-    button: {
-      text: 'Kostenfrei registrieren',
-      specialEventId: '752fdaaf-e782-4f09-bafe-6ba6eca6d5e5',
-    },
-  },
-  {
-    date: 'SO, 20.07.25',
-    from: '11:00',
-    startDate: '2025-07-20T11:00',
-    endDate: '2025-07-20T13:00',
-    image: '/events/sunday-morning-pilates.jpg',
-    title: 'Sunday Morning Pilates',
-    fullName: 'Weinzelt X égoïste Studios - Sunday Morning Pilates',
-    description:
-      'Starte deinen Sonntag mit einem dynamischen Pilates Workout vom gehypten égoïste Pilates Studio aus Düsseldorf. Danach genießt du coole Beats bei einem Glas Weißwein oder Matcha und connectest mit der Community.',
-    button: {
-      text: 'Ticket kaufen',
-      link: 'https://www.eventbrite.com/e/rheinkirmes-weinzelt-x-egoiste-pilates-20072025-tickets-1498268524489?utm_experiment=test_share_listing&aff=ebdsshios',
-      external: true,
-    },
+    specials: [
+      {
+        title: 'WINE WALK #1',
+        time: '11:30',
+        badge: 'inkl. Snack · 29 €',
+        description:
+          'Start am Carlsplatz bei Concept Riesling mit entspanntem Get-together und Aperitif. Danach geht es gemeinsam mit Sommelier und mehreren ausgewählten Weinen über die Rheinbrücke bis ins Weinzelt.',
+        link: 'https://www.conceptriesling.com/collections/kirmes/products/wine-walk-zur-kirmes-1-walk-i-26-7-2026?variant=54333127360835',
+        ctaLabel: 'Tickets 11:30',
+      },
+      {
+        title: 'WINE WALK #2',
+        time: '12:30',
+        badge: 'inkl. Snack · 29 €',
+        description:
+          'Der zweite Walk des Tages mit Aperitif, geführtem Spaziergang, mehreren Wein-Stopps und entspanntem Finale im Weinzelt.',
+        link: 'https://www.conceptriesling.com/collections/kirmes/products/wine-walk-zur-kirmes-2-walk-i-26-7-2026?variant=54333127786819',
+        ctaLabel: 'Tickets 12:30',
+      },
+      {
+        title: 'WINE WALK #3',
+        time: '14:00',
+        badge: 'ohne Essen · 19 €',
+        description:
+          'Die spätere Nachmittagsrunde für alle, die den Sonntag genussvoll und locker angehen wollen. Mit Sommelier, ausgewählten Weinen und Ziel im Weinzelt.',
+        link: 'https://www.conceptriesling.com/collections/kirmes/products/wine-walk-zur-kirmes-3-walk-i-26-7-2026?variant=54333130408259',
+        ctaLabel: 'Tickets 14:00',
+      },
+      {
+        title: 'WINE WALK #4',
+        time: '15:00',
+        badge: 'ohne Essen · 19 €',
+        description:
+          'Die letzte WINE WALK Runde des Tages — perfekt für einen entspannten Sonntag mit Freunden, Wein und sommerlichem Kirmes-Vibe.',
+        link: 'https://www.conceptriesling.com/collections/kirmes/products/wine-walk-zur-kirmes-4-walk-i-26-7-2026?variant=54333136535875',
+        ctaLabel: 'Tickets 15:00',
+      },
+    ],
   },
 ];

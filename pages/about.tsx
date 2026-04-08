@@ -5,6 +5,34 @@ import { team } from '@/lib/team';
 import { Divider } from '@mui/material';
 import Image from 'next/image';
 
+function CompanyLogo({ company }: { company: 'KM' | 'CR' | 'MD' }) {
+  if (company == 'KM')
+    return (
+      <img
+        className="max-h-10 object-contain mx-auto"
+        src="/partners/km-logo.png"
+        alt="KM Entertainment"
+      />
+    );
+  if (company == 'CR')
+    return (
+      <img
+        className="max-h-10 object-contain mx-auto"
+        src="/partners/cr-logo.png"
+        alt="Concept Riesling"
+      />
+    );
+  if (company == 'MD')
+    return (
+      <img
+        className="max-h-10 object-contain mx-auto"
+        src="/partners/mrdus-logo.png"
+        alt="Mr Düsseldorf"
+      />
+    );
+  return null;
+}
+
 export default function AboutPage({ session }: { session: Session }) {
   return (
     <div>
@@ -84,7 +112,7 @@ export default function AboutPage({ session }: { session: Session }) {
                     <h3 className="text-xl font-semibold mb-2 px-3">
                       {member.name}
                     </h3>
-                    <p className="text-gray-600 text-sm px-3">{member.bio}</p>
+                    <CompanyLogo company={member.company} />
                   </div>
                 ))}
               </div>
