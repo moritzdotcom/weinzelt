@@ -136,7 +136,7 @@ export const eventDays: EventDay[] = [
     vibeText:
       'Zum Opening wird direkt klar, wohin die Reise geht: gute Weine, volle Energie und ein musikalischer Start mit echtem Nightlife-Charakter. Perfekt für alle, die den ersten Freitag direkt mitnehmen wollen.',
     highlights: ['Opening', 'Audio Kitchen'],
-    reservationLink: '/reservation',
+    reservationLink: '/reservation?date=17.07.26',
     image: '/events/audiokitchen.jpg',
     accentClassName: 'from-blue-50 via-white to-purple-50 border-blue-800/70',
     djs: {
@@ -154,7 +154,7 @@ export const eventDays: EventDay[] = [
     vibeText:
       'Die Weindampfer Night bringt genau den Mix, den man sich für einen Samstag auf der Rheinkirmes wünscht: tagsüber entspanntes Daydrinking, und in der Nacht sorgen die besten DJs vom Weindampfer für ein unvergessliches Erlebnis.',
     highlights: ['Weindampfer Night', 'Public Viewing'],
-    reservationLink: '/reservation/standing',
+    reservationLink: '/reservation?date=18.07.26',
     image: '/events/weindampfer.jpg',
     accentClassName:
       'from-stone-100 via-stone-300 to-stone-50 border-stone-800/70',
@@ -179,7 +179,7 @@ export const eventDays: EventDay[] = [
     vibeText:
       'Wenn die Kiesgrube ins Weinzelt kommt, wird der Sonntag nicht leise, sondern legendär. Seit Jahrzehnten steht Kiesgrube für Freiheit, Haltung, kompromisslosen Sound und genau diese besondere Energie zwischen Exzess, Ritual und Ausnahmezustand. Ein Tag für alle, die Sonntage nicht absitzen, sondern feiern wollen.',
     highlights: ['Kiesgrube', 'Tickets coming soon', 'WM Finale'],
-    reservationLink: '/reservation',
+    reservationLink: '/reservation?date=19.07.26',
     image: '/events/keezy.webp',
     djs: {
       headliner: [{ name: 'Kiesgrube', genre: 'TBA' }],
@@ -215,7 +215,7 @@ export const eventDays: EventDay[] = [
       'Laura Zimmermann',
       'Live Music',
     ],
-    reservationLink: '/reservation/vip',
+    reservationLink: '/reservation?date=20.07.26',
     accentClassName: 'from-rose-100 via-white to-orange-50 border-rose-300/70',
     image: '/events/laurazimmermann.jpg',
     djs: {
@@ -234,7 +234,7 @@ export const eventDays: EventDay[] = [
     vibeText:
       'Mr. Düsseldorf bringt lokalen Glamour, Szene-Publikum und genau die besondere Energie ins Weinzelt, die diesen Tag jedes Jahr so besonders macht. Mit Salvatore Mancuso rückt 2026 ein Headliner in den Fokus, der schon im letzten Jahr bei unseren Gästen extrem gut angekommen ist und mit seinen Sets voller überraschender Momente, starker Spannungsbögen und genreübergreifender Energie perfekt zu diesem Abend passt. Vielleicht wartet für alle Mr. Düsseldorf Karteninhaber an diesem Tag auch noch eine kleine Überraschung. Mehr dazu verraten wir bald.',
     highlights: ['Mr. Düsseldorf', 'Salvatore Mancuso'],
-    reservationLink: '/reservation/vip',
+    reservationLink: '/reservation?date=21.07.26',
     image: '/events/mrdus.jpg',
     djs: {
       support: [JHEEZ, HOODDIVER, RIZZY, BASST],
@@ -252,7 +252,7 @@ export const eventDays: EventDay[] = [
     vibeText:
       'Mit Palmenmarkt kommt am Mittwoch ein ganz besonderer Kiesgrube-Vibe ins Weinzelt. Zwischen guter Musik, sommerlicher Energie und einer Atmosphäre, die sich deutlich von den anderen Tagen abhebt, entsteht ein Abend mit ganz eigener Handschrift. Perfekt für alle, die unter der Woche Lust auf etwas Besonderes haben.',
     highlights: ['Kiesgrube', 'Palmenmarkt'],
-    reservationLink: '/reservation',
+    reservationLink: '/reservation?date=22.07.26',
     image: '/events/keezy.webp',
     djs: {
       support: [],
@@ -269,7 +269,7 @@ export const eventDays: EventDay[] = [
     vibeText:
       'Mit LUNARO kommt am Donnerstag eine Eventreihe ins Weinzelt, die in Düsseldorf längst für volle Abende und starken Sound bekannt ist. Viele kennen den Vibe aus den monatlichen Nächten im Hotel Hotel und dieses Jahr gibt es ihn auf der Rheinkirmes.',
     highlights: ['LUNARO'],
-    reservationLink: '/reservation/vip',
+    reservationLink: '/reservation?date=23.07.26',
     accentClassName:
       'from-amber-900/10 via-orange-900/10 to-amber-800/20 border-amber-900/70',
     image: '/events/lunaro.jpg',
@@ -288,7 +288,7 @@ export const eventDays: EventDay[] = [
     vibeText:
       'Am zweiten Freitag übernimmt erneut AUDIO KITCHEN und macht das Weinzelt zur Bühne. Wer elektronische Sets, gute Energie und spätes Weiterfeiern mag, ist hier genau richtig.',
     highlights: ['Audio Kitchen'],
-    reservationLink: '/reservation',
+    reservationLink: '/reservation?date=24.07.26',
     accentClassName:
       'from-blue-800/10 via-white to-purple-50 border-blue-800/70',
     image: '/events/audiokitchen.jpg',
@@ -308,7 +308,7 @@ export const eventDays: EventDay[] = [
     vibeText:
       'Der letzte Samstag bündelt alles, was das Weinzelt über die Woche ausmacht: gute Leute, volle Tische, starke Musik und genau dieser letzte-Samstag-Vibe, bei dem niemand zu früh nach Hause will. Mit RELOVA steht dabei ein Headliner-Duo im Fokus, das mit eigenen Releases, starken Remixen und viel Momentum gerade richtig Fahrt aufgenommen hat. Ein perfekter Abschluss für alle, die den letzten Samstag nochmal voll mitnehmen wollen.',
     highlights: ['Closing Saturday', 'RELOVA'],
-    reservationLink: '/reservation/standing',
+    reservationLink: '/reservation?date=25.07.26',
     image: '/events/relova.jpg',
     djs: {
       support: [ARDEE, JASONWATS],
@@ -326,7 +326,7 @@ export const eventDays: EventDay[] = [
     vibeText:
       'Apero @ Weinzelt eignet sich perfekt für alle, die die letzten Stunden der Kirmes stilvoll ausklingen lassen wollen. Und ja, auch dieses Jahr sind die legendären WINE WALKS wieder mit im Programm: gemeinsam mit Sommelier, ausgewählten Weinen und dem perfekten Sonntag zwischen Carlsplatz, Rheinbrücke und Weinzelt.',
     highlights: ['Closing', 'WINE WALK'],
-    reservationLink: '/reservation',
+    reservationLink: '/reservation?date=26.07.26',
     image: '/events/winewalk.jpg',
     djs: {
       support: [],
