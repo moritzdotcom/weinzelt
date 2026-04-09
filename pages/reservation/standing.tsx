@@ -28,6 +28,7 @@ import AddressInput, {
   validateAddress,
 } from '@/components/reservation/addressInput';
 import NewsletterConfirmation from '@/components/reservation/newsletterConfirmation';
+import HtmlHead from '@/components/htmlHead';
 
 type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
@@ -193,6 +194,7 @@ export default function StandingReservationPage() {
 
   return (
     <ReservationCountdownSection startDate="2026-02-27T11:00:00Z">
+      <HtmlHead title="Reserviere deinen Stehtisch im Weinzelt" />
       {!data ? (
         fetchError ? (
           <ReservationError text={fetchError} />

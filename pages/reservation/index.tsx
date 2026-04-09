@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import ReservationCountdownSection from '@/components/reservation/countdown';
+import HtmlHead from '@/components/htmlHead';
 
 export default function ReservationPage() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function ReservationPage() {
 
   return (
     <ReservationCountdownSection startDate="2026-02-27T11:00:00Z">
+      <HtmlHead title="Reserviere dein besonderes Erlebnis im Weinzelt" />
       <Box className="max-w-4xl mx-auto px-4 py-16 font-sans text-gray-800">
         <ReservationHeader>
           Wähle deinen Tisch für das Weinzelt

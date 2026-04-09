@@ -20,6 +20,7 @@ import AddressInput, {
   defaultAddress,
 } from '@/components/reservation/addressInput';
 import { Address } from '@/lib/reservation';
+import HtmlHead from '@/components/htmlHead';
 
 type SeatingType =
   ApiGetReservationDatesResponse['eventDates'][number]['seatings'][number];
@@ -149,6 +150,7 @@ export default function CompanyReservationPage() {
 
   return (
     <Box className="max-w-4xl mx-auto px-4 py-16 font-sans text-gray-800">
+      <HtmlHead title="Deine Firmenfeier im Weinzelt" />
       <ReservationHeader>
         Anfrage für große Gruppen & Firmenkunden
       </ReservationHeader>

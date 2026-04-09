@@ -1,20 +1,19 @@
-import Image from 'next/image';
 import Link from 'next/link';
-import { Divider } from '@mui/material';
 import Countdown from '@/components/countdown';
 import { Session } from '@/hooks/useSession';
 import { KeyboardArrowRight } from '@mui/icons-material';
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
-import SpecialEventRegistrationDialog from '@/components/specialEventRegistrationDialog';
 import FoodGrid from '@/components/foodGrid';
 import { InstagramReel } from '@/components/instagramReel';
 import HeroFade from '@/components/heroFade';
 import EventDaysSection from '@/components/home/eventDaysSection';
+import HtmlHead from '@/components/htmlHead';
 
 export default function Home({ session }: { session: Session }) {
   return (
     <div className="font-sans relative">
+      <HtmlHead />
       <div className="fixed bottom-0 left-0 w-full sm:hidden z-10 bg-gray-100 px-3 py-2 flex items-center justify-center">
         <Link
           href="/reservation"
@@ -213,53 +212,6 @@ export default function Home({ session }: { session: Session }) {
         <h3 className="text-2xl font-cocogoose text-center text-white mt-12 mb-6">
           Letztes Jahr war nur der Anfang...
         </h3>
-
-        {/* Eventkalender */}
-        {/* <div className="mt-12">
-          <h3 className="text-2xl font-cocogoose text-center text-white mb-6">
-            Unsere Events im Weinzelt
-          </h3>
-          <div className="flex overflow-x-auto space-x-4 p-4">
-            {events.map((e) => (
-              <div
-                key={`${e.date}${e.title}`}
-                className="flex-shrink-0 w-72 bg-neutral-900 rounded-lg shadow-lg hover:bg-neutral-800 hover:scale-105 transition overflow-hidden flex flex-col justify-between"
-              >
-                <div>
-                  <img src={e.image} alt={e.title} />
-                  <div className="px-3 py-2 flex flex-col">
-                    <p className="text-lg font-semibold text-white">{e.date}</p>
-                    <p className="text-base font-light text-gray-300">
-                      {e.from}
-                    </p>
-                    <p className="text-gray-300 text-xl mt-2">{e.title}</p>
-                    <Divider
-                      sx={{ marginY: 2 }}
-                      className="bg-gray-400 w-2/3"
-                    />
-                    <p className="text-gray-400 text-sm">{e.description}</p>
-                  </div>
-                </div>
-                {e.button.specialEventId && (
-                  <SpecialEventRegistrationDialog
-                    id={e.button.specialEventId}
-                    buttonLabel={e.button.text}
-                  />
-                )}
-                {e.button.link && (
-                  <Link
-                    className="w-full py-3 text-center bg-gray-200 inline-block text-black hover:underline text-lg"
-                    href={e.button.link}
-                    target={e.button.external ? '_blank' : '_self'}
-                    rel={e.button.external ? 'noopener noreferrer' : undefined}
-                  >
-                    {e.button.text}
-                  </Link>
-                )}
-              </div>
-            ))}
-          </div>
-        </div> */}
       </section>
       <EventDaysSection />
       {/* Speisen & Getränke */}

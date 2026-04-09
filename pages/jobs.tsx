@@ -1,7 +1,8 @@
 import Footer from '@/components/footer';
+import HtmlHead from '@/components/htmlHead';
 import Navbar from '@/components/navbar';
 import { Session } from '@/hooks/useSession';
-import { TextField, Box, Button, MenuItem } from '@mui/material';
+import { TextField, Box, MenuItem } from '@mui/material';
 import axios from 'axios';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -10,6 +11,7 @@ import { useState } from 'react';
 export default function JobsPage({ session }: { session: Session }) {
   return (
     <div>
+      <HtmlHead title="Weinzelt - Wir suchen dich!" />
       <Navbar session={session} />
       <section className="bg-white pb-20 px-6 md:px-12">
         <div className="max-w-5xl mx-auto text-center mt-12">
@@ -238,8 +240,8 @@ function ApplicationForm() {
             {loading
               ? 'Wird gesendet...'
               : success
-              ? 'Bewerbung gesendet'
-              : 'Bewerbung absenden'}
+                ? 'Bewerbung gesendet'
+                : 'Bewerbung absenden'}
           </button>
         </Box>
       </form>
