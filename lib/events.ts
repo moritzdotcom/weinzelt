@@ -120,10 +120,17 @@ const RELOVA = {
   genre: 'House',
   instagramUrl: 'https://www.instagram.com/relova.official/',
 };
+
 const JASONWATS = {
   name: 'Jason Wats',
   genre: 'Techno',
   instagramUrl: 'https://www.instagram.com/jasonwats.ofc/',
+};
+
+const PANPOT = {
+  name: 'PAN-POT',
+  genre: 'Dance/Electronic',
+  instagramUrl: 'https://www.instagram.com/panpotofficial/',
 };
 
 export const eventDays: EventDay[] = [
@@ -182,7 +189,7 @@ export const eventDays: EventDay[] = [
     reservationLink: '/reservation?date=19.07.26',
     image: '/events/keezy.webp',
     djs: {
-      headliner: [{ name: 'Kiesgrube', genre: 'TBA' }],
+      headliner: [PANPOT],
     },
     accentClassName: 'from-red-100 via-white to-orange-50 border-red-800/70',
     specials: [
