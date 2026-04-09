@@ -185,7 +185,7 @@ export const eventDays: EventDay[] = [
     subtitle: 'Sonntag mit Kultstatus, Clubkultur und echtem Kiesgrube-Vibe.',
     vibeText:
       'Wenn die Kiesgrube ins Weinzelt kommt, wird der Sonntag nicht leise, sondern legendär. Seit Jahrzehnten steht Kiesgrube für Freiheit, Haltung, kompromisslosen Sound und genau diese besondere Energie zwischen Exzess, Ritual und Ausnahmezustand. Ein Tag für alle, die Sonntage nicht absitzen, sondern feiern wollen.',
-    highlights: ['Kiesgrube', 'Tickets coming soon', 'WM Finale'],
+    highlights: ['Kiesgrube', 'PAN-POT', 'Tickets coming soon', 'WM Finale'],
     reservationLink: '/reservation?date=19.07.26',
     image: '/events/keezy.webp',
     djs: {
