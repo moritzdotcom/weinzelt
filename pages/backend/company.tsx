@@ -563,7 +563,8 @@ function NewReservationDialog({
     !email.trim() ||
     !guestCount ||
     !selectedDate ||
-    !selectedSlot;
+    !selectedSlot ||
+    tablesAvailable <= 0;
 
   return (
     <Dialog
