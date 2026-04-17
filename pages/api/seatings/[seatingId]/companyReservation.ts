@@ -4,13 +4,13 @@ import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handle(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   if (req.method === 'POST') {
     await handlePOST(req, res);
   } else {
     throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
+      `The HTTP ${req.method} method is not supported at this route.`,
     );
   }
 }
@@ -20,7 +20,17 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
   if (typeof seatingId !== 'string')
     return res.status(401).json('Event required');
 
-  const { name, companyName, email, people, budget, text } = req.body;
+  const {
+    name,
+    companyName,
+    email,
+    people,
+    budget,
+    text,
+    shippingAddress,
+    billingAddress,
+    shippingSameAsBilling,
+  } = req.body;
   if (typeof name !== 'string')
     return res.status(401).json('Invalid value for name');
   if (typeof email !== 'string')
@@ -31,7 +41,18 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
     return res.status(401).json('Invalid value for budget');
 
   const companyReservation = await prisma.companyReservation.create({
-    data: { companyName, name, email, people, budget, text, seatingId },
+    data: {
+      companyName,
+      name,
+      email,
+      people,
+      budget,
+      text,
+      seatingId,
+      shippingAddress,
+      billingAddress,
+      shippingSameAsBilling,
+    },
     include: {
       seating: {
         select: {
@@ -51,7 +72,7 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
     name,
     people,
     companyReservation.seating.eventDate.date,
-    companyReservation.seating.timeslot
+    companyReservation.seating.timeslot,
   );
 
   return res.json(companyReservation);

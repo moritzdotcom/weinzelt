@@ -1,4 +1,5 @@
 import sendReservationMail from '@/lib/mailer/reservationMail';
+import sendCompanyReservationMail from '@/lib/mailer/reservationMailCompany';
 import prisma from '@/lib/prismadb';
 import { translateType } from '@/lib/reservation';
 import { getServerSession } from '@/lib/session';
@@ -38,8 +39,19 @@ async function handlePOST(
   res: NextApiResponse,
   userName: string,
 ) {
-  const { type, name, email, people, tableCount, minimumSpend, seatingId } =
-    req.body;
+  const {
+    type,
+    name,
+    email,
+    people,
+    tableCount,
+    minimumSpend,
+    seatingId,
+    billingAddress,
+    shippingSameAsBilling,
+    shippingAddress,
+    internalNotes,
+  } = req.body;
 
   const reservationType = type == 'STANDING' ? 'STANDING' : 'VIP';
   if (typeof name !== 'string' || name.length == 0)
@@ -51,6 +63,11 @@ async function handlePOST(
   if (typeof seatingId !== 'string')
     return res.status(401).json('Ungültiger Timeslot');
 
+  const note = internalNotes
+    ? internalNotes
+    : `${tableCount} ${translateType(reservationType)}${
+        tableCount == 1 ? '' : 'e'
+      }`;
   const reservation = await prisma.reservation.create({
     data: {
       type: reservationType,
@@ -62,9 +79,10 @@ async function handlePOST(
       paymentStatus: 'PENDING_PAYMENT',
       seatingId,
       notified: new Date(),
-      internalNotes: `${tableCount} ${translateType(reservationType)}${
-        tableCount == 1 ? '' : 'e'
-      } - Eingeladen von ${userName}`,
+      internalNotes: `${note} - Eingeladen von ${userName}`,
+      billingAddress,
+      shippingAddress,
+      shippingSameAsBilling,
     },
     include: {
       seating: {
@@ -79,6 +97,14 @@ async function handlePOST(
       },
     },
   });
+
+  await sendCompanyReservationMail(
+    email,
+    people,
+    reservation.seating.eventDate.date,
+    reservation.seating.timeslot,
+    shippingAddress,
+  );
 
   return res.json(reservation);
 }

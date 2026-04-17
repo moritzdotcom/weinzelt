@@ -29,9 +29,12 @@ import { ApiGetCompanyReservationsResponse } from '../api/events/[eventId]/compa
 import { TransitionProps } from '@mui/material/transitions';
 import { ReservationType } from '@prisma/client';
 import { ApiGetReservationDataResponse } from '../api/reservationData';
-import { translateType } from '@/lib/reservation';
+import { Address, translateType } from '@/lib/reservation';
 import { Close } from '@mui/icons-material';
 import EventSelector from '@/components/eventSelector';
+import AddressInput, {
+  defaultAddress,
+} from '@/components/reservation/addressInput';
 
 export default function BackendCompanyPage({ session }: { session: Session }) {
   const router = useRouter();
@@ -419,9 +422,16 @@ function NewReservationDialog({
   const [email, setEmail] = useState('');
   const [guestCount, setGuestCount] = useState('1');
   const [tableCount, setTableCount] = useState('1');
-  const [packageName, setPackageName] = useState('');
-  const [packageDescription, setPackageDescription] = useState('');
+  const [internalNotes, setInternalNotes] = useState('');
   const [minimumSpend, setMinimumSpend] = useState('1000');
+
+  const [billingAddress, setBillingAddress] = useState<Address>(() =>
+    defaultAddress('DE'),
+  );
+  const [shippingSameAsBilling, setShippingSameAsBilling] = useState(true);
+  const [shippingAddress, setShippingAddress] = useState<Address>(() =>
+    defaultAddress('DE'),
+  );
 
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedSlot, setSelectedSlot] = useState<
@@ -433,6 +443,7 @@ function NewReservationDialog({
   const [dataLoading, setDataLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string>();
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [success, setSuccess] = useState(false);
 
   // Lade für den ausgewählten Type die verfügbaren Daten (Dates & Timeslots)
@@ -487,6 +498,7 @@ function NewReservationDialog({
 
   const handleSubmit = async () => {
     if (!selectedSlot) return;
+    setSubmitted(true);
     setLoading(true);
     try {
       await axios.post('/api/reservations/company', {
@@ -497,6 +509,10 @@ function NewReservationDialog({
         tableCount: Number(tableCount),
         seatingId: selectedSlot.id,
         minimumSpend: Number(minimumSpend),
+        billingAddress,
+        shippingSameAsBilling,
+        shippingAddress,
+        internalNotes,
       });
       setSuccess(true);
       reservation && onDelete(reservation.id);
@@ -515,11 +531,14 @@ function NewReservationDialog({
     setEmail('');
     setGuestCount('1');
     setTableCount('1');
-    setPackageName('');
-    setPackageDescription('');
+    setInternalNotes('');
     setMinimumSpend('1000');
     setSelectedDate('');
     setSelectedSlot(null);
+    setBillingAddress(defaultAddress('DE'));
+    setShippingSameAsBilling(true);
+    setShippingAddress(defaultAddress('DE'));
+    setSubmitted(false);
     onClose();
   };
 
@@ -698,6 +717,25 @@ function NewReservationDialog({
                     },
                   }}
                 />
+                <AddressInput
+                  submitted={submitted}
+                  billingAddress={billingAddress}
+                  onBillingAddressChange={setBillingAddress}
+                  shippingSameAsBilling={shippingSameAsBilling}
+                  onShippingSameAsBillingChange={setShippingSameAsBilling}
+                  shippingAddress={shippingAddress}
+                  onShippingAddressChange={setShippingAddress}
+                  subtitle="Eintrittsbändchen und Verzehrgutscheine werden an diese Adresse geschickt"
+                />
+                <TextField
+                  label="Interne Notizen"
+                  value={internalNotes}
+                  onChange={(e) => setInternalNotes(e.target.value)}
+                  fullWidth
+                  multiline
+                  rows={3}
+                  placeholder="Hier kannst du interne Notizen zur Reservierung hinzufügen."
+                />
               </Box>
             </Collapse>
           </Box>
@@ -723,7 +761,7 @@ function NewReservationDialog({
           disabled={isSubmitDisabled}
           className="w-full border border-black bg-black text-white rounded py-2 px-4"
         >
-          Speichern
+          Anlegen & benachrichtigen
         </button>
       </DialogActions>
     </Dialog>
