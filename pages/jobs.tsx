@@ -46,60 +46,45 @@ export default function JobsPage({ session }: { session: Session }) {
 
           {/* Jobangebote */}
           <div className="grid md:grid-cols-2 gap-10 text-left">
-            {/* VIP Kellner */}
-            <div className="border border-gray-200 rounded-2xl p-6 shadow hover:shadow-md hover:scale-105 transition">
-              <h2 className="text-2xl font-cocogoose mb-4">
-                ✨ VIP-Kellner:in
-              </h2>
-              <p className="text-gray-700 text-base leading-relaxed">
-                Du hast jahrelange Erfahrung in der Gastronomie und verstehst
+            <JobCard
+              title="✨ VIP-Kellner:in"
+              description="Du hast jahrelange Erfahrung in der Gastronomie und verstehst
                 etwas von Wein - wirklich etwas? In unserem exklusiven
                 VIP-Bereich erwarten unsere Gäste nicht nur Top-Service, sondern
                 auch fachkundige Empfehlungen. Du solltest souverän auftreten,
                 belastbar sein und auch im größten Trubel den Überblick
                 behalten. Sommelier-Kenntnisse oder tieferes Weinwissen sind ein
-                großes Plus.
-              </p>
-            </div>
+                großes Plus."
+              disabled
+            />
 
-            {/* Barkraft */}
-            <div className="border border-gray-200 rounded-2xl p-6 shadow hover:shadow-md hover:scale-105 transition">
-              <h2 className="text-2xl font-cocogoose mb-4">🍷 Barkraft</h2>
-              <p className="text-gray-700 text-base leading-relaxed">
-                Du hast bereits Erfahrung hinter der Bar und weißt, wie man mit
+            <JobCard
+              title="🍷 Barkraft"
+              description="Du hast bereits Erfahrung hinter der Bar und weißt, wie man mit
                 Gästen umgeht? Dann suchen wir dich! An unserer Panorama-Bar
                 servierst du hochwertige Weine, Aperitifs und Softdrinks mit
                 Tempo, Charme und Überblick. Du bist schnell, freundlich und
                 kannst auch unter Stress dein Team unterstützen - dann bist du
-                bei uns genau richtig.
-              </p>
-            </div>
+                bei uns genau richtig."
+            />
 
-            {/* Küchen-/Spülhilfe */}
-            <div className="border border-gray-200 rounded-2xl p-6 shadow hover:shadow-md hover:scale-105 transition">
-              <h2 className="text-2xl font-cocogoose mb-4">
-                🍽️ Küchen- & Spülhilfe
-              </h2>
-              <p className="text-gray-700 text-base leading-relaxed">
-                Ordnung in der Küche ist für dich selbstverständlich? Dann
+            <JobCard
+              title="🍽️ Küchen- & Spülhilfe"
+              description="Ordnung in der Küche ist für dich selbstverständlich? Dann
                 unterstütze unser Team im Hintergrund - beim Spülen, Vorbereiten
                 und Sauberhalten unseres Küchenbereichs. Auch ohne
                 Gastroerfahrung bist du willkommen, wenn du ordentlich, flink
-                und zuverlässig bist.
-              </p>
-            </div>
+                und zuverlässig bist."
+            />
 
-            {/* Runner */}
-            <div className="border border-gray-200 rounded-2xl p-6 shadow hover:shadow-md hover:scale-105 transition">
-              <h2 className="text-2xl font-cocogoose mb-4">🏃‍♂️ Runner</h2>
-              <p className="text-gray-700 text-base leading-relaxed">
-                Als Runner bist du das Rückgrat unseres Betriebs: Du sorgst
+            <JobCard
+              title="🏃‍♂️ Runner"
+              description="Als Runner bist du das Rückgrat unseres Betriebs: Du sorgst
                 dafür, dass Kühlschränke immer aufgefüllt sind, Materialien aus
                 dem Kühlcontainer kommen und das Team nie auf Nachschub warten
                 muss. Eine körperlich fitte, zuverlässige Person mit Überblick
-                ist hier gefragt.
-              </p>
-            </div>
+                ist hier gefragt."
+            />
           </div>
           <ApplicationForm />
 
@@ -127,6 +112,51 @@ export default function JobsPage({ session }: { session: Session }) {
         </div>
       </section>
       <Footer />
+    </div>
+  );
+}
+
+function JobCard({
+  title,
+  description,
+  disabled,
+}: {
+  title: string;
+  description: string;
+  disabled?: boolean;
+}) {
+  return (
+    <div
+      className={[
+        'relative rounded-2xl border p-6 shadow transition',
+        disabled
+          ? 'border-gray-200 bg-gray-50 opacity-70'
+          : 'border-gray-200 bg-white hover:scale-[1.02] hover:shadow-md',
+      ].join(' ')}
+    >
+      {disabled && (
+        <div className="absolute right-4 top-4 rounded-full bg-gray-900 px-3 py-1 text-xs font-medium text-white">
+          Aktuell kein Bedarf
+        </div>
+      )}
+
+      <h2
+        className={[
+          'mb-4 text-2xl font-cocogoose',
+          disabled ? 'text-gray-500 line-through' : 'text-black',
+        ].join(' ')}
+      >
+        {title}
+      </h2>
+
+      <p
+        className={[
+          'text-base leading-relaxed',
+          disabled ? 'text-gray-500' : 'text-gray-700',
+        ].join(' ')}
+      >
+        {description}
+      </p>
     </div>
   );
 }
@@ -202,7 +232,9 @@ function ApplicationForm() {
           }}
           sx={{ marginBottom: 2, textAlign: 'start' }}
         >
-          <MenuItem value={'VIP-Kellner:in'}>✨ VIP-Kellner:in</MenuItem>
+          <MenuItem disabled value={'VIP-Kellner:in'}>
+            ✨ VIP-Kellner:in
+          </MenuItem>
           <MenuItem value={'Barkraft'}>🍷 Barkraft</MenuItem>
           <MenuItem value={'Küchen- & Spülhilfe'}>
             🍽️ Küchen- & Spülhilfe
