@@ -30,11 +30,15 @@ async function handleGET(
   id: string,
 ) {
   const reservations = await prisma.reservation.findMany({
-    where: { seating: { eventDateId: id }, paymentStatus: 'PAID' },
+    where: {
+      seating: { eventDateId: id },
+      paymentStatus: { in: ['PAID', 'PENDING_PAYMENT'] },
+    },
     select: {
       name: true,
       people: true,
       tableNumber: true,
+      paymentStatus: true,
       seating: {
         select: { timeslot: true, eventDate: { select: { date: true } } },
       },
@@ -117,7 +121,12 @@ async function handleGET(
         let rowTop = tableTop + 20 + rowIndex * 25; // 25pt Zeilenhöhe
         rowIndex += 1;
 
-        const values = [r.name, r.people.toString(), r.tableNumber || '', ''];
+        const values = [
+          `${r.name} (${r.paymentStatus == 'PAID' ? 'bezahlt' : 'offen'})`,
+          r.people.toString(),
+          r.tableNumber || '',
+          '',
+        ];
 
         // Horizontale Linie oben
         doc

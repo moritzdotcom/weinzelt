@@ -30,7 +30,10 @@ async function handleGET(
   id: string,
 ) {
   const reservations = await prisma.reservation.findMany({
-    where: { seating: { eventDateId: id }, paymentStatus: 'PAID' },
+    where: {
+      seating: { eventDateId: id },
+      paymentStatus: { in: ['PAID', 'PENDING_PAYMENT'] },
+    },
     select: {
       type: true,
       paymentStatus: true,
