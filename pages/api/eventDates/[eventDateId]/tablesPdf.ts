@@ -194,9 +194,16 @@ async function handleGET(
               align: 'left',
             });
 
-          const rowsNeeded = r.internalNotes
-            ? Math.ceil(`Interne Notiz: ${r.internalNotes}`.length / 88)
-            : 0;
+          let rowsNeeded = 0;
+
+          if (r.internalNotes) {
+            r.internalNotes.split('\n').forEach((n, i) => {
+              rowsNeeded +=
+                i == 0
+                  ? Math.ceil(`Interne Notiz: ${n}`.length / 88)
+                  : Math.ceil(n.length / 88);
+            });
+          }
 
           if (r.internalNotes) {
             // Zusätzliche Höhe für interne Notizen
