@@ -29,7 +29,7 @@ interface Props {
 }
 
 export const getServerSideProps: GetServerSideProps<Partial<Props>> = async (
-  ctx
+  ctx,
 ) => {
   // Alben laden
   const albumsRaw = await prisma.album.findMany({
