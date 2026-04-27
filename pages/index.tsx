@@ -235,15 +235,15 @@ export default function Home({ session }: { session: Session }) {
               und clevere alkoholfreie Alternativen. Alles, was du brauchst für
               einen Abend, der stilvoll knallt!
             </p>
-            {/* <div className="flex flex-col items-center sm:items-start gap-3">
-              <Link
+            <div className="flex flex-col items-center sm:items-start gap-3">
+              {/* <Link
                 href="/weinzelt-food.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block border border-black text-black px-6 py-3 rounded-full shadow-md hover:bg-gray-200 hover:text-black text-center transition"
               >
                 Entdecke unser Weingarten Menu
-              </Link>
+              </Link> */}
               <Link
                 href="/weinzelt-drinks.pdf"
                 target="_blank"
@@ -255,7 +255,7 @@ export default function Home({ session }: { session: Session }) {
                   & Lieblingstropfen finden!
                 </span>
               </Link>
-            </div> */}
+            </div>
           </div>
 
           {/* Bildbereich */}
