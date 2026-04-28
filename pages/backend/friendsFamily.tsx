@@ -80,9 +80,9 @@ export default function FriendsFamilyReservationPage() {
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [minimumSpend, setMinimumSpend] = useState('100');
 
   const maxGuests = type === 'VIP' ? 10 : 20;
-  const packagePrice = type === 'VIP' ? 200 : 100;
 
   // Fetch or load from cache on type change
   useEffect(() => {
@@ -160,7 +160,7 @@ export default function FriendsFamilyReservationPage() {
         email,
         people: Number(guestCount),
         seatingId: selectedSlot.id,
-        packagePrice,
+        minimumSpend: Number(minimumSpend),
       });
       setSuccess(true);
       setDialogOpen(true);
@@ -363,9 +363,10 @@ export default function FriendsFamilyReservationPage() {
                 />
                 <TextField
                   fullWidth
+                  type="number"
                   label="Mindestverzehr"
-                  disabled
-                  value={packagePrice}
+                  value={minimumSpend}
+                  onChange={(e) => setMinimumSpend(e.target.value)}
                   slotProps={{
                     input: {
                       startAdornment: (
