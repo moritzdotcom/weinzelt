@@ -8,6 +8,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import type { Prisma } from '@prisma/client';
 
 export type Address = {
   company?: string;
@@ -19,6 +20,7 @@ export type Address = {
 };
 
 export type AddressErrors = Partial<Record<keyof Address, string>>;
+type AddressJsonInput = Prisma.JsonValue | null | undefined;
 
 export function defaultAddress(country: string = 'DE'): Address {
   return {
@@ -28,6 +30,44 @@ export function defaultAddress(country: string = 'DE'): Address {
     postalCode: '',
     city: '',
     country,
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function stringOrEmpty(value: unknown): string {
+  return typeof value === 'string' ? value : '';
+}
+
+export function addressFromJson(
+  value: AddressJsonInput,
+  fallbackCountry = 'DE',
+): Address {
+  const fallback = defaultAddress(fallbackCountry);
+
+  if (!isRecord(value)) {
+    return fallback;
+  }
+
+  return {
+    company: stringOrEmpty(value.company),
+
+    // neues Format: line1
+    // altes Format: street
+    line1: stringOrEmpty(value.line1) || stringOrEmpty(value.street),
+
+    line2: stringOrEmpty(value.line2),
+
+    postalCode:
+      stringOrEmpty(value.postalCode) ||
+      stringOrEmpty(value.zip) ||
+      stringOrEmpty(value.plz),
+
+    city: stringOrEmpty(value.city),
+
+    country: stringOrEmpty(value.country) || fallbackCountry,
   };
 }
 

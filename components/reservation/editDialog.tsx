@@ -10,6 +10,11 @@ import {
 import { forwardRef, useEffect, useState } from 'react';
 import { TransitionProps } from '@mui/material/transitions';
 import { ApiGetReservationsResponse } from '@/pages/api/events/[eventId]/reservations';
+import AddressInput, {
+  Address,
+  addressFromJson,
+  defaultAddress,
+} from './addressInput';
 
 const Transition = forwardRef(function Transition(
   props: TransitionProps & { children: React.ReactElement },
@@ -34,6 +39,9 @@ export default function EditReservationDialog({
     tableCount: '1',
     minimumSpend: '0',
     internalNotes: '',
+    shippingAddress: defaultAddress('DE'),
+    billingAddress: defaultAddress('DE'),
+    shippingSameAsBilling: true,
   });
 
   const [peopleChanged, setPeopleChanged] = useState(false);
@@ -47,16 +55,37 @@ export default function EditReservationDialog({
         tableCount: `${reservation.tableCount}`,
         minimumSpend: `${reservation.minimumSpend}`,
         internalNotes: reservation.internalNotes || '',
+        shippingAddress: addressFromJson(reservation.shippingAddress),
+        billingAddress: addressFromJson(reservation.billingAddress),
+        shippingSameAsBilling: reservation.shippingSameAsBilling,
       });
       setPeopleChanged(false);
     }
   }, [reservation]);
 
-  const handleChange = (key: string, value: string) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+  const handleChange = <K extends keyof typeof form>(
+    key: K,
+    value: (typeof form)[K],
+  ) => {
+    setForm((prev) => {
+      const next = {
+        ...prev,
+        [key]: value,
+      };
+
+      // Optional: Wenn Billing geändert wird und Shipping gleich sein soll,
+      // direkt synchron halten
+      if (key === 'billingAddress' && prev.shippingSameAsBilling) {
+        next.shippingAddress = value as Address;
+      }
+
+      // Wenn "gleiche Adresse" aktiviert wird, Shipping direkt übernehmen
+      if (key === 'shippingSameAsBilling' && value === true) {
+        next.shippingAddress = prev.billingAddress;
+      }
+
+      return next;
+    });
 
     if (key === 'people') {
       setPeopleChanged(true);
@@ -81,7 +110,7 @@ export default function EditReservationDialog({
       onClose={onClose}
       slots={{ transition: Transition }}
       fullWidth
-      maxWidth="sm"
+      maxWidth="md"
       slotProps={{
         paper: {
           sx: {
@@ -139,6 +168,22 @@ export default function EditReservationDialog({
           multiline
           rows={3}
           placeholder="Hier kannst du interne Notizen zur Reservierung hinzufügen."
+        />
+        <AddressInput
+          submitted={true}
+          billingAddress={form.billingAddress}
+          onBillingAddressChange={(next) =>
+            handleChange('billingAddress', next)
+          }
+          shippingSameAsBilling={form.shippingSameAsBilling}
+          onShippingSameAsBillingChange={(next) =>
+            handleChange('shippingSameAsBilling', next)
+          }
+          shippingAddress={form.shippingAddress}
+          onShippingAddressChange={(next) =>
+            handleChange('shippingAddress', next)
+          }
+          subtitle="Eintrittsbändchen und Verzehrgutscheine werden an diese Adresse geschickt"
         />
         {peopleChanged && (
           <Typography variant="body2" color="warning.main" mt={1}>
