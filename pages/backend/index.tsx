@@ -2,7 +2,6 @@ import { Session } from '@/hooks/useSession';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
-import { Grid } from '@mui/material';
 import CelebrationRoundedIcon from '@mui/icons-material/CelebrationRounded';
 import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -13,6 +12,97 @@ import PasswordIcon from '@mui/icons-material/Password';
 import LocalActivityIcon from '@mui/icons-material/LocalActivity';
 import SearchIcon from '@mui/icons-material/Search';
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
+import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
+import BackendKpiSection from '@/components/backend/kpiSection';
+
+const menuItems = [
+  {
+    href: '/backend/events',
+    title: 'Veranstaltungen',
+    description: 'Verwalte Veranstaltungen und Sichtbarkeit.',
+    Icon: CelebrationRoundedIcon,
+    group: 'Setup',
+  },
+  {
+    href: '/backend/seatings',
+    title: 'Seatings & Timeslots',
+    description:
+      'Plane Sitzbereiche, Kapazitäten, Timeslots und Mindestverzehr.',
+    Icon: TableRestaurantIcon,
+    group: 'Setup',
+  },
+  {
+    href: '/backend/reservations',
+    title: 'Reservierungen',
+    description:
+      'Bestätige Zahlungen, storniere Reservierungen, und plane Tischbelegung.',
+    Icon: AssignmentIcon,
+    group: 'Reservierungen',
+  },
+  {
+    href: '/backend/search',
+    title: 'Reservierungen suchen',
+    description:
+      'Finde und bearbeite Reservierungen schnell nach Name, E-Mail, Datum oder Buchungsdetails.',
+    Icon: SearchIcon,
+    group: 'Reservierungen',
+  },
+  {
+    href: '/backend/company',
+    title: 'Firmenbereich',
+    description:
+      'Verwalte Firmen & Gruppenanfragen und lege Firmenreservierungen an.',
+    Icon: ApartmentIcon,
+    group: 'Reservierungen',
+  },
+  {
+    href: '/backend/friendsFamily',
+    title: 'Friends & Family',
+    description:
+      'Erstelle interne Einladungen und besondere Reservierungen für Gäste des Teams.',
+    Icon: Diversity1Icon,
+    group: 'Reservierungen',
+  },
+  {
+    href: '/backend/dashboard',
+    title: 'Statistiken',
+    description:
+      'Analysiere Reservierungen, Auslastung, Gästezahlen und Umsatzentwicklung.',
+    Icon: LineAxisIcon,
+    group: 'Reporting',
+  },
+  {
+    href: '/backend/invoices',
+    title: 'Rechnungen',
+    description: 'Rechnungen erstellen, versenden, suchen und exportieren.',
+    Icon: ReceiptOutlinedIcon,
+    group: 'Reporting',
+  },
+  {
+    href: '/backend/referralCodes',
+    title: 'Referral Codes',
+    description:
+      'Lege Codes für Partner, Aktionen oder besondere Buchungskanäle an.',
+    Icon: PasswordIcon,
+    group: 'Marketing',
+  },
+  {
+    href: '/backend/specialEvents',
+    title: 'Special Events',
+    description:
+      'Pflege Sonderformate, Aktionen, Highlights und buchbare Zusatzveranstaltungen.',
+    Icon: LocalActivityIcon,
+    group: 'Marketing',
+  },
+  {
+    href: '/backend/impressions',
+    title: 'Fotos hochladen',
+    description:
+      'Lade Impressionen hoch und verwalte Bilder für Galerie und Website.',
+    Icon: AddAPhotoIcon,
+    group: 'Marketing',
+  },
+];
 
 export default function Backend({ session }: { session: Session }) {
   const router = useRouter();
@@ -24,86 +114,98 @@ export default function Backend({ session }: { session: Session }) {
     }
   }, [session.status, router.isReady]);
 
+  const groupedItems = menuItems.reduce(
+    (acc, item) => {
+      acc[item.group] = acc[item.group] || [];
+      acc[item.group].push(item);
+      return acc;
+    },
+    {} as Record<string, typeof menuItems>,
+  );
+
   return (
-    <div className="w-full max-w-2xl mx-auto px-3 mt-10 mb-5 flex flex-col gap-7">
-      <div>
-        <img src="/logo.png" alt="WEINZELT" className="w-64 mx-auto mb-6" />
-        <h2 className="text-2xl text-center font-light text-gray-600">
-          Backend
-        </h2>
-      </div>
-      <Grid container spacing={4} justifyContent="center">
-        <LinkItem
-          href="/backend/events"
-          text="Veranstaltungen"
-          Icon={CelebrationRoundedIcon}
-        />
-        <LinkItem
-          href="/backend/seatings"
-          text="Seatings & Timeslots"
-          Icon={TableRestaurantIcon}
-        />
-        <LinkItem
-          href="/backend/reservations"
-          text="Reservierungen"
-          Icon={AssignmentIcon}
-        />
-        <LinkItem
-          href="/backend/search"
-          text="Reservierungen suchen"
-          Icon={SearchIcon}
-        />
-        <LinkItem
-          href="/backend/company"
-          text="Firmenbereich"
-          Icon={ApartmentIcon}
-        />
-        <LinkItem
-          href="/backend/friendsFamily"
-          text="Friends & Family Reservierung"
-          Icon={Diversity1Icon}
-        />
-        <LinkItem
-          href="/backend/dashboard"
-          text="Statistiken"
-          Icon={LineAxisIcon}
-        />
-        <LinkItem
-          href="/backend/referralCodes"
-          text="Referral Codes"
-          Icon={PasswordIcon}
-        />
-        <LinkItem
-          href="/backend/specialEvents"
-          text="Special Events"
-          Icon={LocalActivityIcon}
-        />
-        <LinkItem
-          href="/backend/impressions"
-          text="Fotos hochladen"
-          Icon={AddAPhotoIcon}
-        />
-      </Grid>
+    <div className="w-full max-w-6xl mx-auto px-4 py-8 flex flex-col gap-8">
+      <header className="flex flex-col items-center text-center gap-3">
+        <img src="/logo.png" alt="WEINZELT" className="w-56" />
+
+        <div>
+          <p className="text-sm uppercase tracking-[0.2em] text-gray-400 mb-3">
+            Backend
+          </p>
+          <h1 className="text-3xl font-semibold text-gray-950">
+            Hallo {session.user?.name}
+          </h1>
+          <p className="mt-2 text-gray-500">
+            Noch{' '}
+            <b>
+              {Math.round(
+                Math.max(
+                  0,
+                  (new Date('2026-07-17T14:00').getTime() -
+                    new Date().getTime()) /
+                    1000 /
+                    60 /
+                    60 /
+                    24,
+                ),
+              )}{' '}
+              Tage
+            </b>{' '}
+            bis zum Weinzelt
+          </p>
+        </div>
+      </header>
+
+      <BackendKpiSection />
+
+      <section className="flex flex-col gap-8">
+        {Object.entries(groupedItems).map(([group, items]) => (
+          <div key={group} className="flex flex-col gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-950">{group}</h2>
+              <div className="mt-1 h-px bg-gray-200" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {items.map((item) => (
+                <LinkItem key={item.href} {...item} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
     </div>
   );
 }
 
 function LinkItem({
   href,
-  text,
+  title,
+  description,
   Icon,
 }: {
   href: string;
-  text: string;
+  title: string;
+  description: string;
   Icon: React.ElementType;
 }) {
   return (
     <Link
       href={href}
-      className="w-full bg-gray-50 rounded-md shadow flex gap-3 items-center px-4 py-5 text-xl text-gray-900"
+      className="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md"
     >
-      <Icon fontSize="large" />
-      <p>{text}</p>
+      <div className="flex items-start gap-4">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-700 transition group-hover:bg-gray-950 group-hover:text-white">
+          <Icon fontSize="small" />
+        </div>
+
+        <div>
+          <h3 className="text-base font-semibold text-gray-950">{title}</h3>
+          <p className="mt-1 text-sm leading-relaxed text-gray-500">
+            {description}
+          </p>
+        </div>
+      </div>
     </Link>
   );
 }

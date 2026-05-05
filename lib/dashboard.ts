@@ -9,6 +9,7 @@ export interface Metrics {
   paidCount: number;
   revenue: number;
   capacity: { x: string; y1: number; y2: number }[];
+  reservationCountByDay: { x: string; y: number }[];
   vipCountByDay: { x: string; y: number }[];
   referralCodes: { x: string; y: number }[];
   lastTenReservations: {
@@ -26,11 +27,16 @@ export function calculateMetrics(eventData: ApiGetEventDataResponse): Metrics {
   // flatten alle Reservierungen
   const allReservations = eventData.eventDates.flatMap((d) =>
     d.seatings.flatMap((s) =>
-      s.reservations.map((r) => ({ ...r, timeslot: s.timeslot, date: d.date })),
+      s.reservations
+        .filter(
+          (r) =>
+            r.paymentStatus === 'PAID' || r.paymentStatus === 'PENDING_PAYMENT',
+        )
+        .map((r) => ({ ...r, timeslot: s.timeslot, date: d.date })),
     ),
   );
 
-  const totalCount = allReservations.reduce((a, b) => a + b.tableCount, 0);
+  const totalCount = allReservations.length;
   const vipCount = allReservations
     .filter((r) => r.type === 'VIP')
     .reduce((a, b) => a + b.tableCount, 0);
@@ -76,6 +82,31 @@ export function calculateMetrics(eventData: ApiGetEventDataResponse): Metrics {
       y2: (data.standing * 100) / data.availableStanding,
     }));
 
+  const reservationCountByDay: {
+    [key: string]: { count: number };
+  } = {};
+  eventData.eventDates.forEach((date) => {
+    const data = { count: 0 };
+    date.seatings.forEach((s) => {
+      s.reservations.forEach((r) => {
+        if (
+          r.paymentStatus === 'PAID' ||
+          r.paymentStatus === 'PENDING_PAYMENT'
+        ) {
+          data.count += 1;
+        }
+      });
+    });
+    reservationCountByDay[date.date] = data;
+  });
+
+  const sortedReservationCountByDay = Object.entries(reservationCountByDay)
+    .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+    .map(([date, data]) => ({
+      x: date,
+      y: data.count,
+    }));
+
   const vipCountByDay: {
     [key: string]: { people: number };
   } = {};
@@ -83,7 +114,10 @@ export function calculateMetrics(eventData: ApiGetEventDataResponse): Metrics {
     const data = { people: 0 };
     date.seatings.forEach((s) => {
       s.reservations.forEach((r) => {
-        if (r.type === 'VIP' && r.paymentStatus === 'PAID') {
+        if (
+          (r.type === 'VIP' || r.paymentStatus === 'PENDING_PAYMENT') &&
+          r.paymentStatus === 'PAID'
+        ) {
           data.people += r.people;
         }
       });
@@ -137,6 +171,7 @@ export function calculateMetrics(eventData: ApiGetEventDataResponse): Metrics {
     standingCount,
     paidCount,
     revenue,
+    reservationCountByDay: sortedReservationCountByDay,
     capacity: sortedCapacity,
     vipCountByDay: sortedVipCountByDay,
     referralCodes: sortedreferralCodes,

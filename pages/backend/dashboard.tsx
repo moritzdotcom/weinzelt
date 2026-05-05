@@ -275,13 +275,7 @@ export default function EventDashboard({ session }: { session: Session }) {
           {/* Diagramme */}
           <LineChartCard
             title="Reservierungen pro Tag"
-            data={eventData.eventDates.map((date) => ({
-              x: date.date,
-              y: date.seatings.reduce(
-                (acc, seating) => acc + seating.reservations.length,
-                0,
-              ),
-            }))}
+            data={metrics.reservationCountByDay}
             yLabel="Reservierungen"
           />
           <MultiLineChartCard
