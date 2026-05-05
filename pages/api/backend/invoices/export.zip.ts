@@ -126,10 +126,21 @@ export default async function handler(
     orderBy: {
       issuedAt: 'asc',
     },
-    include: {
+    select: {
+      lineItems: true,
+      invoiceNumber: true,
+      issuedAt: true,
+      customerName: true,
+      customerEmail: true,
+      billingAddress: true,
+      vat7Cents: true,
+      vat19Cents: true,
+      totalCents: true,
       reservation: {
-        include: {
-          seating: true,
+        select: {
+          seating: {
+            select: { timeslot: true, eventDate: { select: { date: true } } },
+          },
         },
       },
     },
@@ -167,8 +178,8 @@ export default async function handler(
       customerName: invoice.customerName,
       customerEmail: invoice.customerEmail,
       billingAddress: invoice.billingAddress,
-      eventDateLabel: formatEventDateLabel(invoice.reservation.seating),
-      timeslot: formatTimeslotLabel(invoice.reservation.seating),
+      eventDateLabel: invoice.reservation.seating.eventDate.date,
+      timeslot: invoice.reservation.seating.timeslot,
       lineItems,
       vat7Cents: invoice.vat7Cents,
       vat19Cents: invoice.vat19Cents,
