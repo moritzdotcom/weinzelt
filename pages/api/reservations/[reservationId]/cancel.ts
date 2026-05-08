@@ -33,7 +33,7 @@ async function handlePOST(
   res: NextApiResponse,
   id: string,
 ) {
-  const { reason } = req.body;
+  const { reason, sendMail } = req.body;
 
   const reservation = await prisma.reservation.findUnique({
     where: { id },
@@ -108,14 +108,16 @@ async function handlePOST(
   });
 
   // 4) Mail
-  await sendReservationCancelMail(
-    updated.email,
-    updated.name,
-    updated.people,
-    updated.seating.eventDate.date,
-    updated.seating.timeslot,
-    reason,
-  );
+  if (sendMail === true) {
+    await sendReservationCancelMail(
+      updated.email,
+      updated.name,
+      updated.people,
+      updated.seating.eventDate.date,
+      updated.seating.timeslot,
+      reason,
+    );
+  }
 
   return res.json(updated);
 }

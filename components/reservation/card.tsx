@@ -3,12 +3,14 @@ import { useRef, useState } from 'react';
 import { ApiGetReservationsResponse } from '@/pages/api/events/[eventId]/reservations';
 import {
   Box,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
+  FormControlLabel,
   IconButton,
   InputAdornment,
   Menu,
@@ -37,11 +39,13 @@ export default function ReservationCard({
   const [savingTableNumber, setSavingTableNumber] = useState(false);
 
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [notifyGuest, setNotifyGuest] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
 
   const handleCancelReservation = async () => {
     await axios.post(`/api/reservations/${reservation.id}/cancel`, {
       reason: cancelReason,
+      sendMail: notifyGuest,
     });
     onUpdate({ ...reservation, paymentStatus: 'CANCELED' });
     setAnchorEl(null);
@@ -192,7 +196,7 @@ export default function ReservationCard({
           }}
           disabled={reservation.paymentStatus === 'CANCELED'}
         >
-          Stornieren & benachrichtigen
+          Stornieren
         </MenuItem>
       </Menu>
       <Dialog
@@ -215,6 +219,35 @@ export default function ReservationCard({
             maxRows={4}
             minRows={2}
           />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={notifyGuest}
+                onChange={(e) => setNotifyGuest(e.target.checked)}
+                sx={{
+                  color: 'black',
+                  '&.Mui-checked': { color: 'black' },
+                }}
+              />
+            }
+            label={
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: '0.875rem',
+                  color: '#333333',
+                  display: 'inline',
+                }}
+              >
+                Gast über Storno benachrichtigen
+              </Typography>
+            }
+            sx={{
+              width: '100%',
+              justifyContent: 'start',
+              mt: 2,
+            }}
+          />
         </DialogContent>
         <DialogActions
           sx={{
@@ -235,7 +268,7 @@ export default function ReservationCard({
             className="w-full shadow rounded text-white bg-red-600 hover:bg-red-700 px-3 py-2 transition hover:scale-105 ml-3"
             onClick={handleCancelReservation}
           >
-            Stornieren
+            Stornieren{notifyGuest ? ' & benachrichtigen' : ''}
           </button>
         </DialogActions>
       </Dialog>
