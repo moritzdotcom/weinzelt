@@ -327,11 +327,10 @@ export const eventDays: EventDay[] = [
     id: '2026-07-26',
     date: '26.07.2026',
     weekday: 'Sonntag',
-    motto: 'APERO @ WEINZELT',
-    subtitle:
-      'Der entspannte Abschluss mit Fokus auf Genuss, Sommer und Ausklang.',
+    motto: 'CLOSING Sunday',
+    subtitle: 'Das Motto wird in den kommenden Tagen angekündigt.',
     vibeText:
-      'Apero @ Weinzelt eignet sich perfekt für alle, die die letzten Stunden der Kirmes stilvoll ausklingen lassen wollen. Und ja, auch dieses Jahr sind die legendären WINE WALKS wieder mit im Programm: gemeinsam mit Sommelier, ausgewählten Weinen und dem perfekten Sonntag zwischen Carlsplatz, Rheinbrücke und Weinzelt.',
+      'Nur so viel Vorab: Auch dieses Jahr sind die legendären WINE WALKS wieder mit im Programm. Gemeinsam mit Sommelier, ausgewählten Weinen und dem perfekten Sonntag zwischen Carlsplatz, Rheinbrücke und Weinzelt.',
     highlights: ['Closing', 'WINE WALK'],
     reservationLink: '/reservation?date=26.07.26',
     image: '/events/winewalk.jpg',
