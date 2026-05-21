@@ -21,13 +21,14 @@ export function ReservationCancelDialog({
 }: {
   open: boolean;
   onClose: () => void;
-  reservation: ApiGetReservationsResponse[number];
+  reservation: ApiGetReservationsResponse[number] | null;
   onUpdate: (reservation: ApiGetReservationsResponse[number]) => void;
 }) {
   const [notifyGuest, setNotifyGuest] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
 
   const handleCancelReservation = async () => {
+    if (!reservation) return;
     await axios.post(`/api/reservations/${reservation.id}/cancel`, {
       reason: cancelReason,
       sendMail: notifyGuest,
@@ -55,7 +56,8 @@ export function ReservationCancelDialog({
           minRows={2}
         />
 
-        {reservation.stripePaymentIntentId &&
+        {reservation &&
+          reservation.stripePaymentIntentId &&
           reservation.paymentStatus === 'PAID' && (
             <Alert
               severity="warning"
