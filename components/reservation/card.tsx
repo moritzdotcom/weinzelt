@@ -3,14 +3,8 @@ import { useRef, useState } from 'react';
 import { ApiGetReservationsResponse } from '@/pages/api/events/[eventId]/reservations';
 import {
   Box,
-  Checkbox,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Divider,
-  FormControlLabel,
   IconButton,
   InputAdornment,
   Menu,
@@ -23,6 +17,7 @@ import { motion } from 'framer-motion';
 import { translateType } from '@/lib/reservation';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { Reservation } from '@prisma/client';
+import { ReservationCancelDialog } from './cancelDialog';
 
 export default function ReservationCard({
   reservation,
@@ -39,17 +34,6 @@ export default function ReservationCard({
   const [savingTableNumber, setSavingTableNumber] = useState(false);
 
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const [notifyGuest, setNotifyGuest] = useState(false);
-  const [cancelReason, setCancelReason] = useState('');
-
-  const handleCancelReservation = async () => {
-    await axios.post(`/api/reservations/${reservation.id}/cancel`, {
-      reason: cancelReason,
-      sendMail: notifyGuest,
-    });
-    onUpdate({ ...reservation, paymentStatus: 'CANCELED' });
-    setAnchorEl(null);
-  };
 
   const handleUpdateTableNumber = async (tableNumber: string) => {
     onUpdate({ ...reservation, tableNumber });
@@ -199,79 +183,12 @@ export default function ReservationCard({
           Stornieren
         </MenuItem>
       </Menu>
-      <Dialog
+      <ReservationCancelDialog
         open={cancelDialogOpen}
         onClose={() => setCancelDialogOpen(false)}
-      >
-        <DialogTitle>Reservierung Stornieren</DialogTitle>
-        <DialogContent>
-          <p className="text-lg mb-3">
-            Bitte gib einen Stornierungsgrund an. Dieser wird dem Kunden in der
-            Stornierungsbestätigung mitgeteilt.
-          </p>
-          <TextField
-            fullWidth
-            label="Stornierungsgrund"
-            placeholder="Nicht bezahlt"
-            multiline
-            value={cancelReason}
-            onChange={(e) => setCancelReason(e.target.value)}
-            maxRows={4}
-            minRows={2}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={notifyGuest}
-                onChange={(e) => setNotifyGuest(e.target.checked)}
-                sx={{
-                  color: 'black',
-                  '&.Mui-checked': { color: 'black' },
-                }}
-              />
-            }
-            label={
-              <Typography
-                variant="body2"
-                sx={{
-                  fontSize: '0.875rem',
-                  color: '#333333',
-                  display: 'inline',
-                }}
-              >
-                Gast über Storno benachrichtigen
-              </Typography>
-            }
-            sx={{
-              width: '100%',
-              justifyContent: 'start',
-              mt: 2,
-            }}
-          />
-        </DialogContent>
-        <DialogActions
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            px: 3,
-            pb: 2,
-            pt: 1,
-          }}
-        >
-          <button
-            className="w-full shadow rounded bg-gray-300 hover:bg-gray-400 px-3 py-2 transition hover:scale-105 mr-3"
-            onClick={() => setCancelDialogOpen(false)}
-          >
-            Abbrechen
-          </button>
-          <button
-            className="w-full shadow rounded text-white bg-red-600 hover:bg-red-700 px-3 py-2 transition hover:scale-105 ml-3"
-            onClick={handleCancelReservation}
-          >
-            Stornieren{notifyGuest ? ' & benachrichtigen' : ''}
-          </button>
-        </DialogActions>
-      </Dialog>
+        reservation={reservation}
+        onUpdate={onUpdate}
+      />
     </motion.div>
   );
 }

@@ -24,10 +24,12 @@ const Transition = forwardRef(function Transition(
 });
 
 export default function EditReservationDialog({
+  open,
   reservation,
   onClose,
   onSave,
 }: {
+  open: boolean;
   reservation: ApiGetReservationsResponse[number] | null;
   onClose: () => void;
   onSave: (updated: ApiGetReservationsResponse[number]) => void;
@@ -106,7 +108,7 @@ export default function EditReservationDialog({
 
   return (
     <Dialog
-      open={!!reservation}
+      open={open}
       onClose={onClose}
       slots={{ transition: Transition }}
       fullWidth

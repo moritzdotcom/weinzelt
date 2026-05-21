@@ -25,8 +25,9 @@ import { ApiGetReservationsResponse } from '../api/events/[eventId]/reservations
 import axios from 'axios';
 import { translateState, translateType } from '@/lib/reservation';
 import EditReservationDialog from '@/components/reservation/editDialog';
-import { Edit, MoreVert, ReceiptLong } from '@mui/icons-material';
+import { Cancel, Edit, MoreVert, ReceiptLong } from '@mui/icons-material';
 import { ReservationPaymentStatus } from '@prisma/client';
+import { ReservationCancelDialog } from '@/components/reservation/cancelDialog';
 
 export default function BackendSearchReservationPage({
   session,
@@ -42,6 +43,8 @@ export default function BackendSearchReservationPage({
   const [filteredReservations, setFilteredReservations] =
     useState<ApiGetReservationsResponse>([]);
   const [loading, setLoading] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const [selectedReservation, setSelectedReservation] = useState<
     ApiGetReservationsResponse[number] | null
@@ -103,6 +106,21 @@ export default function BackendSearchReservationPage({
     setFilteredReservations(sortReservations(res.data));
   };
 
+  const updateReservations = (
+    updatedReservation: ApiGetReservationsResponse[number],
+  ) => {
+    setFilteredReservations((prev) =>
+      prev.map((r) =>
+        r.id === updatedReservation.id ? updatedReservation : r,
+      ),
+    );
+    setReservations((prev) =>
+      prev.map((r) =>
+        r.id === updatedReservation.id ? updatedReservation : r,
+      ),
+    );
+  };
+
   const handleSave = (
     updatedReservation: ApiGetReservationsResponse[number],
   ) => {
@@ -112,16 +130,7 @@ export default function BackendSearchReservationPage({
         updatedReservation,
       )
       .then(() => {
-        setFilteredReservations((prev) =>
-          prev.map((r) =>
-            r.id === updatedReservation.id ? updatedReservation : r,
-          ),
-        );
-        setReservations((prev) =>
-          prev.map((r) =>
-            r.id === updatedReservation.id ? updatedReservation : r,
-          ),
-        );
+        updateReservations(updatedReservation);
         setSelectedReservation(null);
       })
       .catch((error) => {
@@ -338,6 +347,7 @@ export default function BackendSearchReservationPage({
               (x) => x.id === menuReservationId,
             );
             if (r) setSelectedReservation(r);
+            setEditDialogOpen(true);
             closeMenu();
           }}
         >
@@ -346,11 +356,43 @@ export default function BackendSearchReservationPage({
           </ListItemIcon>
           <ListItemText>Bearbeiten</ListItemText>
         </MenuItem>
+        <MenuItem
+          onClick={() => {
+            const r = filteredReservations.find(
+              (x) => x.id === menuReservationId,
+            );
+            if (r) setSelectedReservation(r);
+            setCancelDialogOpen(true);
+            closeMenu();
+          }}
+          disabled={menuReservationPaymentStatus === 'CANCELED'}
+        >
+          <ListItemIcon>
+            <Cancel fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Stornieren</ListItemText>
+        </MenuItem>
       </Menu>
       <EditReservationDialog
+        open={editDialogOpen}
         reservation={selectedReservation}
-        onClose={() => setSelectedReservation(null)}
+        onClose={() => {
+          setEditDialogOpen(false);
+          setSelectedReservation(null);
+        }}
         onSave={handleSave}
+      />
+      <ReservationCancelDialog
+        open={cancelDialogOpen}
+        onClose={() => {
+          setCancelDialogOpen(false);
+          setSelectedReservation(null);
+        }}
+        reservation={selectedReservation!}
+        onUpdate={(res) => {
+          updateReservations(res);
+          setSelectedReservation(null);
+        }}
       />
     </Box>
   );
