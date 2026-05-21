@@ -57,7 +57,8 @@ async function handlePOST(
 
   // 2) Refund nur wenn Zahlung existiert / bezahlt wurde
   // (Passe das an deine Status-Logik an)
-  const shouldRefund = reservation.paymentStatus === 'PAID';
+  const shouldRefund =
+    reservation.paymentStatus === 'PAID' && reservation.stripePaymentIntentId;
 
   let refund: { id: string; amount: number } | null = null;
 
