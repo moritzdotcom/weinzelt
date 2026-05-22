@@ -26,6 +26,10 @@ export function determineTableCount(people: number) {
   return Math.ceil(people / 10);
 }
 
+export function determinePeopleCount(tables: number) {
+  return tables * 10;
+}
+
 export function determineMinimumSpend(
   type: ReservationType,
   people: number,

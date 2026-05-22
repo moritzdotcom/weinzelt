@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Typography,
@@ -20,7 +20,7 @@ import { SimpleOrderSummary } from '@/components/reservation/orderSummary';
 import { isValidEmail } from '@/lib/validator';
 import ReferralCodeField from '@/components/reservation/referralCodeField';
 import { ApiGetReferralCodeResponse } from '../api/referralCodes/getCode';
-import { determineTableCount } from '@/lib/reservation';
+import { determinePeopleCount, determineTableCount } from '@/lib/reservation';
 import AddressInput, {
   Address,
   defaultAddress,
@@ -34,7 +34,6 @@ type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
 
 export default function VipReservationPage() {
-  const pricePerMenu = 65;
   const router = useRouter();
   const [data, setData] = useState<ApiGetReservationDataResponse | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -61,6 +60,21 @@ export default function VipReservationPage() {
 
   const [submitted, setSubmitted] = useState(false);
   const [mailError, setMailError] = useState('');
+
+  const tableLimit = useMemo(() => {
+    if (!selectedSlot) return 0;
+
+    return (
+      selectedSlot.availableVip -
+      selectedSlot.reservations
+        .filter(({ type }) => type == 'VIP')
+        .reduce((a, b) => a + b.tableCount, 0)
+    );
+  }, [selectedSlot]);
+
+  const peopleLimit = useMemo(() => {
+    return determinePeopleCount(tableLimit);
+  }, [tableLimit]);
 
   useEffect(() => {
     if (!router.isReady || !data) return;
@@ -101,7 +115,7 @@ export default function VipReservationPage() {
       type: 'VIP',
       name,
       email,
-      people: Math.min(Number(personCount), 80),
+      people: Math.min(Number(personCount), peopleLimit),
       seatingId: selectedSlot.id,
       referralCodeId: referralCode?.id,
       billingAddress,
@@ -343,12 +357,19 @@ export default function VipReservationPage() {
                 label="Anzahl Personen"
                 type="number"
                 required
-                error={Number(personCount) > 80}
+                error={Number(personCount) > peopleLimit}
                 helperText={
-                  Number(personCount) > 80 ? 'max. 80 Personen' : undefined
+                  Number(personCount) > peopleLimit
+                    ? `max. ${peopleLimit} Personen`
+                    : undefined
                 }
                 value={personCount}
                 onChange={(e) => setPersonCount(e.target.value)}
+                onBlur={() =>
+                  setPersonCount((prev) =>
+                    prev ? Math.min(Number(prev), peopleLimit).toString() : '',
+                  )
+                }
                 fullWidth
                 margin="normal"
               />
