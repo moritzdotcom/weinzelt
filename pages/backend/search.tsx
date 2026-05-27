@@ -132,6 +132,7 @@ export default function BackendSearchReservationPage({
       .then(() => {
         updateReservations(updatedReservation);
         setSelectedReservation(null);
+        setEditDialogOpen(false);
       })
       .catch((error) => {
         console.error('Error updating reservation:', error);
