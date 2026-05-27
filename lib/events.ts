@@ -340,11 +340,11 @@ export const eventDays: EventDay[] = [
     },
     specials: [
       {
-        title: 'WINE WALK #1',
+        title: 'WINE WALK - BOLLINGER & TAITTINGER',
         time: '11:30',
         badge: 'inkl. Snack · 29 €',
         description:
-          'Start am Carlsplatz bei Concept Riesling mit entspanntem Get-together und Aperitif. Danach geht es gemeinsam mit Sommelier und mehreren ausgewählten Weinen über die Rheinbrücke bis ins Weinzelt.',
+          'Freut euch auf ausgewählte Cuvées von Taittinger und Bollinger, die uns auf diesem besonderen WINE WALK begleiten. Ein prickelndes Erlebnis für alle Champagner-Liebhaber - powered by WEINWOLF.',
         link: 'https://www.conceptriesling.com/collections/kirmes/products/wine-walk-zur-kirmes-1-walk-i-26-7-2026?variant=54333127360835',
         ctaLabel: 'Tickets 11:30',
       },
@@ -360,18 +360,18 @@ export const eventDays: EventDay[] = [
       {
         title: 'WINE WALK #3',
         time: '14:00',
-        badge: 'ohne Essen · 19 €',
+        badge: 'inkl. Snack · 29 €',
         description:
           'Die spätere Nachmittagsrunde für alle, die den Sonntag genussvoll und locker angehen wollen. Mit Sommelier, ausgewählten Weinen und Ziel im Weinzelt.',
         link: 'https://www.conceptriesling.com/collections/kirmes/products/wine-walk-zur-kirmes-3-walk-i-26-7-2026?variant=54333130408259',
         ctaLabel: 'Tickets 14:00',
       },
       {
-        title: 'WINE WALK #4',
+        title: 'WINE WALK - PINK PARTY!',
         time: '15:00',
-        badge: 'ohne Essen · 19 €',
+        badge: 'inkl. Snack · 29 €',
         description:
-          'Die letzte WINE WALK Runde des Tages — perfekt für einen entspannten Sonntag mit Freunden, Wein und sommerlichem Kirmes-Vibe.',
+          'Rosé all day! Beim Pink Party Walk dreht sich alles um sommerliche Vibes, elegante Rosés und gute Stimmung auf dem Weg zur Rheinkirmes.',
         link: 'https://www.conceptriesling.com/collections/kirmes/products/wine-walk-zur-kirmes-4-walk-i-26-7-2026?variant=54333136535875',
         ctaLabel: 'Tickets 15:00',
       },
