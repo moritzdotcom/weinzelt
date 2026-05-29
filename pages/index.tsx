@@ -236,14 +236,14 @@ export default function Home({ session }: { session: Session }) {
               einen Abend, der stilvoll knallt!
             </p>
             <div className="flex flex-col items-center sm:items-start gap-3">
-              {/* <Link
+              <Link
                 href="/weinzelt-food.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block border border-black text-black px-6 py-3 rounded-full shadow-md hover:bg-gray-200 hover:text-black text-center transition"
               >
                 Entdecke unser Weingarten Menu
-              </Link> */}
+              </Link>
               <Link
                 href="/weinzelt-drinks.pdf"
                 target="_blank"
