@@ -136,11 +136,22 @@ export default async function handler(
 
     const specialEvent = await prisma.specialEvent.create({
       data: {
-        ...payload,
-        badge: payload.badge || null,
-        externalUrl:
-          payload.bookingType === 'EXTERNAL_LINK' ? payload.externalUrl : null,
-        priceLabel: payload.priceLabel || null,
+        name: payload.name,
+        description: payload.description,
+        eventDateId: payload.eventDateId,
+        startTime: payload.startTime,
+        endTime: payload.endTime,
+        category: payload.category,
+        badge: payload.badge ?? null,
+        ctaLabel: payload.ctaLabel,
+        bookingType: payload.bookingType,
+        externalUrl: payload.externalUrl ?? null,
+        priceCents: payload.priceCents,
+        priceLabel: payload.priceLabel ?? null,
+        capacity: payload.capacity,
+        maxPersonsPerRegistration: payload.maxPersonsPerRegistration,
+        sortOrder: payload.sortOrder,
+        isPublished: payload.isPublished,
       },
       select: {
         id: true,
