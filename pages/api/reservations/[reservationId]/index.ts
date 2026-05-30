@@ -75,22 +75,13 @@ async function handleGET(
   return res.status(200).json({ reservation });
 }
 
-export type ApiPutReservationResponse = {
-  name: string;
-  id: string;
-  email: string;
-  createdAt: Date;
-  seatingId: string;
-  people: number;
-  type: ReservationType;
-  tableCount: number;
-  minimumSpend: number;
-  tableNumber: string | null;
-  internalNotes: string | null;
-  notified: Date | null;
-  pageVisitId: string | null;
-  referralCodeId: string | null;
-};
+export type ApiPutReservationResponse = Prisma.ReservationGetPayload<{
+  include: {
+    seating: {
+      include: { eventDate: true };
+    };
+  };
+}>;
 
 async function handlePUT(
   req: NextApiRequest,
@@ -106,6 +97,7 @@ async function handlePUT(
     tableCount,
     minimumSpend,
     internalNotes,
+    seatingId,
   } = req.body;
 
   const reservation = await prisma.reservation.update({
@@ -118,8 +110,14 @@ async function handlePUT(
       tableCount,
       minimumSpend,
       internalNotes,
+      seatingId,
     },
     where: { id },
+    include: {
+      seating: {
+        include: { eventDate: true },
+      },
+    },
   });
 
   return res.json(reservation);

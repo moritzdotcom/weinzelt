@@ -25,9 +25,16 @@ import { ApiGetReservationsResponse } from '../api/events/[eventId]/reservations
 import axios from 'axios';
 import { translateState, translateType } from '@/lib/reservation';
 import EditReservationDialog from '@/components/reservation/editDialog';
-import { Cancel, Edit, MoreVert, ReceiptLong } from '@mui/icons-material';
+import {
+  CalendarMonth,
+  Cancel,
+  Edit,
+  MoreVert,
+  ReceiptLong,
+} from '@mui/icons-material';
 import { ReservationPaymentStatus } from '@prisma/client';
 import { ReservationCancelDialog } from '@/components/reservation/cancelDialog';
+import { ChangeReservationDateDialog } from '@/components/reservation/changeEventDateDialog';
 
 export default function BackendSearchReservationPage({
   session,
@@ -45,6 +52,7 @@ export default function BackendSearchReservationPage({
   const [loading, setLoading] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [changeDateDialogOpen, setChangeDateDialogOpen] = useState(false);
 
   const [selectedReservation, setSelectedReservation] = useState<
     ApiGetReservationsResponse[number] | null
@@ -363,6 +371,21 @@ export default function BackendSearchReservationPage({
               (x) => x.id === menuReservationId,
             );
             if (r) setSelectedReservation(r);
+            setChangeDateDialogOpen(true);
+            closeMenu();
+          }}
+        >
+          <ListItemIcon>
+            <CalendarMonth fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Timeslot anpassen</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            const r = filteredReservations.find(
+              (x) => x.id === menuReservationId,
+            );
+            if (r) setSelectedReservation(r);
             setCancelDialogOpen(true);
             closeMenu();
           }}
@@ -393,6 +416,25 @@ export default function BackendSearchReservationPage({
         onUpdate={(res) => {
           updateReservations(res);
           setSelectedReservation(null);
+        }}
+      />
+      <ChangeReservationDateDialog
+        open={changeDateDialogOpen}
+        onClose={() => {
+          setChangeDateDialogOpen(false);
+          setSelectedReservation(null);
+        }}
+        eventId={selectedReservation?.seating.eventDate.eventId ?? ''}
+        reservationId={selectedReservation?.id ?? ''}
+        seatingId={selectedReservation?.seatingId ?? ''}
+        reservationType={selectedReservation?.type ?? 'VIP'}
+        tableCount={selectedReservation?.tableCount ?? 0}
+        onChanged={(updated) => {
+          setChangeDateDialogOpen(false);
+          setSelectedReservation(null);
+          setReservations((prev) =>
+            prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r)),
+          );
         }}
       />
     </Box>
