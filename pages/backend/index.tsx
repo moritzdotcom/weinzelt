@@ -88,7 +88,7 @@ const menuItems = [
   },
   {
     href: '/backend/specialEvents',
-    title: 'Special Events',
+    title: 'WineEvents',
     description:
       'Pflege Sonderformate, Aktionen, Highlights und buchbare Zusatzveranstaltungen.',
     Icon: LocalActivityIcon,

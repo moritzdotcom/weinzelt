@@ -1,29 +1,86 @@
-import { Session } from '@/hooks/useSession';
-import { ApiGetSpecialEventResponse } from '@/pages/api/specialEvents/[specialEventId]';
+import { useCallback, useEffect, useState } from 'react';
+import type { GetServerSideProps } from 'next';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import axios from 'axios';
 import {
+  ArrowBackRounded,
+  CalendarMonthRounded,
+  CancelRounded,
+  CheckCircleRounded,
+  EmailRounded,
+  ErrorOutlineRounded,
+  GroupsRounded,
+  LocalActivityRounded,
+  MailOutlineRounded,
+  RefreshRounded,
+  ScheduleRounded,
+  WineBarRounded,
+} from '@mui/icons-material';
+import {
+  Alert,
   Box,
   Button,
+  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   IconButton,
+  LinearProgress,
   Paper,
   Snackbar,
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from '@mui/material';
-import axios from 'axios';
-import { GetServerSideProps } from 'next';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import DeleteIcon from '@mui/icons-material/Delete';
+import type { Session } from '@/hooks/useSession';
+import type { ApiGetSpecialEventResponse } from '@/pages/api/backend/specialEvents/[specialEventId]';
+import type { ApiSendSpecialEventReminderResponse } from '@/pages/api/backend/specialEvents/[specialEventId]/sendReminder';
+import { formatSpecialEventCategory } from '@/lib/specialEvents';
+
+function formatDate(value: string | Date | null | undefined) {
+  if (!value) return '-';
+
+  return new Date(value).toLocaleDateString('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+function formatDateTime(value: string | Date | null | undefined) {
+  if (!value) return '-';
+
+  return new Date(value).toLocaleString('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function getBookingTypeLabel(
+  bookingType: ApiGetSpecialEventResponse['bookingType'],
+) {
+  switch (bookingType) {
+    case 'INTERNAL_REGISTRATION':
+      return 'Interne Anmeldung';
+    case 'EXTERNAL_LINK':
+      return 'Externer Link';
+    default:
+      return 'Nur Information';
+  }
+}
 
 export default function BackendSpecialEventPage({
   session,
@@ -33,214 +90,709 @@ export default function BackendSpecialEventPage({
   id: string;
 }) {
   const router = useRouter();
+
   const [specialEvent, setSpecialEvent] =
     useState<ApiGetSpecialEventResponse>();
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [cancelRegistrationId, setCancelRegistrationId] = useState<
+    string | null
+  >(null);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
 
-  const handleReminderSent = () => {
-    setSpecialEvent((p) =>
-      p
-        ? {
-            ...p,
-            registrations: p.registrations.map((r) => ({
-              ...r,
-              reminderSent: new Date(),
-            })),
-          }
-        : undefined
-    );
-  };
+  const fetchSpecialEvent = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
 
-  const handleDelete = async (id: string) => {
-    await axios.delete(`/api/eventRegistration/${id}`);
-    setSpecialEvent((p) =>
-      p
-        ? { ...p, registrations: p.registrations.filter((r) => r.id !== id) }
-        : undefined
-    );
-  };
+    try {
+      const { data } = await axios.get<ApiGetSpecialEventResponse>(
+        `/api/backend/specialEvents/${id}`,
+      );
+
+      setSpecialEvent(data);
+    } catch (error) {
+      console.error(error);
+      setLoadError('Das WineEvent konnte nicht geladen werden.');
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
 
   useEffect(() => {
-    axios(`/api/specialEvents/${id}`).then(({ data }) => setSpecialEvent(data));
-  }, []);
+    void fetchSpecialEvent();
+  }, [fetchSpecialEvent]);
 
   useEffect(() => {
     if (!router.isReady) return;
+
     if (session.status === 'unauthenticated') {
-      router.push('/backend/login');
+      void router.push('/backend/login');
     }
-  }, [session.status, router.isReady]);
+  }, [router, session.status]);
 
-  if (!specialEvent)
-    return (
-      <Box className="flex justify-center items-center h-screen">
-        <CircularProgress sx={{ color: 'black' }} />
-      </Box>
-    );
-  return (
-    <Box className="max-w-5xl mx-auto px-4 py-16">
-      {/* Event Header */}
-      <Box className="mb-6 text-center">
-        <Typography variant="h4" className="font-semibold text-black">
-          {specialEvent.name}
-        </Typography>
-        <Typography variant="h6" className="text-neutral-600 mt-2">
-          {specialEvent.eventDate.dow}, {specialEvent.eventDate.date}
-        </Typography>
-      </Box>
+  const handleCancelRegistration = async () => {
+    if (!cancelRegistrationId) return;
 
-      {/* Event Statistics */}
-      <Box className="my-8 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Box>
-          <Typography variant="body1" className="text-gray-600">
-            Registrierungen:
-          </Typography>
-          <Typography variant="h6" className="font-bold">
-            {specialEvent.registrations.length}
-          </Typography>
-        </Box>
-        <Box>
-          <Typography variant="body1" className="text-gray-600">
-            Teilnehmer:
-          </Typography>
-          <Typography variant="h6" className="font-bold">
-            {specialEvent.registrations.reduce((a, b) => a + b.personCount, 0)}
-          </Typography>
-        </Box>
-      </Box>
-
-      <div className="flex justify-end">
-        <ReminderEmailButton
-          specialEvent={specialEvent}
-          onSuccess={handleReminderSent}
-        />
-      </div>
-
-      {/* Registrations Table */}
-      <TableContainer component={Paper} className="my-8">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                <strong>Name</strong>
-              </TableCell>
-              <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                <strong>E-Mail</strong>
-              </TableCell>
-              <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                <strong>Personen</strong>
-              </TableCell>
-              <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                <strong>Registriert am</strong>
-              </TableCell>
-              <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                <strong>Erinnert am</strong>
-              </TableCell>
-              <TableCell />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {specialEvent.registrations.map((registration, index) => (
-              <TableRow key={index}>
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                  {registration.name}
-                </TableCell>
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                  {registration.email}
-                </TableCell>
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                  {registration.personCount}
-                </TableCell>
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                  {new Date(registration.createdAt).toLocaleDateString()}
-                </TableCell>
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                  {registration.reminderSent
-                    ? new Date(registration.reminderSent).toLocaleDateString()
-                    : '-'}
-                </TableCell>
-                <TableCell>
-                  <IconButton
-                    onClick={() => handleDelete(registration.id)}
-                    color="error"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
-  );
-}
-
-function ReminderEmailButton({
-  specialEvent,
-  onSuccess,
-}: {
-  specialEvent: ApiGetSpecialEventResponse;
-  onSuccess: () => void;
-}) {
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
-
-  const handleSendEmails = async () => {
-    setLoading(true);
     try {
-      await axios.post(`/api/specialEvents/${specialEvent.id}/sendReminder`);
-      setFeedbackMessage('Erinnerungs-E-Mails wurden erfolgreich versendet.');
-      onSuccess();
+      await axios.post(
+        `/api/backend/eventRegistrations/${cancelRegistrationId}/cancel`,
+      );
+
+      setFeedbackMessage('Die Anmeldung wurde storniert.');
+      setCancelRegistrationId(null);
+
+      await fetchSpecialEvent();
     } catch (error) {
-      setFeedbackMessage('Es gab ein Problem beim Versenden der E-Mails.');
-    } finally {
-      setLoading(false);
-      setDialogOpen(false);
+      console.error(error);
+      setFeedbackMessage('Die Anmeldung konnte nicht storniert werden.');
     }
   };
 
-  return (
-    <>
-      {/* Button, um den Dialog zu öffnen */}
-      <button
-        onClick={() => setDialogOpen(true)}
-        disabled={loading}
-        className="rounded-full bg-black text-white px-6 py-2 text-sm font-medium shadow-sm hover:bg-gray-800 transition"
-      >
-        Erinnerungs-E-Mails senden
-      </button>
+  if (loading && !specialEvent) {
+    return (
+      <Box className="flex min-h-screen items-center justify-center">
+        <CircularProgress sx={{ color: 'black' }} />
+      </Box>
+    );
+  }
 
-      {/* Bestätigungsdialog */}
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>Bestätigen</DialogTitle>
+  if (loadError || !specialEvent) {
+    return (
+      <Box className="mx-auto max-w-5xl px-4 py-16">
+        <Alert severity="error">
+          {loadError ?? 'Das WineEvent wurde nicht gefunden.'}
+        </Alert>
+      </Box>
+    );
+  }
+
+  const activeRegistrations = specialEvent.registrations.filter(
+    (registration) => registration.status === 'REGISTERED',
+  );
+
+  const canceledRegistrations = specialEvent.registrations.filter(
+    (registration) => registration.status === 'CANCELED',
+  );
+
+  return (
+    <Box className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
+      <Link
+        href="/backend/specialEvents"
+        className="inline-flex items-center gap-1 text-sm font-semibold text-gray-600 transition hover:text-black"
+      >
+        <ArrowBackRounded fontSize="small" />
+        Zurück zu den WineEvents
+      </Link>
+
+      <Box className="mt-6 overflow-hidden rounded-[2rem] border border-black/10 bg-white shadow-sm">
+        <Box className="grid md:grid-cols-[260px_1fr]">
+          <Box className="relative min-h-56 overflow-hidden bg-stone-100 md:min-h-full">
+            {specialEvent.titleImageUrl ? (
+              <img
+                src={specialEvent.titleImageUrl}
+                alt={specialEvent.name}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : (
+              <Box className="flex h-full min-h-56 items-center justify-center bg-gradient-to-br from-stone-100 via-orange-50 to-rose-100">
+                <WineBarRounded sx={{ fontSize: 72, opacity: 0.25 }} />
+              </Box>
+            )}
+          </Box>
+
+          <Box className="p-6 sm:p-8">
+            <Box className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <Box>
+                <Box className="flex flex-wrap gap-2">
+                  <Chip
+                    size="small"
+                    label={formatSpecialEventCategory(specialEvent.category)}
+                    sx={{
+                      bgcolor: 'black',
+                      color: 'white',
+                      fontWeight: 700,
+                    }}
+                  />
+
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    label={getBookingTypeLabel(specialEvent.bookingType)}
+                  />
+
+                  <Chip
+                    size="small"
+                    color={specialEvent.isPublished ? 'success' : 'default'}
+                    variant="outlined"
+                    label={
+                      specialEvent.isPublished ? 'Veröffentlicht' : 'Entwurf'
+                    }
+                  />
+                </Box>
+
+                <Typography
+                  variant="h4"
+                  className="mt-4 font-bold leading-tight"
+                >
+                  {specialEvent.name}
+                </Typography>
+
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={{ xs: 1, sm: 3 }}
+                  className="mt-4 text-gray-600"
+                >
+                  <span className="inline-flex items-center gap-1.5 text-sm">
+                    <CalendarMonthRounded fontSize="small" />
+                    {specialEvent.eventDate.dow}, {specialEvent.eventDate.date}
+                  </span>
+
+                  <span className="inline-flex items-center gap-1.5 text-sm">
+                    <ScheduleRounded fontSize="small" />
+                    {specialEvent.startTime}-{specialEvent.endTime} Uhr
+                  </span>
+                </Stack>
+              </Box>
+
+              <Link
+                href={
+                  specialEvent.bookingType === 'EXTERNAL_LINK' &&
+                  specialEvent.externalUrl
+                    ? specialEvent.externalUrl
+                    : `/events/${specialEvent.id}`
+                }
+                target="_blank"
+                className="inline-flex shrink-0 items-center justify-center rounded-full border border-black/15 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+              >
+                Öffentliche Seite öffnen
+              </Link>
+            </Box>
+
+            <Typography className="mt-5 max-w-3xl text-sm leading-relaxed text-gray-600">
+              {specialEvent.description}
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+
+      <Box className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard
+          icon={<GroupsRounded />}
+          label="Anmeldungen"
+          value={specialEvent.stats.registrationCount}
+        />
+
+        <StatCard
+          icon={<LocalActivityRounded />}
+          label="Teilnehmer"
+          value={specialEvent.stats.registeredPersonCount}
+        />
+
+        <StatCard
+          icon={<WineBarRounded />}
+          label="Freie Plätze"
+          value={
+            specialEvent.stats.remainingCapacity === null
+              ? 'Unbegrenzt'
+              : specialEvent.stats.remainingCapacity
+          }
+        />
+
+        <StatCard
+          icon={<MailOutlineRounded />}
+          label="Reminder offen"
+          value={specialEvent.stats.pendingReminderCount}
+          warning={specialEvent.stats.pendingReminderCount > 0}
+        />
+      </Box>
+
+      <Box className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Box>
+          <Typography variant="h5" fontWeight={800}>
+            Teilnehmer
+          </Typography>
+
+          <Typography className="mt-1 text-sm text-gray-500">
+            {activeRegistrations.length} aktive Anmeldungen
+            {canceledRegistrations.length > 0 &&
+              ` · ${canceledRegistrations.length} storniert`}
+          </Typography>
+        </Box>
+
+        {specialEvent.bookingType === 'INTERNAL_REGISTRATION' && (
+          <ReminderEmailButton
+            specialEvent={specialEvent}
+            onFinished={fetchSpecialEvent}
+          />
+        )}
+      </Box>
+
+      <TableContainer
+        component={Paper}
+        variant="outlined"
+        className="mt-5 overflow-x-auto rounded-3xl"
+      >
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>
+                <strong>Name</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Kontakt</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Personen</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Registriert am</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Reminder</strong>
+              </TableCell>
+              <TableCell align="right" />
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {activeRegistrations.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6}>
+                  <Box className="py-10 text-center">
+                    <GroupsRounded sx={{ fontSize: 46, opacity: 0.25 }} />
+
+                    <Typography className="mt-2 font-semibold">
+                      Noch keine Anmeldungen
+                    </Typography>
+
+                    <Typography className="mt-1 text-sm text-gray-500">
+                      Sobald sich Gäste anmelden, erscheinen sie hier.
+                    </Typography>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ) : (
+              activeRegistrations.map((registration) => (
+                <TableRow key={registration.id} hover>
+                  <TableCell sx={{ minWidth: 170 }}>
+                    <Typography className="font-semibold">
+                      {registration.name}
+                    </Typography>
+                  </TableCell>
+
+                  <TableCell sx={{ minWidth: 220 }}>
+                    <Typography className="text-sm">
+                      {registration.email}
+                    </Typography>
+
+                    {registration.phone && (
+                      <Typography className="mt-0.5 text-xs text-gray-500">
+                        {registration.phone}
+                      </Typography>
+                    )}
+                  </TableCell>
+
+                  <TableCell>{registration.personCount}</TableCell>
+
+                  <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                    {formatDate(registration.createdAt)}
+                  </TableCell>
+
+                  <TableCell sx={{ minWidth: 190 }}>
+                    <ReminderStatus registration={registration} />
+                  </TableCell>
+
+                  <TableCell align="right">
+                    <Tooltip title="Anmeldung stornieren">
+                      <IconButton
+                        color="error"
+                        onClick={() => setCancelRegistrationId(registration.id)}
+                      >
+                        <CancelRounded />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {canceledRegistrations.length > 0 && (
+        <Box className="mt-8">
+          <Typography variant="h6" fontWeight={800}>
+            Stornierte Anmeldungen
+          </Typography>
+
+          <Box className="mt-3 grid gap-2">
+            {canceledRegistrations.map((registration) => (
+              <Box
+                key={registration.id}
+                className="flex flex-col gap-1 rounded-2xl border border-black/10 bg-stone-50 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
+              >
+                <span>
+                  <strong>{registration.name}</strong> · {registration.email} ·{' '}
+                  {registration.personCount}{' '}
+                  {registration.personCount === 1 ? 'Person' : 'Personen'}
+                </span>
+
+                <span className="text-xs text-gray-500">
+                  Storniert am {formatDate(registration.canceledAt)}
+                </span>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      )}
+
+      <Dialog
+        open={Boolean(cancelRegistrationId)}
+        onClose={() => setCancelRegistrationId(null)}
+        fullWidth
+        maxWidth="xs"
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+          },
+        }}
+      >
+        <DialogTitle>Anmeldung stornieren?</DialogTitle>
+
         <DialogContent>
-          <p>
-            Willst du wirklich Erinnerungs-E-Mails an alle Teilnehmer senden?
-          </p>
+          <Typography color="text.secondary">
+            Die Anmeldung wird nicht gelöscht, sondern als storniert markiert.
+            Dadurch bleibt sie später nachvollziehbar.
+          </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)} color="secondary">
+
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setCancelRegistrationId(null)}>
             Abbrechen
           </Button>
-          <Button onClick={handleSendEmails} color="primary" disabled={loading}>
-            {loading ? <CircularProgress size={24} /> : 'Bestätigen'}
+
+          <Button
+            color="error"
+            variant="contained"
+            onClick={handleCancelRegistration}
+          >
+            Stornieren
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Feedback nach dem Versand */}
       <Snackbar
         open={Boolean(feedbackMessage)}
         message={feedbackMessage}
         autoHideDuration={6000}
         onClose={() => setFeedbackMessage('')}
       />
+    </Box>
+  );
+}
+
+function StatCard({
+  icon,
+  label,
+  value,
+  warning = false,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: React.ReactNode;
+  warning?: boolean;
+}) {
+  return (
+    <Box className="rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
+      <Box
+        className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
+          warning ? 'bg-amber-100 text-amber-700' : 'bg-stone-100'
+        }`}
+      >
+        {icon}
+      </Box>
+
+      <Typography className="mt-4 text-xs font-semibold uppercase tracking-wide text-gray-500">
+        {label}
+      </Typography>
+
+      <Typography variant="h5" className="mt-1 font-bold">
+        {value}
+      </Typography>
+    </Box>
+  );
+}
+
+function ReminderStatus({
+  registration,
+}: {
+  registration: ApiGetSpecialEventResponse['registrations'][number];
+}) {
+  if (registration.reminderSent) {
+    return (
+      <Chip
+        size="small"
+        color="success"
+        variant="outlined"
+        icon={<CheckCircleRounded />}
+        label={formatDateTime(registration.reminderSent)}
+      />
+    );
+  }
+
+  if (registration.reminderFailureReason) {
+    return (
+      <Tooltip title={registration.reminderFailureReason}>
+        <Chip
+          size="small"
+          color="error"
+          variant="outlined"
+          icon={<ErrorOutlineRounded />}
+          label={`Fehler · Versuch ${registration.reminderAttemptCount}`}
+        />
+      </Tooltip>
+    );
+  }
+
+  return (
+    <Chip
+      size="small"
+      variant="outlined"
+      icon={<EmailRounded />}
+      label="Noch nicht verschickt"
+    />
+  );
+}
+
+function ReminderEmailButton({
+  specialEvent,
+  onFinished,
+}: {
+  specialEvent: ApiGetSpecialEventResponse;
+  onFinished: () => Promise<void>;
+}) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [processed, setProcessed] = useState(0);
+  const [sent, setSent] = useState(0);
+  const [failed, setFailed] = useState(0);
+  const [initialPendingCount, setInitialPendingCount] = useState(0);
+
+  const pendingCount = specialEvent.stats.pendingReminderCount;
+  const failedCount = specialEvent.stats.failedReminderCount;
+
+  const progress = initialPendingCount
+    ? Math.min(100, (processed / initialPendingCount) * 100)
+    : 0;
+
+  const handleOpen = () => {
+    setProcessed(0);
+    setSent(0);
+    setFailed(0);
+    setInitialPendingCount(pendingCount);
+    setDialogOpen(true);
+  };
+
+  const handleSendEmails = async () => {
+    setSending(true);
+
+    let shouldContinue = true;
+    let totalProcessed = 0;
+    let totalSent = 0;
+    let totalFailed = 0;
+    let permanentlyFailed = 0;
+
+    try {
+      while (shouldContinue) {
+        const { data } = await axios.post<ApiSendSpecialEventReminderResponse>(
+          `/api/backend/specialEvents/${specialEvent.id}/sendReminder`,
+        );
+
+        totalProcessed += data.attempted;
+        totalSent += data.sent;
+        totalFailed += data.failed;
+        permanentlyFailed = data.permanentlyFailed;
+
+        setProcessed(totalProcessed);
+        setSent(totalSent);
+        setFailed(totalFailed);
+
+        shouldContinue = !data.done;
+
+        /*
+         * Sicherheitsnetz gegen eine Endlosschleife:
+         * Falls kein Datensatz mehr verarbeitet werden konnte,
+         * stoppen wir den Client-Loop.
+         */
+        if (data.attempted === 0) {
+          shouldContinue = false;
+        }
+      }
+
+      await onFinished();
+
+      if (permanentlyFailed > 0) {
+        setFeedbackMessage(
+          `${totalSent} Reminder verschickt. ${permanentlyFailed} E-Mail-Adressen konnten nach mehreren Versuchen nicht erreicht werden.`,
+        );
+      } else {
+        setFeedbackMessage(
+          `${totalSent} Erinnerungs-E-Mails wurden erfolgreich verschickt.`,
+        );
+      }
+    } catch (error) {
+      console.error(error);
+
+      await onFinished();
+
+      setFeedbackMessage(
+        'Der Versand wurde unterbrochen. Bereits erfolgreich verschickte Reminder wurden gespeichert. Du kannst den Versand erneut starten.',
+      );
+    } finally {
+      setSending(false);
+      setDialogOpen(false);
+    }
+  };
+
+  const handleResetFailed = async () => {
+    setResetting(true);
+
+    try {
+      const { data } = await axios.post<{ reset: number }>(
+        `/api/backend/specialEvents/${specialEvent.id}/resetFailedReminders`,
+      );
+
+      await onFinished();
+
+      setFeedbackMessage(
+        `${data.reset} fehlgeschlagene Reminder wurden erneut freigegeben.`,
+      );
+    } catch (error) {
+      console.error(error);
+
+      setFeedbackMessage(
+        'Die fehlgeschlagenen Reminder konnten nicht zurückgesetzt werden.',
+      );
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  return (
+    <>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+        {failedCount > 0 && (
+          <Button
+            variant="outlined"
+            color="error"
+            disabled={resetting || sending}
+            startIcon={
+              resetting ? <CircularProgress size={16} /> : <RefreshRounded />
+            }
+            onClick={handleResetFailed}
+            sx={{ borderRadius: 999 }}
+          >
+            Fehlgeschlagene erneut freigeben
+          </Button>
+        )}
+
+        <Button
+          variant="contained"
+          disabled={sending || pendingCount === 0}
+          startIcon={<MailOutlineRounded />}
+          onClick={handleOpen}
+          sx={{ borderRadius: 999 }}
+        >
+          {pendingCount === 0
+            ? 'Alle Reminder verschickt'
+            : `${pendingCount} Reminder senden`}
+        </Button>
+      </Stack>
+
+      <Dialog
+        open={dialogOpen}
+        onClose={sending ? undefined : () => setDialogOpen(false)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+          },
+        }}
+      >
+        <DialogTitle>Reminder verschicken?</DialogTitle>
+
+        <DialogContent>
+          <Typography color="text.secondary">
+            Es werden Reminder an {initialPendingCount}{' '}
+            {initialPendingCount === 1
+              ? 'offene Anmeldung'
+              : 'offene Anmeldungen'}{' '}
+            verschickt. Der Versand erfolgt automatisch in kleinen Batches.
+          </Typography>
+
+          {sending && (
+            <Box sx={{ mt: 3 }}>
+              <LinearProgress
+                variant="determinate"
+                value={progress}
+                sx={{ height: 8, borderRadius: 999 }}
+              />
+
+              <Box className="mt-2 flex justify-between gap-3 text-sm text-gray-500">
+                <span>
+                  {processed} von {initialPendingCount} verarbeitet
+                </span>
+
+                <span>
+                  {sent} erfolgreich
+                  {failed > 0 && ` · ${failed} fehlgeschlagen`}
+                </span>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+
+        <DialogActions sx={{ p: 3 }}>
+          <Button disabled={sending} onClick={() => setDialogOpen(false)}>
+            Abbrechen
+          </Button>
+
+          <Button
+            variant="contained"
+            disabled={sending}
+            startIcon={sending ? <CircularProgress size={18} /> : undefined}
+            onClick={handleSendEmails}
+          >
+            {sending ? 'Versand läuft …' : 'Jetzt verschicken'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={Boolean(feedbackMessage)}
+        message={feedbackMessage}
+        autoHideDuration={8000}
+        onClose={() => setFeedbackMessage('')}
+      />
     </>
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (props) => {
-  const id = props.query.id;
-  return { props: { id } };
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const id = context.query.id;
+
+  if (typeof id !== 'string') {
+    return {
+      notFound: true,
+    };
+  }
+
+  return {
+    props: {
+      id,
+    },
+  };
 };

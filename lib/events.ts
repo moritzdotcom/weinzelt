@@ -31,6 +31,18 @@ export type EventDay = {
   }>;
 };
 
+export type WineEvent = {
+  id: string;
+  date: string;
+  image: string;
+  title: string;
+  time?: string;
+  badge?: string;
+  description: string;
+  link?: string;
+  ctaLabel?: string;
+};
+
 const JHEEZ = {
   name: 'JHEEZ',
   genre: 'Afro House',
@@ -338,43 +350,57 @@ export const eventDays: EventDay[] = [
       support: [],
       headliner: [],
     },
-    specials: [
-      {
-        title: 'WINE WALK - BOLLINGER & TAITTINGER',
-        time: '11:30',
-        badge: 'inkl. Snack · 29 €',
-        description:
-          'Freut euch auf ausgewählte Cuvées von Taittinger und Bollinger, die uns auf diesem besonderen WINE WALK begleiten. Ein prickelndes Erlebnis für alle Champagner-Liebhaber - powered by WEINWOLF.',
-        link: 'https://www.conceptriesling.com/collections/kirmes/products/wine-walk-zur-kirmes-1-walk-i-26-7-2026?variant=54333127360835',
-        ctaLabel: 'Tickets 11:30',
-      },
-      {
-        title: 'WINE WALK #2',
-        time: '12:30',
-        badge: 'inkl. Snack · 29 €',
-        description:
-          'Der zweite Walk des Tages mit Aperitif, geführtem Spaziergang, mehreren Wein-Stopps und entspanntem Finale im Weinzelt.',
-        link: 'https://www.conceptriesling.com/collections/kirmes/products/wine-walk-zur-kirmes-2-walk-i-26-7-2026?variant=54333127786819',
-        ctaLabel: 'Tickets 12:30',
-      },
-      {
-        title: 'WINE WALK #3',
-        time: '14:00',
-        badge: 'inkl. Snack · 29 €',
-        description:
-          'Die spätere Nachmittagsrunde für alle, die den Sonntag genussvoll und locker angehen wollen. Mit Sommelier, ausgewählten Weinen und Ziel im Weinzelt.',
-        link: 'https://www.conceptriesling.com/collections/kirmes/products/wine-walk-zur-kirmes-3-walk-i-26-7-2026?variant=54333130408259',
-        ctaLabel: 'Tickets 14:00',
-      },
-      {
-        title: 'WINE WALK - PINK PARTY!',
-        time: '15:00',
-        badge: 'inkl. Snack · 29 €',
-        description:
-          'Rosé all day! Beim Pink Party Walk dreht sich alles um sommerliche Vibes, elegante Rosés und gute Stimmung auf dem Weg zur Rheinkirmes.',
-        link: 'https://www.conceptriesling.com/collections/kirmes/products/wine-walk-zur-kirmes-4-walk-i-26-7-2026?variant=54333136535875',
-        ctaLabel: 'Tickets 15:00',
-      },
-    ],
+    specials: [],
+  },
+];
+
+export const wineEvents: WineEvent[] = [
+  {
+    id: 'wine-event-1',
+    date: '26.07.2026',
+    image: '/events/winewalk.jpg',
+    title: 'WINE WALK - BOLLINGER & TAITTINGER',
+    time: '11:30',
+    badge: 'inkl. Snack · 29 €',
+    description:
+      'Freut euch auf ausgewählte Cuvées von Taittinger und Bollinger, die uns auf diesem besonderen WINE WALK begleiten. Ein prickelndes Erlebnis für alle Champagner-Liebhaber - powered by WEINWOLF.',
+    link: 'https://www.conceptriesling.com/collections/kirmes/products/wine-walk-zur-kirmes-1-walk-i-26-7-2026?variant=54333127360835',
+    ctaLabel: 'Tickets 11:30',
+  },
+  {
+    id: 'wine-event-2',
+    date: '26.07.2026',
+    image: '/events/winewalk.jpg',
+    title: 'WINE WALK #2',
+    time: '12:30',
+    badge: 'inkl. Snack · 29 €',
+    description:
+      'Der zweite Walk des Tages mit Aperitif, geführtem Spaziergang, mehreren Wein-Stopps und entspanntem Finale im Weinzelt.',
+    link: 'https://www.conceptriesling.com/collections/kirmes/products/wine-walk-zur-kirmes-2-walk-i-26-7-2026?variant=54333127786819',
+    ctaLabel: 'Tickets 12:30',
+  },
+  {
+    id: 'wine-event-3',
+    date: '26.07.2026',
+    image: '/events/winewalk.jpg',
+    title: 'WINE WALK #3',
+    time: '14:00',
+    badge: 'inkl. Snack · 29 €',
+    description:
+      'Die spätere Nachmittagsrunde für alle, die den Sonntag genussvoll und locker angehen wollen. Mit Sommelier, ausgewählten Weinen und Ziel im Weinzelt.',
+    link: 'https://www.conceptriesling.com/collections/kirmes/products/wine-walk-zur-kirmes-3-walk-i-26-7-2026?variant=54333130408259',
+    ctaLabel: 'Tickets 14:00',
+  },
+  {
+    id: 'wine-event-4',
+    date: '26.07.2026',
+    image: '/events/winewalk.jpg',
+    title: 'WINE WALK - PINK PARTY!',
+    time: '15:00',
+    badge: 'inkl. Snack · 29 €',
+    description:
+      'Rosé all day! Beim Pink Party Walk dreht sich alles um sommerliche Vibes, elegante Rosés und gute Stimmung auf dem Weg zur Rheinkirmes.',
+    link: 'https://www.conceptriesling.com/collections/kirmes/products/wine-walk-zur-kirmes-4-walk-i-26-7-2026?variant=54333136535875',
+    ctaLabel: 'Tickets 15:00',
   },
 ];

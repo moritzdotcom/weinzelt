@@ -1,76 +1,115 @@
+import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prismadb';
-import { getServerSession } from '@/lib/session';
-import { Prisma } from '@prisma/client';
-import { NextApiRequest, NextApiResponse } from 'next';
+import type { PublicSpecialEvent } from '@/lib/specialEvents';
+import { supabase } from '@/lib/supabase';
 
-export default async function handle(
+export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse<PublicSpecialEvent[] | { error: string }>,
 ) {
-  const session = await getServerSession(req);
-  if (!session) return res.status(401).json('Not authenticated');
-
-  if (req.method === 'GET') {
-    await handleGET(req, res);
-  } else if (req.method === 'POST') {
-    await handlePOST(req, res);
-  } else {
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).json({ error: 'Method not allowed' });
   }
-}
 
-export type ApiGetSpecialEventsResponse = Prisma.SpecialEventGetPayload<{
-  include: {
-    eventDate: { select: { id: true; date: true; dow: true } };
-    _count: { select: { registrations: true } };
-  };
-}>[];
-
-async function handleGET(req: NextApiRequest, res: NextApiResponse) {
-  const { eventId } = req.query;
-
-  if (typeof eventId == 'string') {
+  try {
     const events = await prisma.specialEvent.findMany({
-      where: { eventDate: { eventId } },
-      include: {
-        eventDate: { select: { id: true, date: true, dow: true } },
-        _count: { select: { registrations: true } },
+      where: {
+        isPublished: true,
+      },
+      orderBy: [
+        {
+          eventDate: {
+            date: 'asc',
+          },
+        },
+        {
+          sortOrder: 'asc',
+        },
+        {
+          startTime: 'asc',
+        },
+      ],
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        eventDate: {
+          select: {
+            id: true,
+            date: true,
+          },
+        },
+        startTime: true,
+        endTime: true,
+        category: true,
+        badge: true,
+        titleImagePath: true,
+        priceCents: true,
+        priceLabel: true,
+        ctaLabel: true,
+        bookingType: true,
+        externalUrl: true,
+        capacity: true,
+        maxPersonsPerRegistration: true,
+        registrations: {
+          where: {
+            status: 'REGISTERED',
+          },
+          select: {
+            personCount: true,
+          },
+        },
       },
     });
-    return res.json(events);
-  } else {
-    const events = await prisma.specialEvent.findMany({
-      include: {
-        eventDate: { select: { id: true, date: true, dow: true } },
-        _count: { select: { registrations: true } },
-      },
+
+    const result: PublicSpecialEvent[] = events.map((event) => {
+      const registeredPersons = event.registrations.reduce(
+        (sum, registration) => sum + registration.personCount,
+        0,
+      );
+
+      const remainingCapacity =
+        event.capacity === null
+          ? null
+          : Math.max(0, event.capacity - registeredPersons);
+
+      const titleImageUrl = event.titleImagePath
+        ? supabase.storage.from('Weinzelt').getPublicUrl(event.titleImagePath)
+            .data.publicUrl
+        : null;
+
+      return {
+        id: event.id,
+        name: event.name,
+        description: event.description,
+        eventDate: {
+          id: event.eventDate.id,
+          date: event.eventDate.date,
+        },
+        startTime: event.startTime,
+        endTime: event.endTime,
+        category: event.category,
+        badge: event.badge,
+        titleImageUrl,
+        priceCents: event.priceCents,
+        priceLabel: event.priceLabel,
+        ctaLabel: event.ctaLabel,
+        bookingType: event.bookingType,
+        externalUrl: event.externalUrl,
+        capacity: event.capacity,
+        remainingCapacity,
+        maxPersonsPerRegistration: event.maxPersonsPerRegistration,
+        isSoldOut: remainingCapacity === 0,
+      };
     });
-    return res.json(events);
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      error: 'Die WineEvents konnten nicht geladen werden.',
+    });
   }
-}
-
-export type ApiPostSpecialEventResponse = {
-  name: string;
-  id: string;
-  description: string;
-  eventDateId: string;
-  startTime: string;
-  endTime: string;
-};
-
-async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
-  const { name, description, startTime, endTime, eventDateId } = req.body;
-  if (!name) return res.status(401).json('Name required');
-  if (!description) return res.status(401).json('Description required');
-  if (!startTime) return res.status(401).json('Start Time required');
-  if (!endTime) return res.status(401).json('End Time required');
-  if (!eventDateId) return res.status(401).json('Event Date required');
-
-  const event = await prisma.specialEvent.create({
-    data: { name, description, startTime, endTime, eventDateId },
-  });
-
-  return res.json(event);
 }

@@ -1,72 +1,112 @@
+import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prismadb';
-import { getServerSession } from '@/lib/session';
-import { Prisma } from '@prisma/client';
-import { NextApiRequest, NextApiResponse } from 'next';
+import type { PublicSpecialEvent } from '@/lib/specialEvents';
+import { supabase } from '@/lib/supabase';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const session = await getServerSession(req);
-  if (!session) return res.status(401).json('Not authenticated');
+function getPublicImageUrl(titleImagePath: string | null) {
+  if (!titleImagePath) return null;
 
-  const { specialEventId } = req.query;
-  if (typeof specialEventId !== 'string')
-    return res.status(401).json('Special Event required');
-
-  if (req.method === 'GET') {
-    await handleGET(req, res, specialEventId);
-  } else if (req.method === 'PUT') {
-    await handlePUT(req, res, specialEventId);
-  } else {
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
-  }
+  return supabase.storage.from('Weinzelt').getPublicUrl(titleImagePath).data
+    .publicUrl;
 }
 
-export type ApiGetSpecialEventResponse = Prisma.SpecialEventGetPayload<{
-  include: {
-    eventDate: { select: { id: true; date: true; dow: true } };
-    registrations: true;
-  };
-}>;
-
-async function handleGET(
+export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse,
-  id: string
+  res: NextApiResponse<PublicSpecialEvent | { error: string }>,
 ) {
-  const event = await prisma.specialEvent.findUnique({
-    where: { id },
-    include: {
-      eventDate: { select: { id: true, date: true, dow: true } },
-      registrations: true,
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+
+    return res.status(405).json({
+      error: 'Method not allowed',
+    });
+  }
+
+  const specialEventId = req.query.specialEventId;
+
+  if (typeof specialEventId !== 'string') {
+    return res.status(400).json({
+      error: 'Es wurde kein WineEvent angegeben.',
+    });
+  }
+
+  const event = await prisma.specialEvent.findFirst({
+    where: {
+      id: specialEventId,
+      isPublished: true,
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      startTime: true,
+      endTime: true,
+      category: true,
+      badge: true,
+      titleImagePath: true,
+      priceCents: true,
+      priceLabel: true,
+      ctaLabel: true,
+      bookingType: true,
+      externalUrl: true,
+      capacity: true,
+      maxPersonsPerRegistration: true,
+      eventDate: {
+        select: {
+          id: true,
+          date: true,
+          dow: true,
+        },
+      },
+      registrations: {
+        where: {
+          status: 'REGISTERED',
+        },
+        select: {
+          personCount: true,
+        },
+      },
     },
   });
-  return res.json(event);
-}
 
-export type ApiPutSpecialEventResponse = {
-  name: string;
-  id: string;
-  description: string;
-  eventDateId: string;
-  startTime: string;
-  endTime: string;
-};
+  if (!event) {
+    return res.status(404).json({
+      error: 'Das WineEvent wurde nicht gefunden.',
+    });
+  }
 
-async function handlePUT(
-  req: NextApiRequest,
-  res: NextApiResponse,
-  id: string
-) {
-  const { name, description, startTime, endTime } = req.body;
+  const registeredPersonCount = event.registrations.reduce(
+    (sum, registration) => sum + registration.personCount,
+    0,
+  );
 
-  const event = await prisma.specialEvent.update({
-    where: { id },
-    data: { name, description, startTime, endTime },
+  const remainingCapacity =
+    event.capacity === null
+      ? null
+      : Math.max(0, event.capacity - registeredPersonCount);
+
+  return res.status(200).json({
+    id: event.id,
+    name: event.name,
+    description: event.description,
+    startTime: event.startTime,
+    endTime: event.endTime,
+    category: event.category,
+    badge: event.badge,
+    titleImageUrl: getPublicImageUrl(event.titleImagePath),
+    priceCents: event.priceCents,
+    priceLabel: event.priceLabel,
+    ctaLabel: event.ctaLabel,
+    bookingType: event.bookingType,
+    externalUrl: event.externalUrl,
+    capacity: event.capacity,
+    remainingCapacity,
+    maxPersonsPerRegistration: event.maxPersonsPerRegistration,
+    isSoldOut: remainingCapacity === 0,
+    eventDate: {
+      id: event.eventDate.id,
+      date: event.eventDate.date,
+      dow: event.eventDate.dow,
+    },
   });
-
-  return res.json(event);
 }

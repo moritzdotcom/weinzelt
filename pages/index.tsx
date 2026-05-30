@@ -9,6 +9,7 @@ import { InstagramReel } from '@/components/instagramReel';
 import HeroFade from '@/components/heroFade';
 import EventDaysSection from '@/components/home/eventDaysSection';
 import HtmlHead from '@/components/htmlHead';
+import SpecialEventsSection from '@/components/home/specialEventSection';
 
 export default function Home({ session }: { session: Session }) {
   return (
@@ -83,8 +84,10 @@ export default function Home({ session }: { session: Session }) {
         </div>
       </section>
 
+      <SpecialEventsSection />
+
       {/* VIP Bereich */}
-      <section id="vip" className="bg-stone-100 py-20 px-4">
+      <section id="vip" className="bg-white py-20 px-4">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row-reverse gap-12 items-center">
           {/* Textbereich */}
           <div className="w-full sm:w-2/3">
@@ -213,7 +216,9 @@ export default function Home({ session }: { session: Session }) {
           Letztes Jahr war nur der Anfang...
         </h3>
       </section>
+
       <EventDaysSection />
+
       {/* Speisen & Getränke */}
       <section id="gastro" className="py-20 px-4 bg-white">
         <div className="max-w-6xl mx-auto grid md:grid-cols-[2fr_1fr] gap-12 items-center">

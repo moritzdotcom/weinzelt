@@ -191,26 +191,83 @@ model ReferralCode {
   reservations Reservation[]
 }
 
+enum SpecialEventCategory {
+  WINE_WALK
+  WINE_TASTING
+  OTHER
+}
+
+enum SpecialEventBookingType {
+  INTERNAL_REGISTRATION
+  EXTERNAL_LINK
+  NONE
+}
+
+enum EventRegistrationStatus {
+  REGISTERED
+  CANCELED
+}
+
 model SpecialEvent {
-  id            String              @id @default(uuid())
-  name          String
-  description   String
-  eventDate     EventDate           @relation(fields: [eventDateId], references: [id])
-  eventDateId   String
-  startTime     String
-  endTime       String
+  id          String @id @default(uuid())
+  name        String
+  description String
+
+  eventDate   EventDate @relation(fields: [eventDateId], references: [id], onDelete: Cascade)
+  eventDateId String
+
+  startTime String
+  endTime   String
+
+  // Darstellung
+  category       SpecialEventCategory @default(OTHER)
+  badge          String?
+  titleImagePath String?
+  priceCents     Int?
+  priceLabel     String?
+  ctaLabel       String               @default("Jetzt anmelden")
+  sortOrder      Int                  @default(0)
+
+  // Buchungslogik
+  bookingType SpecialEventBookingType @default(INTERNAL_REGISTRATION)
+  externalUrl String?
+
+  // Kapazitäten
+  capacity                  Int?
+  maxPersonsPerRegistration Int  @default(10)
+
+  // Veröffentlichung
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
   registrations EventRegistration[]
+
+  @@index([eventDateId, sortOrder])
+  @@index([isPublished])
 }
 
 model EventRegistration {
   id             String       @id @default(uuid())
-  specialEvent   SpecialEvent @relation(fields: [specialEventId], references: [id])
+  specialEvent   SpecialEvent @relation(fields: [specialEventId], references: [id], onDelete: Cascade)
   specialEventId String
-  name           String
-  email          String
-  personCount    Int
-  createdAt      DateTime     @default(now())
-  reminderSent   DateTime?
+
+  name        String
+  email       String
+  phone       String?
+  personCount Int
+
+  status     EventRegistrationStatus @default(REGISTERED)
+  createdAt  DateTime                @default(now())
+  canceledAt DateTime?
+
+  reminderSent          DateTime?
+  reminderLastAttemptAt DateTime?
+  reminderAttemptCount  Int       @default(0)
+  reminderFailureReason String?
+
+  @@unique([specialEventId, email])
+  @@index([specialEventId, status])
+  @@index([specialEventId, reminderSent])
 }
 
 model ReservationReminder {
