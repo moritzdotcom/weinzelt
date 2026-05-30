@@ -302,14 +302,16 @@ function AdminSpecialEventCard({
               </Typography>
             </Box>
 
-            <Chip
-              size="small"
-              icon={<GroupsRounded sx={{ fontSize: '16px !important' }} />}
-              label={event.registeredPersonCount}
-              color="error"
-              variant="outlined"
-              sx={{ fontWeight: 700 }}
-            />
+            {event.registeredPersonCount > 0 && (
+              <Chip
+                size="small"
+                icon={<GroupsRounded sx={{ fontSize: '16px !important' }} />}
+                label={event.registeredPersonCount}
+                color="error"
+                variant="outlined"
+                sx={{ fontWeight: 700, mx: 0.5 }}
+              />
+            )}
           </Box>
 
           <Typography className="mt-4 line-clamp-3 text-sm leading-relaxed text-gray-600">
@@ -349,13 +351,15 @@ function AdminSpecialEventCard({
           Bearbeiten
         </Button>
 
-        <Link
-          href={`/backend/specialEvents/${event.id}`}
-          className="inline-flex items-center justify-center gap-1 rounded-full border border-sky-600 px-4 py-2 text-sm font-semibold text-sky-600 transition hover:bg-sky-50"
-        >
-          <GroupsRounded fontSize="small" />
-          Teilnehmer
-        </Link>
+        {event.bookingType === 'INTERNAL_REGISTRATION' && (
+          <Link
+            href={`/backend/specialEvents/${event.id}`}
+            className="inline-flex items-center justify-center gap-1 rounded-full border border-sky-600 px-4 py-2 text-sm font-semibold text-sky-600 transition hover:bg-sky-50"
+          >
+            <GroupsRounded fontSize="small" />
+            Teilnehmer
+          </Link>
+        )}
 
         <Link
           href={
