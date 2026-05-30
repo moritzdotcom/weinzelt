@@ -4,7 +4,8 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import prisma from '@/lib/prismadb';
 import { supabase } from '@/lib/supabase';
-import { SpecialEventBookingType, SpecialEventCategory } from '@prisma/client';
+import { getServerSession } from '@/lib/session';
+import { validateSpecialEventPayload } from '@/lib/specialEvents/validator';
 
 export const config = {
   api: {
@@ -19,14 +20,14 @@ function firstField(fields: Fields, key: string) {
   return value ?? '';
 }
 
-function parseOptionalNumber(value: string) {
+function parseOptionalNumber(value: string): number | null {
   if (!value.trim()) return null;
 
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function parseBoolean(value: string) {
+function parseBoolean(value: string): boolean {
   return value === 'true';
 }
 
@@ -78,18 +79,6 @@ async function parseForm(req: NextApiRequest) {
   });
 }
 
-/**
- * Durch deinen bestehenden Backend-Session-Guard ersetzen.
- */
-async function requireBackendAdmin(
-  _req: NextApiRequest,
-  _res: NextApiResponse,
-) {
-  // Beispiel:
-  // const session = await getSession(req, res);
-  // if (!session?.user) throw new Error('UNAUTHORIZED');
-}
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
@@ -100,22 +89,28 @@ export default async function handler(
   }
 
   try {
-    await requireBackendAdmin(req, res);
+    const session = await getServerSession(req);
+
+    if (!session) {
+      return res.status(401).json({
+        error: 'Nicht autorisiert.',
+      });
+    }
 
     const specialEventId = String(req.query.specialEventId);
     const { fields, files } = await parseForm(req);
     const titleImage = getFirstFile(files.titleImage);
 
-    const payload = {
+    const validation = validateSpecialEventPayload({
       name: firstField(fields, 'name'),
       description: firstField(fields, 'description'),
       eventDateId: firstField(fields, 'eventDateId'),
       startTime: firstField(fields, 'startTime'),
       endTime: firstField(fields, 'endTime'),
-      category: firstField(fields, 'category') as SpecialEventCategory,
+      category: firstField(fields, 'category'),
       badge: firstField(fields, 'badge') || undefined,
       ctaLabel: firstField(fields, 'ctaLabel'),
-      bookingType: firstField(fields, 'bookingType') as SpecialEventBookingType,
+      bookingType: firstField(fields, 'bookingType'),
       externalUrl: firstField(fields, 'externalUrl') || undefined,
       priceCents: parseOptionalNumber(firstField(fields, 'priceCents')),
       priceLabel: firstField(fields, 'priceLabel') || undefined,
@@ -126,7 +121,16 @@ export default async function handler(
       sortOrder: parseOptionalNumber(firstField(fields, 'sortOrder')) ?? 0,
       isPublished: parseBoolean(firstField(fields, 'isPublished')),
       removeTitleImage: parseBoolean(firstField(fields, 'removeTitleImage')),
-    };
+    });
+
+    if (!validation.valid) {
+      return res.status(400).json({
+        error: 'Die Eingaben sind nicht vollständig oder ungültig.',
+        details: validation.errors,
+      });
+    }
+
+    const payload = validation.payload;
 
     const existingEvent = await prisma.specialEvent.findUnique({
       where: {

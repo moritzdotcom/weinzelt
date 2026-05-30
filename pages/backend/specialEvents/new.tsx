@@ -25,11 +25,6 @@ import type { PublicSpecialEvent } from '@/lib/specialEvents';
 import EventSelector from '@/components/eventSelector';
 import { ApiGetEventsResponse } from '@/pages/api/events';
 
-type EventDateOption = {
-  id: string;
-  date: string;
-};
-
 type FormState = {
   name: string;
   description: string;
