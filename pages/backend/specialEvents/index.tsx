@@ -723,11 +723,13 @@ function EditSpecialEventDialog({
                     updateForm('eventDateId', event.target.value)
                   }
                 >
-                  {eventDates?.map((date) => (
-                    <MenuItem key={date.id} value={date.id}>
-                      {date.dow}, {date.date}
-                    </MenuItem>
-                  ))}
+                  {eventDates
+                    ?.sort((a, b) => a.date.localeCompare(b.date))
+                    .map((date) => (
+                      <MenuItem key={date.id} value={date.id}>
+                        {date.dow}, {date.date}
+                      </MenuItem>
+                    ))}
                 </Select>
               </FormControl>
 

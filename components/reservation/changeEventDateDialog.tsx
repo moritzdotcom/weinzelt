@@ -172,20 +172,22 @@ export function ChangeReservationDateDialog({
 
   const groupedOptions = useMemo(() => {
     if (!eventDates) return [];
-    return eventDates.map((eventDate) => ({
-      eventDateId: eventDate.id,
-      date: eventDate.date,
-      dow: eventDate.dow,
-      options: eventDate.seatings.map((seating) =>
-        getSeatingOption({
-          eventDate,
-          seating,
-          reservationId,
-          reservationType,
-          requiredTableCount: tableCount,
-        }),
-      ),
-    }));
+    return eventDates
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map((eventDate) => ({
+        eventDateId: eventDate.id,
+        date: eventDate.date,
+        dow: eventDate.dow,
+        options: eventDate.seatings.map((seating) =>
+          getSeatingOption({
+            eventDate,
+            seating,
+            reservationId,
+            reservationType,
+            requiredTableCount: tableCount,
+          }),
+        ),
+      }));
   }, [eventDates, reservationId, reservationType, tableCount]);
 
   const hasSelectableOption = useMemo(() => {

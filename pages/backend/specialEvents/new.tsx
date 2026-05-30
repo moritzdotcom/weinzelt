@@ -86,8 +86,9 @@ export default function NewSpecialEventPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const eventDates = selectedEvent?.eventDates || [];
-  console.log(eventDates);
+  const eventDates =
+    selectedEvent?.eventDates.sort((a, b) => a.date.localeCompare(b.date)) ||
+    [];
 
   useEffect(() => {
     if (!titleImage) {
