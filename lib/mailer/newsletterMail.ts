@@ -24,8 +24,9 @@ export default function sendNewsletterMail(params: {
   body: string;
   imageUrl?: string | null;
   ctaLabel?: string | null;
-  trackingToken: string;
-  unsubscribeToken: string;
+  ctaHref?: string | null;
+  unsubscribeUrl?: string | null;
+  isTest?: boolean;
 }) {
   const {
     email,
@@ -35,27 +36,36 @@ export default function sendNewsletterMail(params: {
     body,
     imageUrl,
     ctaLabel,
-    trackingToken,
-    unsubscribeToken,
+    ctaHref,
+    unsubscribeUrl,
+    isTest = false,
   } = params;
 
   const safeName = (name || '').trim();
   const greeting = safeName ? `Hallo ${safeName},` : 'Hallo,';
 
-  const clickUrl = `${SITE_URL}/api/newsletter/click/${trackingToken}`;
-  const unsubscribeUrl = `${SITE_URL}/newsletter/unsubscribe/${unsubscribeToken}`;
-
-  const ctaHtml = ctaLabel
-    ? `
+  const ctaHtml =
+    ctaLabel && ctaHref
+      ? `
       <div style="text-align:center; margin:24px 0 8px;">
         <a
-          href="${clickUrl}"
+          href="${escapeHtml(ctaHref)}"
           style="display:inline-block; background-color:#000000; color:#ffffff; text-decoration:none; padding:14px 22px; border-radius:6px; font-weight:bold;"
         >
           ${escapeHtml(ctaLabel)}
         </a>
       </div>
     `
+      : '';
+
+  const testNoticeHtml = isTest
+    ? `
+    <tr>
+      <td style="background-color:#fff3cd; padding:12px 20px; text-align:center; color:#664d03; font-size:13px;">
+        Dies ist ein Testversand. Die E-Mail wurde noch nicht an deine Newsletter-Empfänger verschickt.
+      </td>
+    </tr>
+  `
     : '';
 
   const imageHtml = imageUrl
@@ -72,15 +82,30 @@ export default function sendNewsletterMail(params: {
     `
     : '';
 
+  const unsubscribeHtml = unsubscribeUrl
+    ? `
+    <p style="margin:0; color:#cccccc; font-size:11px;">
+      Du möchtest keine weiteren E-Mails erhalten?
+      <a
+        href="${escapeHtml(unsubscribeUrl)}"
+        style="color:#ffffff; text-decoration:underline;"
+      >
+        Newsletter abbestellen
+      </a>
+    </p>
+  `
+    : '';
+
   return sendMail({
     to: email,
-    subject,
+    subject: isTest ? `[TEST] ${subject}` : subject,
     text:
+      `${isTest ? '[TESTVERSAND]\n\n' : ''}` +
       `${greeting}\n\n` +
       `${headline}\n\n` +
       `${body}\n\n` +
-      (ctaLabel ? `${ctaLabel}: ${clickUrl}\n\n` : '') +
-      `Newsletter abbestellen: ${unsubscribeUrl}\n\n` +
+      (ctaLabel && ctaHref ? `${ctaLabel}: ${ctaHref}\n\n` : '') +
+      (unsubscribeUrl ? `Newsletter abbestellen: ${unsubscribeUrl}\n\n` : '') +
       `Liebe Grüße\n` +
       `Dein Weinzelt-Team`,
     html: `<!DOCTYPE html>
@@ -108,6 +133,7 @@ export default function sendNewsletterMail(params: {
                 style="max-width:200px; height:auto;"
               />
             </td>
+            ${testNoticeHtml}
           </tr>
 
           ${imageHtml}
@@ -132,14 +158,9 @@ export default function sendNewsletterMail(params: {
           <tr>
             <td style="background-color:#000000; padding:18px 20px; text-align:center;">
               <p style="margin:0 0 8px; color:#ffffff; font-size:12px;">
-                © ${new Date().getFullYear()} Weinzelt – Alle Rechte vorbehalten
+                © ${new Date().getFullYear()} Weinzelt - Alle Rechte vorbehalten
               </p>
-              <p style="margin:0; color:#cccccc; font-size:11px;">
-                Du möchtest keine weiteren E-Mails erhalten?
-                <a href="${unsubscribeUrl}" style="color:#ffffff; text-decoration:underline;">
-                  Newsletter abbestellen
-                </a>
-              </p>
+              ${unsubscribeHtml}
             </td>
           </tr>
         </table>

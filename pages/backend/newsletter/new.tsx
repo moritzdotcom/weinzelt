@@ -1,6 +1,5 @@
-import { ArrowBackRounded } from '@mui/icons-material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
+import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import {
   Alert,
   Box,
@@ -9,6 +8,7 @@ import {
   CardContent,
   CircularProgress,
   Divider,
+  IconButton,
   Stack,
   TextField,
   Typography,
@@ -16,24 +16,23 @@ import {
 import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { ArrowBackRounded, SaveOutlined } from '@mui/icons-material';
 
 type Fields = {
   subject: string;
   headline: string;
   body: string;
-  imageUrl: string;
   ctaLabel: string;
   ctaUrl: string;
 };
 
-type FieldErrors = Partial<Record<keyof Fields, string>>;
+type FieldErrors = Partial<Record<keyof Fields | 'titleImage', string>>;
 
 const initialFields: Fields = {
   subject: '',
   headline: '',
   body: '',
-  imageUrl: '',
   ctaLabel: '',
   ctaUrl: '',
 };
@@ -42,6 +41,8 @@ export default function NewNewsletterPage() {
   const router = useRouter();
 
   const [fields, setFields] = useState(initialFields);
+  const [titleImage, setTitleImage] = useState<File>();
+  const [titleImagePreviewUrl, setTitleImagePreviewUrl] = useState<string>();
   const [errors, setErrors] = useState<FieldErrors>({});
   const [saving, setSaving] = useState(false);
   const [globalError, setGlobalError] = useState('');
@@ -58,12 +59,55 @@ export default function NewNewsletterPage() {
     }));
   };
 
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setErrors((current) => ({
+        ...current,
+        titleImage: 'Bitte wähle eine JPG-, PNG- oder WebP-Datei aus.',
+      }));
+
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      setErrors((current) => ({
+        ...current,
+        titleImage: 'Das Titelbild darf maximal 8 MB groß sein.',
+      }));
+
+      return;
+    }
+
+    setTitleImage(file);
+
+    setErrors((current) => ({
+      ...current,
+      titleImage: undefined,
+    }));
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
       setGlobalError('');
 
-      const response = await axios.post('/api/backend/newsletters', fields);
+      const formData = new FormData();
+
+      formData.append('subject', fields.subject);
+      formData.append('headline', fields.headline);
+      formData.append('body', fields.body);
+      formData.append('ctaLabel', fields.ctaLabel);
+      formData.append('ctaUrl', fields.ctaUrl);
+
+      if (titleImage) {
+        formData.append('titleImage', titleImage);
+      }
+
+      const response = await axios.post('/api/backend/newsletters', formData);
 
       await router.push(`/backend/newsletter/${response.data.newsletter.id}`);
     } catch (error) {
@@ -78,6 +122,21 @@ export default function NewNewsletterPage() {
       setSaving(false);
     }
   };
+
+  useEffect(() => {
+    if (!titleImage) {
+      setTitleImagePreviewUrl(undefined);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(titleImage);
+
+    setTitleImagePreviewUrl(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [titleImage]);
 
   return (
     <Stack
@@ -129,19 +188,77 @@ export default function NewNewsletterPage() {
                 fullWidth
               />
 
-              <TextField
-                label="Titelbild-URL"
-                value={fields.imageUrl}
-                onChange={(event) =>
-                  updateField('imageUrl', event.target.value)
-                }
-                error={Boolean(errors.imageUrl)}
-                helperText={
-                  errors.imageUrl ||
-                  'Später kannst du hier deinen bestehenden Image-Upload einsetzen.'
-                }
-                fullWidth
-              />
+              <Stack spacing={1}>
+                <Typography fontWeight={700}>Titelbild</Typography>
+
+                {titleImagePreviewUrl ? (
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={titleImagePreviewUrl}
+                      alt="Newsletter Titelbild"
+                      sx={{
+                        display: 'block',
+                        width: '100%',
+                        maxHeight: 240,
+                        objectFit: 'cover',
+                      }}
+                    />
+
+                    <IconButton
+                      onClick={() => setTitleImage(undefined)}
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        bgcolor: 'background.paper',
+                        '&:hover': {
+                          bgcolor: 'background.paper',
+                        },
+                      }}
+                    >
+                      <DeleteOutlineIcon />
+                    </IconButton>
+                  </Box>
+                ) : (
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    startIcon={<ImageOutlinedIcon />}
+                    sx={{
+                      minHeight: 100,
+                      borderStyle: 'dashed',
+                    }}
+                  >
+                    Titelbild auswählen
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      hidden
+                      onChange={handleImageChange}
+                    />
+                  </Button>
+                )}
+
+                {errors.titleImage && (
+                  <Typography color="error" variant="caption">
+                    {errors.titleImage}
+                  </Typography>
+                )}
+
+                <Typography color="text.secondary" variant="caption">
+                  Optional. Unterstützt werden JPG, PNG und WebP bis maximal 8
+                  MB.
+                </Typography>
+              </Stack>
 
               <TextField
                 label="Text"
@@ -185,7 +302,7 @@ export default function NewNewsletterPage() {
                   saving ? (
                     <CircularProgress size={18} color="inherit" />
                   ) : (
-                    <SaveOutlinedIcon />
+                    <SaveOutlined />
                   )
                 }
                 disabled={saving}
@@ -204,10 +321,10 @@ export default function NewNewsletterPage() {
 
           <Divider />
 
-          {fields.imageUrl && (
+          {titleImagePreviewUrl && (
             <Box
               component="img"
-              src={fields.imageUrl}
+              src={titleImagePreviewUrl}
               alt=""
               sx={{
                 display: 'block',

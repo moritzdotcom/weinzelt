@@ -308,14 +308,15 @@ model NewsletterSubscription {
 }
 
 model Newsletter {
-  id       String           @id @default(uuid())
-  subject  String
-  headline String
-  body     String
-  imageUrl String?
-  ctaLabel String?
-  ctaUrl   String?
-  status   NewsletterStatus @default(DRAFT)
+  id        String           @id @default(uuid())
+  subject   String
+  headline  String
+  body      String
+  imageUrl  String?
+  imagePath String?
+  ctaLabel  String?
+  ctaUrl    String?
+  status    NewsletterStatus @default(DRAFT)
 
   createdAt DateTime  @default(now())
   startedAt DateTime?

@@ -1,5 +1,5 @@
 import prisma from '@/lib/prismadb';
-import sendDoubleOptInMail from './mailer/doubleOptInMail';
+import sendDoubleOptInMail from '../mailer/doubleOptInMail';
 import { Prisma } from '@prisma/client';
 
 export async function createNewsletterSubscription(

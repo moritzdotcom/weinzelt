@@ -201,6 +201,9 @@ export default async function handler(
           },
         });
 
+        const siteUrl =
+          process.env.APP_URL?.replace(/\/$/, '') || 'https://dasweinzelt.de';
+
         await sendNewsletterMail({
           email: recipient.email,
           name: recipient.name,
@@ -209,8 +212,10 @@ export default async function handler(
           body: newsletter.body,
           imageUrl: newsletter.imageUrl,
           ctaLabel: newsletter.ctaLabel,
-          trackingToken: recipient.trackingToken,
-          unsubscribeToken: recipient.unsubscribeToken,
+          ctaHref: newsletter.ctaLabel
+            ? `${siteUrl}/api/newsletter/click/${recipient.trackingToken}`
+            : undefined,
+          unsubscribeUrl: `${siteUrl}/newsletter/unsubscribe/${recipient.unsubscribeToken}`,
         });
 
         await prisma.newsletterRecipient.update({

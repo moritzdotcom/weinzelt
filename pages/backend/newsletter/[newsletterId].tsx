@@ -13,13 +13,14 @@ import {
   Divider,
   LinearProgress,
   Stack,
+  TextField,
   Typography,
 } from '@mui/material';
 import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowBackRounded } from '@mui/icons-material';
+import { ArrowBackRounded, MarkEmailReadOutlined } from '@mui/icons-material';
 
 type Recipient = {
   id: string;
@@ -94,6 +95,11 @@ export default function NewsletterDetailPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
 
+  const [testEmail, setTestEmail] = useState('');
+  const [sendingTest, setSendingTest] = useState(false);
+  const [testSuccess, setTestSuccess] = useState('');
+  const [testError, setTestError] = useState('');
+
   const loadData = useCallback(async () => {
     if (!newsletterId) return;
 
@@ -143,6 +149,34 @@ export default function NewsletterDetailPage() {
     } finally {
       setSending(false);
       await loadData();
+    }
+  };
+
+  const handleSendTest = async () => {
+    if (!newsletterId) return;
+
+    try {
+      setSendingTest(true);
+      setTestSuccess('');
+      setTestError('');
+
+      await axios.post(`/api/backend/newsletters/${newsletterId}/sendTest`, {
+        email: testEmail,
+      });
+
+      setTestSuccess(`Der Testversand wurde an ${testEmail} verschickt.`);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setTestError(
+          error.response?.data?.error || 'Der Testversand ist fehlgeschlagen.',
+        );
+
+        return;
+      }
+
+      setTestError('Der Testversand ist fehlgeschlagen.');
+    } finally {
+      setSendingTest(false);
     }
   };
 
@@ -208,7 +242,7 @@ export default function NewsletterDetailPage() {
       {error && <Alert severity="error">{error}</Alert>}
 
       {newsletter.status === 'SENDING' && (
-        <Card sx={{ borderRadius: 3 }}>
+        <Card variant="outlined" sx={{ borderRadius: 3 }}>
           <CardContent>
             <Stack spacing={1}>
               <Stack direction="row" justifyContent="space-between">
@@ -227,8 +261,63 @@ export default function NewsletterDetailPage() {
         </Card>
       )}
 
+      {newsletter.status === 'DRAFT' && (
+        <Card variant="outlined" sx={{ borderRadius: 3 }}>
+          <CardContent>
+            <Stack spacing={2}>
+              <Box>
+                <Typography variant="h6" fontWeight={500}>
+                  Testversand
+                </Typography>
+
+                <Typography color="text.secondary" variant="body2">
+                  Prüfe Darstellung, Betreff, Titelbild und CTA vor dem Versand
+                  an deine Newsletter-Empfänger.
+                </Typography>
+              </Box>
+
+              {testSuccess && <Alert severity="success">{testSuccess}</Alert>}
+
+              {testError && <Alert severity="error">{testError}</Alert>}
+
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                <TextField
+                  label="Test-E-Mail-Adresse"
+                  type="email"
+                  value={testEmail}
+                  onChange={(event) => {
+                    setTestEmail(event.target.value);
+                    setTestSuccess('');
+                    setTestError('');
+                  }}
+                  fullWidth
+                />
+
+                <Button
+                  variant="outlined"
+                  startIcon={
+                    sendingTest ? (
+                      <CircularProgress size={18} color="inherit" />
+                    ) : (
+                      <MarkEmailReadOutlined />
+                    )
+                  }
+                  disabled={sendingTest || !testEmail.trim()}
+                  onClick={handleSendTest}
+                  sx={{
+                    flexShrink: 0,
+                  }}
+                >
+                  Testmail senden
+                </Button>
+              </Stack>
+            </Stack>
+          </CardContent>
+        </Card>
+      )}
+
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-        <Card sx={{ flex: 1, borderRadius: 3 }}>
+        <Card variant="outlined" sx={{ flex: 1, borderRadius: 3 }}>
           <CardContent>
             <Stack direction="row" spacing={1.5} alignItems="center">
               <EmailOutlinedIcon />
@@ -244,7 +333,7 @@ export default function NewsletterDetailPage() {
           </CardContent>
         </Card>
 
-        <Card sx={{ flex: 1, borderRadius: 3 }}>
+        <Card variant="outlined" sx={{ flex: 1, borderRadius: 3 }}>
           <CardContent>
             <Stack direction="row" spacing={1.5} alignItems="center">
               <AdsClickOutlinedIcon />
@@ -260,7 +349,7 @@ export default function NewsletterDetailPage() {
           </CardContent>
         </Card>
 
-        <Card sx={{ flex: 1, borderRadius: 3 }}>
+        <Card variant="outlined" sx={{ flex: 1, borderRadius: 3 }}>
           <CardContent>
             <Typography variant="h5" fontWeight={700}>
               {stats.totalClicks}
@@ -269,7 +358,7 @@ export default function NewsletterDetailPage() {
           </CardContent>
         </Card>
 
-        <Card sx={{ flex: 1, borderRadius: 3 }}>
+        <Card variant="outlined" sx={{ flex: 1, borderRadius: 3 }}>
           <CardContent>
             <Typography variant="h5" fontWeight={700}>
               {stats.failed}
@@ -281,7 +370,7 @@ export default function NewsletterDetailPage() {
         </Card>
       </Stack>
 
-      <Card sx={{ borderRadius: 3 }}>
+      <Card variant="outlined" sx={{ borderRadius: 3 }}>
         {newsletter.imageUrl && (
           <Box
             component="img"
@@ -312,7 +401,7 @@ export default function NewsletterDetailPage() {
         </CardContent>
       </Card>
 
-      <Card sx={{ borderRadius: 3 }}>
+      <Card variant="outlined" sx={{ borderRadius: 3 }}>
         <CardContent>
           <Typography variant="h6" fontWeight={700} mb={1}>
             Empfänger
