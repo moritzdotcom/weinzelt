@@ -378,7 +378,7 @@ export default function BackendSearchReservationPage({
           <ListItemIcon>
             <CalendarMonth fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Timeslot anpassen</ListItemText>
+          <ListItemText>Reservierung umbuchen</ListItemText>
         </MenuItem>
         <MenuItem
           onClick={() => {
@@ -428,6 +428,8 @@ export default function BackendSearchReservationPage({
         reservationId={selectedReservation?.id ?? ''}
         seatingId={selectedReservation?.seatingId ?? ''}
         reservationType={selectedReservation?.type ?? 'VIP'}
+        reservationMinimumSpend={selectedReservation?.minimumSpend ?? 0}
+        reservationPaymentStatus={selectedReservation?.paymentStatus ?? 'DRAFT'}
         tableCount={selectedReservation?.tableCount ?? 0}
         onChanged={(updated) => {
           setChangeDateDialogOpen(false);

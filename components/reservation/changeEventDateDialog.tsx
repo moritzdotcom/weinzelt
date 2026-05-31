@@ -25,7 +25,7 @@ import {
   EventBusy,
   TableRestaurant,
 } from '@mui/icons-material';
-import { ReservationType } from '@prisma/client';
+import { ReservationPaymentStatus, ReservationType } from '@prisma/client';
 import { ApiGetEventDataResponse } from '@/pages/api/events/[eventId]/data';
 import { ApiPutReservationResponse } from '@/pages/api/reservations/[reservationId]';
 
@@ -37,6 +37,8 @@ type ChangeReservationDateDialogProps = {
   reservationId: string;
   seatingId: string;
   reservationType: ReservationType;
+  reservationPaymentStatus: ReservationPaymentStatus;
+  reservationMinimumSpend: number;
   tableCount: number;
 
   onChanged?: (updated: ApiPutReservationResponse) => void;
@@ -52,6 +54,7 @@ type SeatingOption = {
   reservedTables: number;
   freeTables: number;
   selectable: boolean;
+  minimumSpend: number;
 };
 
 function getTotalTables({
@@ -92,7 +95,8 @@ function getSeatingOption({
     .filter(
       (reservation) =>
         reservation.id !== reservationId &&
-        reservation.type === reservationType,
+        reservation.type === reservationType &&
+        ['PAID', 'PENDING_PAYMENT'].includes(reservation.paymentStatus),
     )
     .reduce((sum, reservation) => sum + reservation.tableCount, 0);
 
@@ -108,6 +112,10 @@ function getSeatingOption({
     reservedTables,
     freeTables,
     selectable: freeTables >= requiredTableCount,
+    minimumSpend:
+      reservationType === 'VIP'
+        ? seating.minimumSpendVip
+        : seating.minimumSpendStanding,
   };
 }
 
@@ -118,6 +126,8 @@ export function ChangeReservationDateDialog({
   reservationId,
   seatingId,
   reservationType,
+  reservationPaymentStatus,
+  reservationMinimumSpend,
   tableCount,
   onChanged,
 }: ChangeReservationDateDialogProps) {
@@ -261,10 +271,14 @@ export function ChangeReservationDateDialog({
       <DialogContent>
         <Stack spacing={2}>
           <Alert severity="info">
-            Für die Umbuchung werden {tableCount}{' '}
-            {tableCount === 1 ? 'freier Tisch' : 'freie Tische'} im Bereich{' '}
+            Für die Umbuchung {tableCount === 1 ? 'wird' : 'werden'}{' '}
+            {tableCount} {tableCount === 1 ? 'freier Tisch' : 'freie Tische'} im{' '}
             <strong>{reservationType === 'VIP' ? 'VIP' : 'Stehplatz'}</strong>{' '}
-            benötigt.
+            Bereich benötigt. Der Mindestverzehr i.H.v.{' '}
+            {reservationMinimumSpend} €{' '}
+            {reservationPaymentStatus == 'PAID'
+              ? 'wurde bereits bezahlt'
+              : 'wurde noch nicht bezahlt'}
           </Alert>
 
           {error && <Alert severity="error">{error}</Alert>}
@@ -394,43 +408,59 @@ export function ChangeReservationDateDialog({
 
                                   <Stack
                                     direction={{ xs: 'column', sm: 'row' }}
-                                    spacing={{ xs: 0.75, sm: 2 }}
+                                    spacing={{ xs: 0.75, sm: 0 }}
+                                    justifyContent={{
+                                      xs: 'flex-start',
+                                      sm: 'space-between',
+                                    }}
                                   >
                                     <Stack
-                                      direction="row"
-                                      spacing={0.75}
-                                      alignItems="center"
+                                      direction={{ xs: 'column', sm: 'row' }}
+                                      spacing={{ xs: 0.75, sm: 2 }}
                                     >
-                                      <TableRestaurant
-                                        sx={{ fontSize: 18 }}
-                                        color="action"
-                                      />
+                                      <Stack
+                                        direction="row"
+                                        spacing={0.75}
+                                        alignItems="center"
+                                      >
+                                        <TableRestaurant
+                                          sx={{ fontSize: 18 }}
+                                          color="action"
+                                        />
 
-                                      <Typography variant="body2">
-                                        Insgesamt:{' '}
-                                        <strong>
-                                          {option.totalTables} Tische
-                                        </strong>
+                                        <Typography variant="body2">
+                                          Insgesamt:{' '}
+                                          <strong>
+                                            {option.totalTables} Tische
+                                          </strong>
+                                        </Typography>
+                                      </Stack>
+
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                      >
+                                        Reserviert: {option.reservedTables}
+                                      </Typography>
+
+                                      <Typography
+                                        variant="body2"
+                                        color={
+                                          option.selectable
+                                            ? 'success.main'
+                                            : 'error.main'
+                                        }
+                                        fontWeight={700}
+                                      >
+                                        Frei: {option.freeTables}
                                       </Typography>
                                     </Stack>
-
                                     <Typography
                                       variant="body2"
                                       color="text.secondary"
+                                      fontWeight={600}
                                     >
-                                      Reserviert: {option.reservedTables}
-                                    </Typography>
-
-                                    <Typography
-                                      variant="body2"
-                                      color={
-                                        option.selectable
-                                          ? 'success.main'
-                                          : 'error.main'
-                                      }
-                                      fontWeight={700}
-                                    >
-                                      Frei: {option.freeTables}
+                                      MVZ: {option.minimumSpend} €
                                     </Typography>
                                   </Stack>
 
