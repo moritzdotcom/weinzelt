@@ -12,6 +12,7 @@ import PasswordIcon from '@mui/icons-material/Password';
 import LocalActivityIcon from '@mui/icons-material/LocalActivity';
 import SearchIcon from '@mui/icons-material/Search';
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
+import MarkAsUnreadIcon from '@mui/icons-material/MarkAsUnread';
 import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
 import BackendKpiSection from '@/components/backend/kpiSection';
 
@@ -92,6 +93,14 @@ const menuItems = [
     description:
       'Pflege Sonderformate, Aktionen, Highlights und buchbare Zusatzveranstaltungen.',
     Icon: LocalActivityIcon,
+    group: 'Marketing',
+  },
+  {
+    href: '/backend/newsletter',
+    title: 'Newsletter',
+    description:
+      'Versende Newsletter und schau dir aktive Subscriptions und Click-Raten an.',
+    Icon: MarkAsUnreadIcon,
     group: 'Marketing',
   },
   {

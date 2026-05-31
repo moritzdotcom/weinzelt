@@ -278,12 +278,100 @@ model ReservationReminder {
   reminderSent DateTime?
 }
 
+enum NewsletterStatus {
+  DRAFT
+  SENDING
+  SENT
+}
+
+enum NewsletterRecipientStatus {
+  PENDING
+  SENDING
+  SENT
+  FAILED
+}
+
 model NewsletterSubscription {
-  id        String   @id @default(uuid())
-  name      String?
-  email     String   @unique
-  confirmed Boolean  @default(false)
+  id               String    @id @default(uuid())
+  name             String?
+  email            String    @unique
+  confirmed        Boolean   @default(false)
+  confirmedAt      DateTime?
+  unsubscribedAt   DateTime?
+  unsubscribeToken String?   @unique @default(uuid())
+  createdAt        DateTime  @default(now())
+
+  newsletterRecipients NewsletterRecipient[]
+
+  @@index([confirmed, unsubscribedAt])
+  @@index([createdAt])
+}
+
+model Newsletter {
+  id       String           @id @default(uuid())
+  subject  String
+  headline String
+  body     String
+  imageUrl String?
+  ctaLabel String?
+  ctaUrl   String?
+  status   NewsletterStatus @default(DRAFT)
+
+  createdAt DateTime  @default(now())
+  startedAt DateTime?
+  sentAt    DateTime?
+
+  recipients NewsletterRecipient[]
+
+  @@index([createdAt])
+  @@index([status])
+}
+
+model NewsletterRecipient {
+  id           String     @id @default(uuid())
+  newsletterId String
+  newsletter   Newsletter @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
+
+  subscriptionId String?
+  subscription   NewsletterSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  // Snapshot: Diese Daten bleiben bestehen, selbst wenn sich die Subscription ändert.
+  email            String
+  name             String?
+  unsubscribeToken String
+
+  status        NewsletterRecipientStatus @default(PENDING)
+  attemptCount  Int                       @default(0)
+  lastAttemptAt DateTime?
+  sentAt        DateTime?
+  failureReason String?
+
+  // Verhindert Doppelversand durch parallele Requests.
+  claimToken String?
+  sendingAt  DateTime?
+
+  // Tracking pro Empfänger und Newsletter.
+  trackingToken String    @unique @default(uuid())
+  ctaClickedAt  DateTime?
+  ctaClickCount Int       @default(0)
+
+  ctaClicks NewsletterClick[]
+
   createdAt DateTime @default(now())
+
+  @@unique([newsletterId, email])
+  @@index([newsletterId, status, attemptCount])
+  @@index([newsletterId, createdAt])
+}
+
+model NewsletterClick {
+  id                    String              @id @default(uuid())
+  newsletterRecipientId String
+  newsletterRecipient   NewsletterRecipient @relation(fields: [newsletterRecipientId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([newsletterRecipientId, createdAt])
 }
 
 model Album {

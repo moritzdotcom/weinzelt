@@ -19,11 +19,16 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { AddPhotoAlternateRounded, SaveRounded } from '@mui/icons-material';
+import {
+  AddPhotoAlternateRounded,
+  ArrowBackRounded,
+  SaveRounded,
+} from '@mui/icons-material';
 import { SpecialEventCard } from '@/components/specialEventCard';
 import type { PublicSpecialEvent } from '@/lib/specialEvents';
 import EventSelector from '@/components/eventSelector';
 import { ApiGetEventsResponse } from '@/pages/api/events';
+import Link from 'next/link';
 
 type FormState = {
   name: string;
@@ -203,12 +208,16 @@ export default function NewSpecialEventPage() {
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f8f6f2', minHeight: '100vh' }}>
-      <Box sx={{ maxWidth: 1440, mx: 'auto' }}>
-        <Typography variant="overline" color="text.secondary">
-          Weinzelt Backend
-        </Typography>
+      <Link
+        href="/backend/specialEvents"
+        className="inline-flex items-center gap-1 text-sm font-semibold text-gray-600 transition hover:text-black"
+      >
+        <ArrowBackRounded fontSize="small" />
+        Zurück zu den WineEvents
+      </Link>
 
-        <Typography variant="h4" fontWeight={800}>
+      <Box sx={{ maxWidth: 1440, mx: 'auto' }}>
+        <Typography variant="h4" fontWeight={700}>
           Neues WineEvent anlegen
         </Typography>
 
