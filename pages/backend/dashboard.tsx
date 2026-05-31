@@ -148,17 +148,15 @@ export const MultiLineChartCard: React.FC<{
 export const NumberChartCard: React.FC<{
   title: string;
   number: number;
-  percentage?: number;
-  type?: 'CURRENCY' | 'NUMBER';
-}> = ({ title, number, type, percentage }) => (
+  type?: 'CURRENCY' | 'NUMBER' | 'PERCENT';
+}> = ({ title, number, type }) => (
   <div className="col-span-12 sm:col-span-6 lg:col-span-3 rounded-lg bg-white shadow-md p-6 flex flex-col items-center justify-center gap-4">
     <h4 className="text-black text-3xl font-bold">
-      {type == 'CURRENCY' ? `${number.toLocaleString('de-DE')} €` : number}
-      {percentage !== undefined && (
-        <span className="text-gray-400 text-sm ml-2">
-          ({Math.round(percentage)}%)
-        </span>
-      )}
+      {type == 'CURRENCY'
+        ? `${number.toLocaleString('de-DE')} €`
+        : type == 'PERCENT'
+          ? `${Math.round(number)} %`
+          : number}
     </h4>
     <h6 className="text-gray-600 text-center">{title}</h6>
   </div>
@@ -270,6 +268,26 @@ export default function EventDashboard({ session }: { session: Session }) {
           <NumberChartCard
             title="Umsatz durch Reservierungen"
             number={metrics.revenue}
+            type="CURRENCY"
+          />
+          <NumberChartCard
+            title="Auslastung Gesamt"
+            number={metrics.totalUtilizationPercent * 100}
+            type="PERCENT"
+          />
+          <NumberChartCard
+            title="Auslastung Stehtische"
+            number={metrics.standingUtilizationPercent * 100}
+            type="PERCENT"
+          />
+          <NumberChartCard
+            title="Auslastung VIP"
+            number={metrics.vipUtilizationPercent * 100}
+            type="PERCENT"
+          />
+          <NumberChartCard
+            title="Ausstehender Umsatz"
+            number={metrics.accountsReceivable}
             type="CURRENCY"
           />
           {/* Diagramme */}

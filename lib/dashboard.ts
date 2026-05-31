@@ -8,6 +8,10 @@ export interface Metrics {
   standingCount: number;
   paidCount: number;
   revenue: number;
+  accountsReceivable: number;
+  totalUtilizationPercent: number;
+  standingUtilizationPercent: number;
+  vipUtilizationPercent: number;
   capacity: { x: string; y1: number; y2: number }[];
   reservationCountByDay: { x: string; y: number }[];
   vipCountByDay: { x: string; y: number }[];
@@ -51,6 +55,10 @@ export function calculateMetrics(eventData: ApiGetEventDataResponse): Metrics {
     .filter((r) => r.paymentStatus === 'PAID')
     .reduce((sum, r) => sum + (r.minimumSpend ?? 0), 0);
 
+  const accountsReceivable = allReservations
+    .filter((r) => r.paymentStatus === 'PENDING_PAYMENT')
+    .reduce((sum, r) => sum + (r.minimumSpend ?? 0), 0);
+
   const capacity: {
     [key: string]: {
       vip: number;
@@ -59,17 +67,38 @@ export function calculateMetrics(eventData: ApiGetEventDataResponse): Metrics {
       availableStanding: number;
     };
   } = {};
+
+  let standingCapacity = 0;
+  let vipCapacity = 0;
+  let standingUtilization = 0;
+  let vipUtilization = 0;
+
   eventData.eventDates.forEach((date) => {
     const data = { vip: 0, standing: 0, availableVip: 0, availableStanding: 0 };
     date.seatings.forEach((s) => {
-      data.vip += s.reservations
-        .filter((r) => r.paymentStatus == 'PAID' && r.type == 'VIP')
+      const vip = s.reservations
+        .filter(
+          (r) =>
+            ['PAID', 'PENDING_PAYMENT'].includes(r.paymentStatus) &&
+            r.type == 'VIP',
+        )
         .reduce((a, b) => a + b.tableCount, 0);
-      data.standing += s.reservations
-        .filter((r) => r.paymentStatus == 'PAID' && r.type == 'STANDING')
+      const standing = s.reservations
+        .filter(
+          (r) =>
+            ['PAID', 'PENDING_PAYMENT'].includes(r.paymentStatus) &&
+            r.type == 'STANDING',
+        )
         .reduce((a, b) => a + b.tableCount, 0);
+      data.vip += vip;
+      data.standing += standing;
       data.availableVip += s.availableVip;
       data.availableStanding += s.availableStanding;
+
+      vipUtilization += vip;
+      standingUtilization += standing;
+      vipCapacity += s.availableVip;
+      standingCapacity += s.availableStanding;
     });
     capacity[date.date] = data;
   });
@@ -81,6 +110,11 @@ export function calculateMetrics(eventData: ApiGetEventDataResponse): Metrics {
       y1: (data.vip * 100) / data.availableVip,
       y2: (data.standing * 100) / data.availableStanding,
     }));
+
+  const totalUtilizationPercent =
+    (vipUtilization + standingUtilization) / (vipCapacity + standingCapacity);
+  const standingUtilizationPercent = standingUtilization / standingCapacity;
+  const vipUtilizationPercent = vipUtilization / vipCapacity;
 
   const reservationCountByDay: {
     [key: string]: { count: number };
@@ -171,6 +205,10 @@ export function calculateMetrics(eventData: ApiGetEventDataResponse): Metrics {
     standingCount,
     paidCount,
     revenue,
+    accountsReceivable,
+    totalUtilizationPercent,
+    standingUtilizationPercent,
+    vipUtilizationPercent,
     reservationCountByDay: sortedReservationCountByDay,
     capacity: sortedCapacity,
     vipCountByDay: sortedVipCountByDay,
