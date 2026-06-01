@@ -52,8 +52,8 @@ export default function Navbar({ session }: { session: Session }) {
             <img src="/logo-sm.png" alt="WEINZELT" className="w-32 sm:w-40" />
           </Link>
           <nav className="hidden md:flex gap-6 items-center">
-            <Link href="/#vip">VIP</Link>
-            <Link href="/#musik">Musik</Link>
+            <Link href="/#wine-events">Events</Link>
+            <Link href="/#programm">Programm</Link>
             <Link href="/#gastro">Getränke</Link>
             <Link href="/about">Über uns</Link>
             <Link href="/jobs">Jobs</Link>
@@ -94,19 +94,15 @@ export default function Navbar({ session }: { session: Session }) {
                 </button>
                 <Collapse in={startOpen} timeout="auto" unmountOnExit>
                   <div className="flex flex-col gap-3 mt-3 ml-3 text-neutral-500">
-                    <Link href="/#vip" onClick={() => setMenuOpen(false)}>
-                      VIP-Tische
-                    </Link>
-                    <Divider />
                     <Link
-                      href="/#standing-tables"
+                      href="/#wine-events"
                       onClick={() => setMenuOpen(false)}
                     >
-                      Stehtische
+                      Events
                     </Link>
                     <Divider />
-                    <Link href="/#musik" onClick={() => setMenuOpen(false)}>
-                      Musik & Events
+                    <Link href="/#programm" onClick={() => setMenuOpen(false)}>
+                      Programm & Entertainment
                     </Link>
                     <Divider />
                     <Link href="/#gastro" onClick={() => setMenuOpen(false)}>

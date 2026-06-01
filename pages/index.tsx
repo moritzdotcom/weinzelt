@@ -205,16 +205,6 @@ export default function Home({ session }: { session: Session }) {
             />
           </div>
         </div>
-
-        <h3 className="text-2xl font-cocogoose text-center text-white mt-12 mb-6">
-          Ein kleiner Vorgeschmack gefällig?
-        </h3>
-        <div className="flex justify-center mx-5">
-          <InstagramReel />
-        </div>
-        <h3 className="text-2xl font-cocogoose text-center text-white mt-12 mb-6">
-          Letztes Jahr war nur der Anfang...
-        </h3>
       </section>
 
       <EventDaysSection />

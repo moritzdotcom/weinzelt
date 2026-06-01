@@ -245,7 +245,7 @@ export default function EventDashboard({ session }: { session: Session }) {
 
   return (
     <div className="px-6 py-16 bg-gray-50">
-      <BackendHeader title="Firmen & Gruppenanfragen" />
+      <BackendHeader title="Statistiken" />
 
       <div className="mt-6 flex items-center flex-col sm:flex-row justify-between gap-5">
         <EventSelector onChange={setSelectedEvent} />
