@@ -98,6 +98,9 @@ async function handlePUT(
     minimumSpend,
     internalNotes,
     seatingId,
+    billingAddress,
+    shippingAddress,
+    shippingSameAsBilling,
   } = req.body;
 
   const reservation = await prisma.reservation.update({
@@ -111,6 +114,9 @@ async function handlePUT(
       minimumSpend,
       internalNotes,
       seatingId,
+      billingAddress,
+      shippingAddress,
+      shippingSameAsBilling,
     },
     where: { id },
     include: {

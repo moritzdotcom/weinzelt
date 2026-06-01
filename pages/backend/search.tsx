@@ -36,6 +36,7 @@ import { ReservationPaymentStatus } from '@prisma/client';
 import { ReservationCancelDialog } from '@/components/reservation/cancelDialog';
 import { ChangeReservationDateDialog } from '@/components/reservation/changeEventDateDialog';
 import BackendHeader from '@/components/backend/header';
+import { ApiPutReservationResponse } from '../api/reservations/[reservationId]';
 
 export default function BackendSearchReservationPage({
   session,
@@ -134,7 +135,7 @@ export default function BackendSearchReservationPage({
     updatedReservation: ApiGetReservationsResponse[number],
   ) => {
     axios
-      .put<ApiGetReservationsResponse[number]>(
+      .put<ApiPutReservationResponse>(
         `/api/reservations/${updatedReservation.id}`,
         updatedReservation,
       )
