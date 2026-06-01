@@ -18,6 +18,7 @@ import { ApiGetReferralCodesResponse } from '../api/referralCodes';
 import { ApiPostReferralCodeToggleResponse } from '../api/referralCodes/[referralCodeId]/toggle';
 import CheckIcon from '@mui/icons-material/Check';
 import CopyAllIcon from '@mui/icons-material/CopyAll';
+import BackendHeader from '@/components/backend/header';
 
 export default function BackendEventsPage({ session }: { session: Session }) {
   const [referralCodes, setreferralCodes] =
@@ -27,12 +28,11 @@ export default function BackendEventsPage({ session }: { session: Session }) {
   const router = useRouter();
 
   const fetchCodes = async () => {
-    const res = await axios.get<ApiGetReferralCodesResponse>(
-      '/api/referralCodes'
-    );
+    const res =
+      await axios.get<ApiGetReferralCodesResponse>('/api/referralCodes');
     const sorted = res.data.sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
     setLoading(false);
     setreferralCodes(sorted);
@@ -56,17 +56,17 @@ export default function BackendEventsPage({ session }: { session: Session }) {
 
   return (
     <Box className="max-w-5xl mx-auto px-4 py-16">
-      <Box className="flex flex-col sm:flex-row gap-3 justify-between items-center mb-6">
-        <Typography variant="h4" className="text-center">
-          Referral Codes verwalten
-        </Typography>
-        <button
-          className="rounded-full bg-black text-white px-6 py-2 text-sm font-medium shadow-sm hover:bg-gray-800 transition"
-          onClick={() => setCreateDialogOpen(true)}
-        >
-          Neuen Code erstellen
-        </button>
-      </Box>
+      <BackendHeader
+        title="Referral Codes verwalten"
+        action={
+          <button
+            className="rounded-full bg-black text-white px-6 py-2 text-sm font-medium shadow-sm hover:bg-gray-800 transition"
+            onClick={() => setCreateDialogOpen(true)}
+          >
+            Neuen Code erstellen
+          </button>
+        }
+      />
       {loading && (
         <Grid container spacing={4}>
           <Grid size={{ xs: 12, sm: 6 }}>
@@ -113,7 +113,7 @@ function CodeCard({
     try {
       const { data } = await axios.post<ApiPostReferralCodeToggleResponse>(
         `/api/referralCodes/${code.id}/toggle`,
-        { valid: !code.valid }
+        { valid: !code.valid },
       );
       onUpdate(data);
     } catch (error) {

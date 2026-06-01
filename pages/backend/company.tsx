@@ -35,6 +35,7 @@ import EventSelector from '@/components/eventSelector';
 import AddressInput, {
   defaultAddress,
 } from '@/components/reservation/addressInput';
+import BackendHeader from '@/components/backend/header';
 
 export default function BackendCompanyPage({ session }: { session: Session }) {
   const router = useRouter();
@@ -130,10 +131,8 @@ export default function BackendCompanyPage({ session }: { session: Session }) {
   }, [selectedEvent?.id]);
 
   return (
-    <Box className="max-w-5xl mx-auto px-4 py-16 overflow-x-hidden">
-      <Typography variant="h4" gutterBottom>
-        Firmen & Gruppenanfragen
-      </Typography>
+    <Box className="max-w-5xl mx-auto px-4 py-8 sm:py-16 overflow-x-hidden">
+      <BackendHeader title="Firmen & Gruppenanfragen" />
 
       <div className="my-7 flex items-center flex-col sm:flex-row justify-between gap-5">
         <EventSelector onChange={setSelectedEvent} />

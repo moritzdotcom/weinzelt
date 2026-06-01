@@ -20,6 +20,7 @@ import axios from 'axios';
 import { Refresh } from '@mui/icons-material';
 import { calculateMetrics, Metrics } from '@/lib/dashboard';
 import EventSelector from '@/components/eventSelector';
+import BackendHeader from '@/components/backend/header';
 
 // ----- Typdefinitionen -----
 interface PieData {
@@ -244,9 +245,7 @@ export default function EventDashboard({ session }: { session: Session }) {
 
   return (
     <div className="px-6 py-16 bg-gray-50">
-      <Typography variant="h4" gutterBottom>
-        Dashboard
-      </Typography>
+      <BackendHeader title="Firmen & Gruppenanfragen" />
 
       <div className="mt-6 flex items-center flex-col sm:flex-row justify-between gap-5">
         <EventSelector onChange={setSelectedEvent} />

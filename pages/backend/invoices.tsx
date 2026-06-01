@@ -37,6 +37,7 @@ import { CreateInvoiceDialog } from '@/components/backend/createInvoiceDialog';
 import { centsToEUR, formatDate } from '@/lib/helpers';
 import { ReservationDetailsDialog } from '@/components/backend/reservationDetailDialog';
 import { translateState } from '@/lib/reservation';
+import BackendHeader from '@/components/backend/header';
 
 function paymentStatusColor(status: string) {
   switch (status) {
@@ -134,22 +135,10 @@ export default function InvoicesPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-8">
       <Stack spacing={4}>
-        <Box>
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            justifyContent="space-between"
-            alignItems={{ xs: 'stretch', md: 'flex-start' }}
-            spacing={2}
-          >
-            <Box>
-              <Typography variant="h4" fontWeight={700}>
-                Rechnungen
-              </Typography>
-              <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-                Rechnungen erstellen, versenden, suchen und als ZIP exportieren.
-              </Typography>
-            </Box>
-
+        <BackendHeader
+          title="Rechnungen"
+          subtitle="Rechnungen erstellen, versenden, suchen und als ZIP exportieren."
+          action={
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
               <Button
                 variant="outlined"
@@ -167,8 +156,8 @@ export default function InvoicesPage() {
                 Rechnung erstellen
               </Button>
             </Stack>
-          </Stack>
-        </Box>
+          }
+        />
 
         {error && <Alert severity="error">{error}</Alert>}
 

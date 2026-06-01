@@ -18,6 +18,7 @@ import ReservationCard from '@/components/reservation/card';
 import useElementHeight from '@/hooks/useElementHeight';
 import EventSelector from '@/components/eventSelector';
 import { ReservationPaymentStatus } from '@prisma/client';
+import BackendHeader from '@/components/backend/header';
 
 export default function BackendReservationsPage({
   session,
@@ -117,9 +118,7 @@ export default function BackendReservationsPage({
   return (
     <Box className="overflow-x-hidden overflow-y-auto h-screen">
       <Box className="max-w-5xl mx-auto px-4 mt-12">
-        <Box className="flex flex-col md:flex-row gap-3 justify-between items-center mb-6">
-          <Typography variant="h4">Reservierungen</Typography>
-        </Box>
+        <BackendHeader title="Reservierungen" />
 
         {/* Filters */}
         <div className="my-7 grid grid-cols-1 md:grid-cols-2 gap-3 items-stretch md:items-center">

@@ -14,10 +14,10 @@ import {
   Typography,
 } from '@mui/material';
 import axios from 'axios';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { ArrowBackRounded, SaveOutlined } from '@mui/icons-material';
+import { SaveOutlined } from '@mui/icons-material';
+import BackendHeader from '@/components/backend/header';
 
 type Fields = {
   subject: string;
@@ -143,24 +143,13 @@ export default function NewNewsletterPage() {
       spacing={3}
       sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f8f6f2', minHeight: '100vh' }}
     >
-      <Box>
-        <Link
-          href="/backend/newsletter"
-          className="inline-flex items-center gap-1 text-sm font-semibold text-gray-600 transition hover:text-black"
-        >
-          <ArrowBackRounded fontSize="small" />
-          Zurück
-        </Link>
-
-        <Typography variant="h4" className="mt-1 font-bold">
-          Newsletter erstellen
-        </Typography>
-
-        <Typography sx={{ mt: 1, color: 'text.secondary' }}>
-          Speichere zunächst einen Entwurf. Der Versand wird anschließend
-          separat auf der Detailseite gestartet.
-        </Typography>
-      </Box>
+      <BackendHeader
+        title="Newsletter erstellen"
+        subtitle="Speichere zunächst einen Entwurf. Der Versand wird anschließend
+          separat auf der Detailseite gestartet."
+        backHref="/backend/newsletter"
+        backLabel="Zurück"
+      />
 
       {globalError && <Alert severity="error">{globalError}</Alert>}
 

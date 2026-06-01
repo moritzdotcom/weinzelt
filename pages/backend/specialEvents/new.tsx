@@ -19,16 +19,12 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import {
-  AddPhotoAlternateRounded,
-  ArrowBackRounded,
-  SaveRounded,
-} from '@mui/icons-material';
+import { AddPhotoAlternateRounded, SaveRounded } from '@mui/icons-material';
 import { SpecialEventCard } from '@/components/specialEventCard';
 import type { PublicSpecialEvent } from '@/lib/specialEvents';
 import EventSelector from '@/components/eventSelector';
 import { ApiGetEventsResponse } from '@/pages/api/events';
-import Link from 'next/link';
+import BackendHeader from '@/components/backend/header';
 
 type FormState = {
   name: string;
@@ -208,23 +204,14 @@ export default function NewSpecialEventPage() {
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f8f6f2', minHeight: '100vh' }}>
-      <Link
-        href="/backend/specialEvents"
-        className="inline-flex items-center gap-1 text-sm font-semibold text-gray-600 transition hover:text-black"
-      >
-        <ArrowBackRounded fontSize="small" />
-        Zurück zu den WineEvents
-      </Link>
+      <BackendHeader
+        title="Neues WineEvent anlegen"
+        subtitle="Lege WineWalks, Tastings und weitere Erlebnisse für die Website an."
+        backHref="/backend/specialEvents"
+        backLabel="Zurück zu den WineEvents"
+      />
 
       <Box sx={{ maxWidth: 1440, mx: 'auto' }}>
-        <Typography variant="h4" fontWeight={700}>
-          Neues WineEvent anlegen
-        </Typography>
-
-        <Typography sx={{ mt: 1, color: 'text.secondary' }}>
-          Lege WineWalks, Tastings und weitere Erlebnisse für die Website an.
-        </Typography>
-
         {error && (
           <Alert severity="error" sx={{ mt: 3 }}>
             {error}

@@ -35,6 +35,7 @@ import {
 import { ReservationPaymentStatus } from '@prisma/client';
 import { ReservationCancelDialog } from '@/components/reservation/cancelDialog';
 import { ChangeReservationDateDialog } from '@/components/reservation/changeEventDateDialog';
+import BackendHeader from '@/components/backend/header';
 
 export default function BackendSearchReservationPage({
   session,
@@ -189,18 +190,15 @@ export default function BackendSearchReservationPage({
 
   return (
     <Box className="mx-auto px-4 py-16">
-      <Box className="grid grid-cols-1 sm:grid-cols-3 gap-3 justify-between items-center mb-12">
-        <Typography
-          variant="h4"
-          className="text-center"
-          marginBottom={{ xs: 2, sm: 0 }}
-        >
-          Reservierung suchen
-        </Typography>
-        <div />
+      <BackendHeader
+        title="Reservierung suchen"
+        action={
+          <Box sx={{ flex: 1 }}>
+            <EventSelector onChange={setSelectedEvent} sx={{ minWidth: 300 }} />
+          </Box>
+        }
+      />
 
-        <EventSelector onChange={setSelectedEvent} />
-      </Box>
       {loading ? (
         <Typography variant="body1" className="text-center">
           Lade Reservierungen...

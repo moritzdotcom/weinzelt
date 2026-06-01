@@ -1,13 +1,15 @@
 import { ApiGetEventsResponse } from '@/pages/api/events';
-import { TextField, MenuItem } from '@mui/material';
+import { TextField, MenuItem, SxProps } from '@mui/material';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
 export default function EventSelector({
   onChange,
+  sx,
 }: {
   onChange: (event: ApiGetEventsResponse[number]) => void;
+  sx?: SxProps;
 }) {
   const router = useRouter();
   const [events, setEvents] = useState<ApiGetEventsResponse>([]);
@@ -44,6 +46,7 @@ export default function EventSelector({
       fullWidth
       value={selectedEventId || ''}
       onChange={(e) => setSelectedEventId(e.target.value)}
+      sx={sx}
     >
       {events.map((event) => (
         <MenuItem key={event.id} value={event.id}>

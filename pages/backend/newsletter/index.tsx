@@ -1,10 +1,10 @@
+import BackendHeader from '@/components/backend/header';
 import AddIcon from '@mui/icons-material/Add';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import DraftsOutlinedIcon from '@mui/icons-material/DraftsOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import {
   Box,
-  Button,
   Card,
   CardContent,
   Chip,
@@ -91,32 +91,19 @@ export default function NewsletterOverviewPage() {
 
   return (
     <Stack spacing={3} className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-      <Box className="flex flex-col gap-5 border-b border-black/10 pb-7 sm:flex-row sm:items-end sm:justify-between">
-        <Box>
-          <Typography
-            variant="overline"
-            className="font-semibold tracking-[0.2em] text-gray-500"
+      <BackendHeader
+        title="Newsletter"
+        subtitle="Entwürfe erstellen, Versand prüfen und Anmeldungen verwalten."
+        action={
+          <Link
+            href="/backend/newsletter/new"
+            className="inline-flex items-center justify-center gap-1 rounded-full bg-black px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800"
           >
-            Weinzelt Backend
-          </Typography>
-
-          <Typography variant="h4" className="mt-1 font-bold">
-            Newsletter
-          </Typography>
-
-          <Typography className="mt-2 max-w-2xl text-gray-500">
-            Entwürfe erstellen, Versand prüfen und Anmeldungen verwalten.
-          </Typography>
-        </Box>
-
-        <Link
-          href="/backend/newsletter/new"
-          className="inline-flex items-center justify-center gap-1 rounded-full bg-black px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800"
-        >
-          <AddIcon fontSize="small" />
-          Newsletter erstellen
-        </Link>
-      </Box>
+            <AddIcon fontSize="small" />
+            Newsletter erstellen
+          </Link>
+        }
+      />
 
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
         <Card sx={{ flex: 1, borderRadius: 3 }}>

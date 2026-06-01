@@ -1,4 +1,3 @@
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AdsClickOutlinedIcon from '@mui/icons-material/AdsClickOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
@@ -17,10 +16,10 @@ import {
   Typography,
 } from '@mui/material';
 import axios from 'axios';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowBackRounded, MarkEmailReadOutlined } from '@mui/icons-material';
+import { MarkEmailReadOutlined } from '@mui/icons-material';
+import BackendHeader from '@/components/backend/header';
 
 type Recipient = {
   id: string;
@@ -194,31 +193,13 @@ export default function NewsletterDetailPage() {
 
   return (
     <Stack spacing={3} className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-      <Box>
-        <Link
-          href="/backend/newsletter"
-          className="inline-flex items-center gap-1 text-sm font-semibold text-gray-600 transition hover:text-black"
-        >
-          <ArrowBackRounded fontSize="small" />
-          Zurück
-        </Link>
-
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={2}
-          justifyContent="space-between"
-          alignItems={{ xs: 'stretch', sm: 'center' }}
-        >
-          <Box>
-            <Typography variant="h4" className="mt-1 font-bold">
-              {newsletter.subject}
-            </Typography>
-            <Typography sx={{ mt: 1, color: 'text.secondary' }}>
-              Erstellt am {formatDate(newsletter.createdAt)}
-            </Typography>
-          </Box>
-
-          {newsletter.status !== 'SENT' && (
+      <BackendHeader
+        title={newsletter.subject}
+        subtitle={`Erstellt am ${formatDate(newsletter.createdAt)}`}
+        backHref="/backend/newsletter"
+        backLabel="Zurück"
+        action={
+          newsletter.status !== 'SENT' ? (
             <Button
               variant="contained"
               startIcon={
@@ -235,9 +216,9 @@ export default function NewsletterDetailPage() {
                 ? 'Versand starten'
                 : 'Versand fortsetzen'}
             </Button>
-          )}
-        </Stack>
-      </Box>
+          ) : null
+        }
+      />
 
       {error && <Alert severity="error">{error}</Alert>}
 

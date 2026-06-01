@@ -19,6 +19,7 @@ import {
   Collapse,
 } from '@mui/material';
 import { Delete, Star, StarBorder } from '@mui/icons-material';
+import BackendHeader from '@/components/backend/header';
 
 type AlbumOption = {
   id: string;
@@ -158,7 +159,7 @@ export default function AdminImpressionsPage() {
         const next = [...prev, { ...album, coverUrl: null, photoCount: 0 }];
         // optional sortieren: neuestes Jahr zuerst
         return next.sort(
-          (a, b) => b.year - a.year || a.day.localeCompare(b.day)
+          (a, b) => b.year - a.year || a.day.localeCompare(b.day),
         );
       });
       setSelectedAlbumId(album.id);
@@ -207,7 +208,7 @@ export default function AdminImpressionsPage() {
       setUploadMessage(`${fileArray.length} Bild(er) erfolgreich hochgeladen.`);
       setFiles(null);
       const input = document.getElementById(
-        'impressions-file-input'
+        'impressions-file-input',
       ) as HTMLInputElement | null;
       if (input) input.value = '';
 
@@ -240,8 +241,8 @@ export default function AdminImpressionsPage() {
         prev.map((a) =>
           a.id === selectedAlbumId
             ? { ...a, coverPhotoId: photo.id, coverUrl: photo.url }
-            : a
-        )
+            : a,
+        ),
       );
     } catch (err: any) {
       console.error(err);
@@ -271,8 +272,8 @@ export default function AdminImpressionsPage() {
                 coverPhotoId:
                   a.coverPhotoId === photo.id ? null : a.coverPhotoId,
               }
-            : a
-        )
+            : a,
+        ),
       );
     } catch (err: any) {
       console.error(err);
@@ -289,6 +290,10 @@ export default function AdminImpressionsPage() {
         px: 2,
       }}
     >
+      <BackendHeader
+        title="Alben und Fotos"
+        subtitle="Alben erstellen und Fotos hochladen"
+      />
       {/* Abschnitt: Album erstellen */}
       <Box
         component="section"

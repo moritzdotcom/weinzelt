@@ -11,10 +11,13 @@ import {
   TextField,
   Chip,
   Skeleton,
+  Stack,
 } from '@mui/material';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { Session } from '@/hooks/useSession';
+import { ArrowBackRounded } from '@mui/icons-material';
+import BackendHeader from '@/components/backend/header';
 
 interface EventDate {
   date: string;
@@ -40,7 +43,7 @@ export default function BackendEventsPage({ session }: { session: Session }) {
     const res = await axios.get('/api/events');
     const sorted = res.data.sort(
       (a: Event, b: Event) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
     setLoading(false);
     setEvents(sorted);
@@ -73,17 +76,17 @@ export default function BackendEventsPage({ session }: { session: Session }) {
 
   return (
     <Box className="max-w-5xl mx-auto px-4 py-16">
-      <Box className="flex flex-col sm:flex-row gap-3 justify-between items-center mb-6">
-        <Typography variant="h4" className="text-center">
-          Veranstaltungen verwalten
-        </Typography>
-        <button
-          className="rounded-full bg-black text-white px-6 py-2 text-sm font-medium shadow-sm hover:bg-gray-800 transition"
-          onClick={() => setCreateDialogOpen(true)}
-        >
-          Neue Veranstaltung erstellen
-        </button>
-      </Box>
+      <BackendHeader
+        title="Veranstaltungen verwalten"
+        action={
+          <button
+            className="rounded-full bg-black px-6 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-gray-800"
+            onClick={() => setCreateDialogOpen(true)}
+          >
+            Neue Veranstaltung erstellen
+          </button>
+        }
+      />
       {loading && (
         <Grid container spacing={4}>
           <Grid size={{ xs: 12, sm: 6 }}>

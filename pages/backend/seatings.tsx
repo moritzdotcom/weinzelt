@@ -33,16 +33,12 @@ import { ApiPutSeatingResponse } from '../api/seatings/[seatingId]';
 import ConfirmDialog from '@/components/confirmDialog';
 import { ApiDeleteEventDateResponse } from '../api/eventDates/[eventDateId]';
 import EventSelector from '@/components/eventSelector';
-import {
-  ConfirmationNumberOutlined,
-  EventSeatOutlined,
-  LocalBarOutlined,
-} from '@mui/icons-material';
+import { ConfirmationNumberOutlined } from '@mui/icons-material';
 import { ApiPutExternalTicketConfigResponse } from '../api/seatings/[seatingId]/externalTicketConfig';
+import BackendHeader from '@/components/backend/header';
 
 type EventDate = ApiGetEventDatesResponse[number];
 type Seating = EventDate['seatings'][number];
-type ExternalTicketConfig = Seating['externalTicketConfig'];
 
 export default function BackendSeatingsPage({ session }: { session: Session }) {
   const router = useRouter();
@@ -188,9 +184,7 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
 
   return (
     <Box className="max-w-5xl mx-auto px-4 py-16">
-      <Typography variant="h4" gutterBottom>
-        Seatings & Timeslots verwalten
-      </Typography>
+      <BackendHeader title="Seatings & Timeslots verwalten" />
 
       <div className="my-7 grid grid-cols-1 sm:grid-cols-3 gap-2">
         <EventSelector onChange={setSelectedEvent} />

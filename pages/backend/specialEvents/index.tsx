@@ -35,7 +35,6 @@ import {
   Typography,
 } from '@mui/material';
 import EventSelector from '@/components/eventSelector';
-import CopyButton from '@/components/copyButton';
 import { compareEventDates } from '@/lib/eventDates';
 import type { Session } from '@/hooks/useSession';
 import type { ApiGetEventsResponse } from '../../api/events';
@@ -46,6 +45,7 @@ import {
   formatSpecialEventPrice,
 } from '@/lib/specialEvents';
 import { SpecialEventCard } from '@/components/specialEventCard';
+import BackendHeader from '@/components/backend/header';
 
 function getBookingTypeLabel(bookingType: PublicSpecialEvent['bookingType']) {
   switch (bookingType) {
@@ -140,33 +140,20 @@ export default function BackendSpecialEventsPage({
 
   return (
     <Box className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-      <Box className="flex flex-col gap-5 border-b border-black/10 pb-7 sm:flex-row sm:items-end sm:justify-between">
-        <Box>
-          <Typography
-            variant="overline"
-            className="font-semibold tracking-[0.2em] text-gray-500"
+      <BackendHeader
+        title="WineEvents verwalten"
+        subtitle="Verwalte WineWalks, Tastings und weitere Veranstaltungen inklusive
+            Buchungslogik, Bildern und Teilnehmerzahlen."
+        action={
+          <Link
+            href="/backend/specialEvents/new"
+            className="inline-flex items-center justify-center gap-1 rounded-full bg-black px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800"
           >
-            Weinzelt Backend
-          </Typography>
-
-          <Typography variant="h4" className="mt-1 font-bold">
-            WineEvents verwalten
-          </Typography>
-
-          <Typography className="mt-2 max-w-2xl text-gray-500">
-            Verwalte WineWalks, Tastings und weitere Veranstaltungen inklusive
-            Buchungslogik, Bildern und Teilnehmerzahlen.
-          </Typography>
-        </Box>
-
-        <Link
-          href="/backend/specialEvents/new"
-          className="inline-flex items-center justify-center gap-1 rounded-full bg-black px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800"
-        >
-          <AddRounded fontSize="small" />
-          Neues WineEvent
-        </Link>
-      </Box>
+            <AddRounded fontSize="small" />
+            Neues WineEvent
+          </Link>
+        }
+      />
 
       <Box className="my-7 max-w-md">
         <EventSelector onChange={setSelectedEvent} />
