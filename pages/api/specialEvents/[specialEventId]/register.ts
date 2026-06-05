@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prismadb';
+import { createNewsletterSubscription } from '@/lib/newsletter';
 
 class RegistrationError extends Error {
   constructor(
@@ -117,6 +118,10 @@ export default async function handler(
       specialEventId,
       ...payload,
     });
+
+    if (payload.newsletterConfirmation) {
+      await createNewsletterSubscription(payload.email, payload.name);
+    }
 
     return res.status(201).json({
       id: registration.id,

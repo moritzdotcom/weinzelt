@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { CheckCircleRounded, LocalActivityRounded } from '@mui/icons-material';
 import type { PublicSpecialEvent } from '@/lib/specialEvents';
+import NewsletterConfirmation from './reservation/newsletterConfirmation';
 
 export function SpecialEventRegistrationForm({
   event,
@@ -26,6 +27,7 @@ export function SpecialEventRegistrationForm({
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [personCount, setPersonCount] = useState(1);
+  const [newsletterConfirmation, setNewsletterConfirmation] = useState(false);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +64,7 @@ export function SpecialEventRegistrationForm({
         email,
         phone: phone || undefined,
         personCount,
+        newsletterConfirmation,
       });
 
       setSuccess(true);
@@ -163,6 +166,8 @@ export function SpecialEventRegistrationForm({
             </MenuItem>
           ))}
         </TextField>
+
+        <NewsletterConfirmation onChecked={setNewsletterConfirmation} />
 
         <Button
           type="submit"

@@ -9,7 +9,7 @@ export async function createNewsletterSubscription(
   try {
     const { id } = await prisma.newsletterSubscription.create({
       data: {
-        email,
+        email: email.toLowerCase(),
         name: name?.trim() || null,
       },
     });

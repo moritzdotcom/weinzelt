@@ -157,12 +157,13 @@ export default function SpecialEventPage({ id }: { id: string }) {
 
               <Typography
                 component="h1"
-                className="mt-4 max-w-4xl font-cocogoose text-4xl leading-tight text-white sm:text-5xl md:text-6xl"
+                sx={{ mt: 1, fontSize: { xs: 20, sm: 24, md: 30 } }}
+                className="max-w-4xl font-cocogoose leading-tight text-white"
               >
                 {event.name}
               </Typography>
 
-              <div className="mt-5 flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/35 px-3 py-1.5 text-sm font-semibold text-white backdrop-blur">
                   <CalendarMonthRounded sx={{ fontSize: 18 }} />
                   {formatDate(event.eventDate)}
