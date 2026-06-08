@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prismadb';
 import { createNewsletterSubscription } from '@/lib/newsletter';
+import sendSpecialEventConfirmationMail from '@/lib/mailer/specialEventConfirmationMail';
 
 class RegistrationError extends Error {
   constructor(
@@ -79,6 +80,16 @@ async function createRegistrationWithRetry(params: {
             },
             select: {
               id: true,
+              email: true,
+              name: true,
+              personCount: true,
+              specialEvent: {
+                select: {
+                  eventDate: true,
+                  startTime: true,
+                  name: true,
+                },
+              },
             },
           });
         },
@@ -122,6 +133,15 @@ export default async function handler(
     if (payload.newsletterConfirmation) {
       await createNewsletterSubscription(payload.email, payload.name);
     }
+
+    await sendSpecialEventConfirmationMail(
+      registration.email,
+      registration.specialEvent.name,
+      registration.name,
+      registration.personCount,
+      registration.specialEvent.eventDate.date,
+      registration.specialEvent.startTime,
+    );
 
     return res.status(201).json({
       id: registration.id,
