@@ -296,7 +296,7 @@ function AdminSpecialEventCard({
                 label={event.registeredPersonCount}
                 color="error"
                 variant="outlined"
-                sx={{ fontWeight: 700, mx: 0.5 }}
+                sx={{ fontWeight: 700, pl: 0.5 }}
               />
             )}
           </Box>

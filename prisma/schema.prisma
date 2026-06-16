@@ -204,6 +204,7 @@ enum SpecialEventBookingType {
 }
 
 enum EventRegistrationStatus {
+  PENDING_PAYMENT
   REGISTERED
   CANCELED
 }
@@ -260,6 +261,13 @@ model EventRegistration {
   createdAt  DateTime                @default(now())
   canceledAt DateTime?
 
+  // Payment
+  priceCentsTotal         Int?
+  stripeCheckoutSessionId String?   @unique
+  stripePaymentIntentId   String?
+  paidAt                  DateTime?
+  paymentExpiresAt        DateTime?
+
   reminderSent          DateTime?
   reminderLastAttemptAt DateTime?
   reminderAttemptCount  Int       @default(0)
@@ -268,6 +276,7 @@ model EventRegistration {
   @@unique([specialEventId, email])
   @@index([specialEventId, status])
   @@index([specialEventId, reminderSent])
+  @@index([stripeCheckoutSessionId])
 }
 
 model ReservationReminder {

@@ -86,6 +86,8 @@ async function handleGET(
           status: 'REGISTERED',
         },
         select: {
+          status: true,
+          paymentExpiresAt: true,
           personCount: true,
         },
       },
@@ -103,8 +105,23 @@ async function handleGET(
 
   return res.status(200).json(
     events.map((event) => {
+      const now = new Date();
+
       const registeredPersonCount = event.registrations.reduce(
-        (sum, registration) => sum + registration.personCount,
+        (sum, registration) => {
+          const isConfirmed = registration.status === 'REGISTERED';
+
+          const isActivePendingPayment =
+            registration.status === 'PENDING_PAYMENT' &&
+            registration.paymentExpiresAt &&
+            registration.paymentExpiresAt > now;
+
+          if (!isConfirmed && !isActivePendingPayment) {
+            return sum;
+          }
+
+          return sum + registration.personCount;
+        },
         0,
       );
 

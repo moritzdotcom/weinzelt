@@ -5,6 +5,7 @@ import sendReservationMail from '@/lib/mailer/reservationMail';
 import sendReservationCancelMail from '@/lib/mailer/reservationCancelMail';
 import { getShippingAddressFromReservation } from '@/lib/reservation';
 import { createAndSendReservationInvoice } from '@/lib/reservationInvoice';
+import sendSpecialEventConfirmationMail from '@/lib/mailer/specialEventConfirmationMail';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-12-15.clover',
@@ -14,28 +15,51 @@ export const config = {
   api: { bodyParser: false },
 };
 
+type StripeFlowType = 'RESERVATION' | 'SPECIAL_EVENT';
+
 async function buffer(readable: any) {
   const chunks: Buffer[] = [];
-  for await (const chunk of readable)
+
+  for await (const chunk of readable) {
     chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+  }
+
   return Buffer.concat(chunks);
 }
 
-function getReservationIdFromSession(session: Stripe.Checkout.Session) {
-  return session.metadata?.reservationId ?? null;
+function getPaymentIntentIdFromSession(session: Stripe.Checkout.Session) {
+  return typeof session.payment_intent === 'string'
+    ? session.payment_intent
+    : null;
 }
 
-function getReservationIdFromPaymentIntent(pi: Stripe.PaymentIntent) {
-  // Wenn du bei create checkout session auch payment_intent_data.metadata setzt,
-  // kannst du es hier direkt ziehen. Falls nicht, kannst du über DB Lookup per stripePaymentIntentId gehen.
-  return (pi.metadata as any)?.reservationId ?? null;
+function getFlowTypeFromMetadata(
+  metadata?: Stripe.Metadata | null,
+): StripeFlowType | null {
+  const type = metadata?.model;
+
+  if (type === 'RESERVATION') return 'RESERVATION';
+  if (type === 'SPECIAL_EVENT') {
+    return 'SPECIAL_EVENT';
+  }
+
+  return null;
 }
 
-async function markPaidAndSendMail(
+function getReservationIdFromMetadata(metadata?: Stripe.Metadata | null) {
+  return metadata?.reservationId ?? null;
+}
+
+function getSpecialEventRegistrationIdFromMetadata(
+  metadata?: Stripe.Metadata | null,
+) {
+  return metadata?.registrationId ?? null;
+}
+
+async function markReservationPaidAndSendMail(
   reservationId: string,
   stripePaymentIntentId?: string | null,
 ) {
-  // Reservation + benötigte Daten fürs Mailing holen
   const reservation = await prisma.reservation.findUnique({
     where: { id: reservationId },
     select: {
@@ -45,7 +69,14 @@ async function markPaidAndSendMail(
       name: true,
       people: true,
       seating: {
-        select: { timeslot: true, eventDate: { select: { date: true } } },
+        select: {
+          timeslot: true,
+          eventDate: {
+            select: {
+              date: true,
+            },
+          },
+        },
       },
       shippingAddress: true,
       billingAddress: true,
@@ -54,15 +85,15 @@ async function markPaidAndSendMail(
   });
 
   if (!reservation) {
-    console.warn(
-      '[stripe-webhook] Reservation not found for markPaid:',
+    console.warn('[stripe-webhook] Reservation not found for markPaid', {
       reservationId,
-    );
+    });
     return;
   }
 
-  // Idempotenz: nur wenn nicht schon PAID
-  if (reservation.paymentStatus === 'PAID') return;
+  if (reservation.paymentStatus === 'PAID') {
+    return;
+  }
 
   await prisma.reservation.update({
     where: { id: reservationId },
@@ -76,7 +107,6 @@ async function markPaidAndSendMail(
 
   const shippingAddress = getShippingAddressFromReservation(reservation);
 
-  // Mail nur einmal (weil wir nur beim Statuswechsel senden)
   await sendReservationMail(
     reservation.email,
     reservation.name,
@@ -89,19 +119,560 @@ async function markPaidAndSendMail(
   await createAndSendReservationInvoice(reservationId);
 }
 
+async function markSpecialEventRegistrationPaidAndSendMail(params: {
+  registrationId: string;
+  stripeCheckoutSessionId?: string | null;
+  stripePaymentIntentId?: string | null;
+}) {
+  const existingRegistration = await prisma.eventRegistration.findUnique({
+    where: {
+      id: params.registrationId,
+    },
+    select: {
+      id: true,
+      status: true,
+      paidAt: true,
+    },
+  });
+
+  if (!existingRegistration) {
+    console.warn('[stripe-webhook] SpecialEvent registration not found', {
+      registrationId: params.registrationId,
+    });
+    return;
+  }
+
+  if (existingRegistration.status === 'REGISTERED') {
+    return;
+  }
+
+  const registration = await prisma.eventRegistration.update({
+    where: {
+      id: params.registrationId,
+    },
+    data: {
+      status: 'REGISTERED',
+      paidAt: new Date(),
+      stripeCheckoutSessionId: params.stripeCheckoutSessionId ?? undefined,
+      stripePaymentIntentId: params.stripePaymentIntentId ?? undefined,
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      personCount: true,
+      specialEvent: {
+        select: {
+          name: true,
+          startTime: true,
+          eventDate: true,
+        },
+      },
+    },
+  });
+
+  await sendSpecialEventConfirmationMail(
+    registration.email,
+    registration.specialEvent.name,
+    registration.name,
+    registration.personCount,
+    registration.specialEvent.eventDate.date,
+    registration.specialEvent.startTime,
+  );
+}
+
+async function handleReservationCheckoutCompleted(
+  session: Stripe.Checkout.Session,
+) {
+  const reservationId = getReservationIdFromMetadata(session.metadata);
+
+  if (!reservationId) {
+    console.warn('[stripe-webhook] Missing reservationId in session metadata', {
+      sessionId: session.id,
+    });
+    return;
+  }
+
+  const amountTotal = session.amount_total ?? null;
+
+  const reservation = await prisma.reservation.findUnique({
+    where: {
+      id: reservationId,
+    },
+    select: {
+      id: true,
+      paymentStatus: true,
+      minimumSpend: true,
+    },
+  });
+
+  if (!reservation) {
+    console.warn('[stripe-webhook] Reservation not found', {
+      reservationId,
+      sessionId: session.id,
+    });
+    return;
+  }
+
+  const expectedTotalCents = reservation.minimumSpend * 100;
+
+  if (amountTotal !== null && amountTotal !== expectedTotalCents) {
+    console.warn('[stripe-webhook] Reservation amount mismatch', {
+      amountTotal,
+      expected: expectedTotalCents,
+      reservationId,
+      sessionId: session.id,
+    });
+  }
+
+  const paymentIntentId = getPaymentIntentIdFromSession(session);
+  const paymentStatus = session.payment_status;
+
+  await prisma.reservation.update({
+    where: {
+      id: reservationId,
+    },
+    data: {
+      stripeCheckoutSessionId: session.id,
+      stripePaymentIntentId: paymentIntentId,
+      paymentStatus:
+        paymentStatus === 'paid' || paymentStatus === 'no_payment_required'
+          ? 'PAID'
+          : 'PENDING_PAYMENT',
+    },
+  });
+
+  if (paymentStatus === 'paid' || paymentStatus === 'no_payment_required') {
+    await markReservationPaidAndSendMail(reservationId, paymentIntentId);
+  }
+}
+
+async function handleSpecialEventCheckoutCompleted(
+  session: Stripe.Checkout.Session,
+) {
+  const registrationId = getSpecialEventRegistrationIdFromMetadata(
+    session.metadata,
+  );
+
+  if (!registrationId) {
+    console.warn(
+      '[stripe-webhook] Missing registrationId in SpecialEvent session metadata',
+      {
+        sessionId: session.id,
+      },
+    );
+    return;
+  }
+
+  const paymentIntentId = getPaymentIntentIdFromSession(session);
+  const paymentStatus = session.payment_status;
+
+  await prisma.eventRegistration.update({
+    where: {
+      id: registrationId,
+    },
+    data: {
+      stripeCheckoutSessionId: session.id,
+      stripePaymentIntentId: paymentIntentId,
+      ...(paymentStatus === 'paid' || paymentStatus === 'no_payment_required'
+        ? {}
+        : { status: 'PENDING_PAYMENT' as const }),
+    },
+  });
+
+  if (paymentStatus === 'paid' || paymentStatus === 'no_payment_required') {
+    await markSpecialEventRegistrationPaidAndSendMail({
+      registrationId,
+      stripeCheckoutSessionId: session.id,
+      stripePaymentIntentId: paymentIntentId,
+    });
+  }
+}
+
+async function handleReservationAsyncPaymentSucceeded(
+  session: Stripe.Checkout.Session,
+) {
+  const reservationId = getReservationIdFromMetadata(session.metadata);
+
+  if (!reservationId) {
+    console.warn(
+      '[stripe-webhook] Missing reservationId in async_payment_succeeded',
+      {
+        sessionId: session.id,
+      },
+    );
+    return;
+  }
+
+  const paymentIntentId = getPaymentIntentIdFromSession(session);
+
+  await prisma.reservation.update({
+    where: {
+      id: reservationId,
+    },
+    data: {
+      stripeCheckoutSessionId: session.id,
+      stripePaymentIntentId: paymentIntentId,
+    },
+  });
+
+  await markReservationPaidAndSendMail(reservationId, paymentIntentId);
+}
+
+async function handleSpecialEventAsyncPaymentSucceeded(
+  session: Stripe.Checkout.Session,
+) {
+  const registrationId = getSpecialEventRegistrationIdFromMetadata(
+    session.metadata,
+  );
+
+  if (!registrationId) {
+    console.warn(
+      '[stripe-webhook] Missing registrationId in SpecialEvent async_payment_succeeded',
+      {
+        sessionId: session.id,
+      },
+    );
+    return;
+  }
+
+  await markSpecialEventRegistrationPaidAndSendMail({
+    registrationId,
+    stripeCheckoutSessionId: session.id,
+    stripePaymentIntentId: getPaymentIntentIdFromSession(session),
+  });
+}
+
+async function handleReservationAsyncPaymentFailed(
+  session: Stripe.Checkout.Session,
+) {
+  const reservationId = getReservationIdFromMetadata(session.metadata);
+
+  if (!reservationId) {
+    console.warn(
+      '[stripe-webhook] Missing reservationId in async_payment_failed',
+      {
+        sessionId: session.id,
+      },
+    );
+    return;
+  }
+
+  const reservation = await prisma.reservation.update({
+    where: {
+      id: reservationId,
+    },
+    data: {
+      paymentStatus: 'CANCELED',
+      stripeCheckoutSessionId: session.id,
+      stripePaymentIntentId: getPaymentIntentIdFromSession(session),
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      people: true,
+      seating: {
+        select: {
+          timeslot: true,
+          eventDate: {
+            select: {
+              date: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  await sendReservationCancelMail(
+    reservation.email,
+    reservation.name,
+    reservation.people,
+    reservation.seating.eventDate.date,
+    reservation.seating.timeslot,
+    'Zahlung fehlgeschlagen',
+  );
+}
+
+async function handleSpecialEventAsyncPaymentFailed(
+  session: Stripe.Checkout.Session,
+) {
+  const registrationId = getSpecialEventRegistrationIdFromMetadata(
+    session.metadata,
+  );
+
+  if (!registrationId) {
+    console.warn(
+      '[stripe-webhook] Missing registrationId in SpecialEvent async_payment_failed',
+      {
+        sessionId: session.id,
+      },
+    );
+    return;
+  }
+
+  await prisma.eventRegistration.update({
+    where: {
+      id: registrationId,
+    },
+    data: {
+      status: 'CANCELED',
+      canceledAt: new Date(),
+      stripeCheckoutSessionId: session.id,
+      stripePaymentIntentId: getPaymentIntentIdFromSession(session),
+    },
+  });
+}
+
+async function handleCheckoutSessionCompleted(
+  session: Stripe.Checkout.Session,
+) {
+  const flowType = getFlowTypeFromMetadata(session.metadata);
+
+  if (flowType === 'SPECIAL_EVENT') {
+    await handleSpecialEventCheckoutCompleted(session);
+    return;
+  }
+
+  if (flowType === 'RESERVATION' || session.metadata?.reservationId) {
+    await handleReservationCheckoutCompleted(session);
+    return;
+  }
+
+  console.info('[stripe-webhook] Ignored checkout.session.completed', {
+    sessionId: session.id,
+    metadata: session.metadata,
+  });
+}
+
+async function handleCheckoutSessionAsyncPaymentSucceeded(
+  session: Stripe.Checkout.Session,
+) {
+  const flowType = getFlowTypeFromMetadata(session.metadata);
+
+  if (flowType === 'SPECIAL_EVENT') {
+    await handleSpecialEventAsyncPaymentSucceeded(session);
+    return;
+  }
+
+  if (flowType === 'RESERVATION' || session.metadata?.reservationId) {
+    await handleReservationAsyncPaymentSucceeded(session);
+    return;
+  }
+
+  console.info('[stripe-webhook] Ignored async_payment_succeeded', {
+    sessionId: session.id,
+    metadata: session.metadata,
+  });
+}
+
+async function handleCheckoutSessionAsyncPaymentFailed(
+  session: Stripe.Checkout.Session,
+) {
+  const flowType = getFlowTypeFromMetadata(session.metadata);
+
+  if (flowType === 'SPECIAL_EVENT') {
+    await handleSpecialEventAsyncPaymentFailed(session);
+    return;
+  }
+
+  if (flowType === 'RESERVATION' || session.metadata?.reservationId) {
+    await handleReservationAsyncPaymentFailed(session);
+    return;
+  }
+
+  console.info('[stripe-webhook] Ignored async_payment_failed', {
+    sessionId: session.id,
+    metadata: session.metadata,
+  });
+}
+
+async function handlePaymentIntentSucceeded(pi: Stripe.PaymentIntent) {
+  const flowType = getFlowTypeFromMetadata(pi.metadata);
+
+  if (flowType === 'SPECIAL_EVENT') {
+    const registrationId = getSpecialEventRegistrationIdFromMetadata(
+      pi.metadata,
+    );
+
+    if (!registrationId) {
+      console.warn(
+        '[stripe-webhook] Missing registrationId in SpecialEvent PaymentIntent metadata',
+        {
+          paymentIntentId: pi.id,
+        },
+      );
+      return;
+    }
+
+    await markSpecialEventRegistrationPaidAndSendMail({
+      registrationId,
+      stripePaymentIntentId: pi.id,
+    });
+
+    return;
+  }
+
+  if (flowType === 'RESERVATION') {
+    const reservationId = getReservationIdFromMetadata(pi.metadata);
+
+    if (!reservationId) {
+      console.warn(
+        '[stripe-webhook] Missing reservationId in Reservation PaymentIntent metadata',
+        {
+          paymentIntentId: pi.id,
+        },
+      );
+      return;
+    }
+
+    await markReservationPaidAndSendMail(reservationId, pi.id);
+    return;
+  }
+
+  const reservation = await prisma.reservation.findFirst({
+    where: {
+      stripePaymentIntentId: pi.id,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (reservation) {
+    await markReservationPaidAndSendMail(reservation.id, pi.id);
+    return;
+  }
+
+  const registration = await prisma.eventRegistration.findFirst({
+    where: {
+      stripePaymentIntentId: pi.id,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (registration) {
+    await markSpecialEventRegistrationPaidAndSendMail({
+      registrationId: registration.id,
+      stripePaymentIntentId: pi.id,
+    });
+    return;
+  }
+
+  console.info('[stripe-webhook] Ignored payment_intent.succeeded', {
+    paymentIntentId: pi.id,
+    metadata: pi.metadata,
+  });
+}
+
+async function handleChargeRefunded(charge: Stripe.Charge) {
+  const paymentIntentId =
+    typeof charge.payment_intent === 'string' ? charge.payment_intent : null;
+
+  if (!paymentIntentId) {
+    console.warn('[stripe-webhook] charge.refunded without payment_intent', {
+      chargeId: charge.id,
+    });
+    return;
+  }
+
+  const reservation = await prisma.reservation.findFirst({
+    where: {
+      stripePaymentIntentId: paymentIntentId,
+    },
+    select: {
+      id: true,
+      paymentStatus: true,
+      email: true,
+      name: true,
+      people: true,
+      seating: {
+        select: {
+          timeslot: true,
+          eventDate: {
+            select: {
+              date: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (reservation) {
+    await prisma.reservation.update({
+      where: {
+        id: reservation.id,
+      },
+      data: {
+        paymentStatus: 'CANCELED',
+      },
+    });
+
+    await sendReservationCancelMail(
+      reservation.email,
+      reservation.name,
+      reservation.people,
+      reservation.seating.eventDate.date,
+      reservation.seating.timeslot,
+      'Rückerstattung durchgeführt',
+    );
+
+    return;
+  }
+
+  const registration = await prisma.eventRegistration.findFirst({
+    where: {
+      stripePaymentIntentId: paymentIntentId,
+    },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+
+  if (registration) {
+    await prisma.eventRegistration.update({
+      where: {
+        id: registration.id,
+      },
+      data: {
+        status: 'CANCELED',
+        canceledAt: new Date(),
+      },
+    });
+
+    return;
+  }
+
+  console.info('[stripe-webhook] Ignored charge.refunded', {
+    chargeId: charge.id,
+    paymentIntentId,
+  });
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+  if (req.method !== 'POST') {
+    return res.status(405).send('Method Not Allowed');
+  }
 
   const sig = req.headers['stripe-signature'];
-  if (!sig) return res.status(400).send('Missing stripe-signature');
+
+  if (!sig) {
+    return res.status(400).send('Missing stripe-signature');
+  }
 
   let event: Stripe.Event;
 
   try {
     const buf = await buffer(req);
+
     event = stripe.webhooks.constructEvent(
       buf,
       sig,
@@ -114,265 +685,40 @@ export default async function handler(
 
   try {
     switch (event.type) {
-      /**
-       * 1) Checkout abgeschlossen (aber nicht immer final bezahlt)
-       */
       case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-
-        const reservationId = getReservationIdFromSession(session);
-        if (!reservationId) {
-          console.warn(
-            '[stripe-webhook] Missing reservationId in session metadata',
-            { sessionId: session.id },
-          );
-          break;
-        }
-
-        // Optional: Verifikation der Summe
-        const amountTotal = session.amount_total ?? null;
-
-        const reservation = await prisma.reservation.findUnique({
-          where: { id: reservationId },
-          select: {
-            id: true,
-            paymentStatus: true,
-            minimumSpend: true,
-          },
-        });
-
-        if (!reservation) {
-          console.warn(
-            '[stripe-webhook] Reservation not found:',
-            reservationId,
-          );
-          break;
-        }
-
-        const totalCents = reservation.minimumSpend * 100;
-        if (amountTotal !== null && amountTotal !== totalCents) {
-          console.warn('[stripe-webhook] Amount mismatch', {
-            amountTotal,
-            expected: totalCents,
-            reservationId,
-            sessionId: session.id,
-          });
-        }
-
-        // IDs immer speichern
-        const paymentIntentId =
-          typeof session.payment_intent === 'string'
-            ? session.payment_intent
-            : null;
-
-        // payment_status ist bei Checkout Sessions der beste Indikator:
-        // - 'paid' => du kannst direkt auf PAID gehen (z.B. Kreditkarte)
-        // - 'unpaid' => async, später kommt async_payment_succeeded oder payment_intent.succeeded
-        // - 'no_payment_required' => 0€ / free
-        const paymentStatus = session.payment_status;
-
-        await prisma.reservation.update({
-          where: { id: reservationId },
-          data: {
-            stripeCheckoutSessionId: session.id,
-            stripePaymentIntentId: paymentIntentId,
-            // Status NICHT blind auf PAID setzen:
-            paymentStatus:
-              paymentStatus === 'paid' ||
-              paymentStatus === 'no_payment_required'
-                ? 'PAID'
-                : 'PENDING_PAYMENT',
-          },
-        });
-
-        // Wenn wirklich paid/no_payment_required: Finalisieren + Mail (idempotent)
-        if (
-          paymentStatus === 'paid' ||
-          paymentStatus === 'no_payment_required'
-        ) {
-          await markPaidAndSendMail(reservationId, paymentIntentId);
-        }
-
+        await handleCheckoutSessionCompleted(
+          event.data.object as Stripe.Checkout.Session,
+        );
         break;
       }
 
-      /**
-       * 2) Async Payment später erfolgreich (SEPA/Klarna/...)
-       */
       case 'checkout.session.async_payment_succeeded': {
-        const session = event.data.object as Stripe.Checkout.Session;
-
-        const reservationId = getReservationIdFromSession(session);
-        if (!reservationId) {
-          console.warn(
-            '[stripe-webhook] Missing reservationId in async_payment_succeeded',
-            { sessionId: session.id },
-          );
-          break;
-        }
-
-        const paymentIntentId =
-          typeof session.payment_intent === 'string'
-            ? session.payment_intent
-            : null;
-
-        // session ist jetzt wirklich bezahlt
-        await prisma.reservation.update({
-          where: { id: reservationId },
-          data: {
-            stripeCheckoutSessionId: session.id,
-            stripePaymentIntentId: paymentIntentId,
-          },
-        });
-
-        await markPaidAndSendMail(reservationId, paymentIntentId);
+        await handleCheckoutSessionAsyncPaymentSucceeded(
+          event.data.object as Stripe.Checkout.Session,
+        );
         break;
       }
 
-      /**
-       * 3) Async Payment fehlgeschlagen (SEPA/Klarna/...)
-       */
       case 'checkout.session.async_payment_failed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-
-        const reservationId = getReservationIdFromSession(session);
-        if (!reservationId) {
-          console.warn(
-            '[stripe-webhook] Missing reservationId in async_payment_failed',
-            { sessionId: session.id },
-          );
-          break;
-        }
-
-        const reservation = await prisma.reservation.update({
-          where: { id: reservationId },
-          data: {
-            paymentStatus: 'CANCELED',
-            stripeCheckoutSessionId: session.id,
-            stripePaymentIntentId:
-              typeof session.payment_intent === 'string'
-                ? session.payment_intent
-                : null,
-          },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            people: true,
-            seating: {
-              select: { timeslot: true, eventDate: { select: { date: true } } },
-            },
-          },
-        });
-
-        await sendReservationCancelMail(
-          reservation.email,
-          reservation.name,
-          reservation.people,
-          reservation.seating.eventDate.date,
-          reservation.seating.timeslot,
-          'Zahlung fehlgeschlagen',
+        await handleCheckoutSessionAsyncPaymentFailed(
+          event.data.object as Stripe.Checkout.Session,
         );
-
         break;
       }
 
-      /**
-       * 4) PaymentIntent succeeded (kommt typischerweise bei Karten-Zahlung)
-       *    -> absolut final "paid"
-       */
       case 'payment_intent.succeeded': {
-        const pi = event.data.object as Stripe.PaymentIntent;
-
-        // 1) versuche ReservationId aus PI metadata (wenn du sie dort setzt)
-        const metaReservationId = getReservationIdFromPaymentIntent(pi);
-
-        if (metaReservationId) {
-          await markPaidAndSendMail(metaReservationId, pi.id);
-          break;
-        }
-
-        // 2) fallback: Reservation über gespeicherte stripePaymentIntentId finden
-        const reservation = await prisma.reservation.findFirst({
-          where: { stripePaymentIntentId: pi.id },
-          select: { id: true },
-        });
-
-        if (!reservation) {
-          console.warn(
-            '[stripe-webhook] No reservation found for payment_intent:',
-            pi.id,
-          );
-          break;
-        }
-
-        await markPaidAndSendMail(reservation.id, pi.id);
+        await handlePaymentIntentSucceeded(
+          event.data.object as Stripe.PaymentIntent,
+        );
         break;
       }
 
-      /**
-       * 5) Refund / Charge refunded
-       *    -> Status auf REFUNDED setzen
-       */
       case 'charge.refunded': {
-        const charge = event.data.object as Stripe.Charge;
-
-        const paymentIntentId =
-          typeof charge.payment_intent === 'string'
-            ? charge.payment_intent
-            : null;
-
-        if (!paymentIntentId) {
-          console.warn(
-            '[stripe-webhook] charge.refunded without payment_intent',
-            { chargeId: charge.id },
-          );
-          break;
-        }
-
-        const reservation = await prisma.reservation.findFirst({
-          where: { stripePaymentIntentId: paymentIntentId },
-          select: {
-            id: true,
-            paymentStatus: true,
-            email: true,
-            name: true,
-            people: true,
-            seating: {
-              select: { timeslot: true, eventDate: { select: { date: true } } },
-            },
-          },
-        });
-
-        if (!reservation) {
-          console.warn(
-            '[stripe-webhook] No reservation found for refunded PI:',
-            paymentIntentId,
-          );
-          break;
-        }
-
-        await prisma.reservation.update({
-          where: { id: reservation.id },
-          data: {
-            paymentStatus: 'CANCELED',
-          },
-        });
-
-        await sendReservationCancelMail(
-          reservation.email,
-          reservation.name,
-          reservation.people,
-          reservation.seating.eventDate.date,
-          reservation.seating.timeslot,
-          'Rückerstattung durchgeführt',
-        );
-
+        await handleChargeRefunded(event.data.object as Stripe.Charge);
         break;
       }
 
       default:
-        // Unhandled event type
         break;
     }
 

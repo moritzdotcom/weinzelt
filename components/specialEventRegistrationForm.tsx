@@ -13,6 +13,7 @@ import {
 import { CheckCircleRounded, LocalActivityRounded } from '@mui/icons-material';
 import type { PublicSpecialEvent } from '@/lib/specialEvents';
 import NewsletterConfirmation from './reservation/newsletterConfirmation';
+import { ApiPostSpecialEventRegisterResponse } from '@/pages/api/specialEvents/[specialEventId]/register';
 
 export function SpecialEventRegistrationForm({
   event,
@@ -52,6 +53,10 @@ export function SpecialEventRegistrationForm({
     );
   }, [event.maxPersonsPerRegistration, event.remainingCapacity]);
 
+  const requiresPayment = Boolean(event.priceCents && event.priceCents > 0);
+
+  const buttonLabel = requiresPayment ? 'Weiter zur Zahlung' : submitLabel;
+
   const handleSubmit = async (submitEvent: FormEvent) => {
     submitEvent.preventDefault();
 
@@ -59,13 +64,21 @@ export function SpecialEventRegistrationForm({
     setError(null);
 
     try {
-      await axios.post(`/api/specialEvents/${event.id}/register`, {
-        name,
-        email,
-        phone: phone || undefined,
-        personCount,
-        newsletterConfirmation,
-      });
+      const response = await axios.post<ApiPostSpecialEventRegisterResponse>(
+        `/api/specialEvents/${event.id}/register`,
+        {
+          name,
+          email,
+          phone: phone || undefined,
+          personCount,
+          newsletterConfirmation,
+        },
+      );
+
+      if ('url' in response.data && response.data.requiresPayment) {
+        window.location.href = response.data.url;
+        return;
+      }
 
       setSuccess(true);
       onRegistered?.();
@@ -184,7 +197,11 @@ export function SpecialEventRegistrationForm({
             },
           }}
         >
-          {saving ? 'Anmeldung wird gespeichert …' : submitLabel}
+          {saving
+            ? requiresPayment
+              ? 'Zahlung wird vorbereitet …'
+              : 'Anmeldung wird gespeichert …'
+            : buttonLabel}
         </Button>
 
         <Typography
@@ -192,7 +209,9 @@ export function SpecialEventRegistrationForm({
           color="text.secondary"
           sx={{ textAlign: 'center' }}
         >
-          Mit dem Absenden meldest du dich verbindlich für das Event an.
+          {requiresPayment
+            ? 'Nach dem Absenden wirst du zur sicheren Zahlung weitergeleitet. Deine Anmeldung ist erst nach erfolgreicher Zahlung abgeschlossen.'
+            : 'Mit dem Absenden meldest du dich verbindlich für das Event an.'}
         </Typography>
       </Stack>
     </Box>

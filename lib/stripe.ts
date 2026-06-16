@@ -123,6 +123,7 @@ export async function createStripeSession(
 
     // sehr wichtig fürs Mapping im Webhook
     metadata: {
+      model: 'RESERVATION',
       reservationId,
       seatingId: seating.id,
       type,
@@ -134,11 +135,58 @@ export async function createStripeSession(
     },
     payment_intent_data: {
       metadata: {
+        model: 'RESERVATION',
         reservationId,
       },
     },
 
     success_url: `${process.env.APP_URL}/reservation/success?rid=${reservationId}`,
     cancel_url: `${process.env.APP_URL}/reservation/cancel?rid=${reservationId}`,
+  });
+}
+
+export async function createSpecialEventStripeSession(params: {
+  registrationId: string;
+  specialEventId: string;
+  eventName: string;
+  email: string;
+  personCount: number;
+  priceCentsPerPerson: number;
+}) {
+  const totalCents = params.priceCentsPerPerson * params.personCount;
+
+  return stripe.checkout.sessions.create({
+    mode: 'payment',
+    payment_method_types: ['card'],
+    customer_email: params.email,
+    line_items: [
+      {
+        quantity: 1,
+        price_data: {
+          currency: 'eur',
+          unit_amount: totalCents,
+          product_data: {
+            name: params.eventName,
+            description: `${params.personCount} ${
+              params.personCount === 1 ? 'Person' : 'Personen'
+            }`,
+          },
+        },
+      },
+    ],
+    success_url: `${process.env.APP_URL}/events/${params.specialEventId}?registrationSuccess=1`,
+    cancel_url: `${process.env.APP_URL}/events/${params.specialEventId}?registrationCanceled=1`,
+    metadata: {
+      model: 'SPECIAL_EVENT',
+      registrationId: params.registrationId,
+      specialEventId: params.specialEventId,
+    },
+    payment_intent_data: {
+      metadata: {
+        model: 'SPECIAL_EVENT',
+        registrationId: params.registrationId,
+        specialEventId: params.specialEventId,
+      },
+    },
   });
 }

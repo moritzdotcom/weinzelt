@@ -259,17 +259,6 @@ export function validateSpecialEventPayload(
     });
   }
 
-  if (
-    isPaidEvent &&
-    input.bookingType !== SpecialEventBookingType.EXTERNAL_LINK
-  ) {
-    errors.push({
-      field: 'bookingType',
-      message:
-        'Kostenpflichtige Events müssen über eine externe Reservierungsplattform gebucht werden.',
-    });
-  }
-
   /*
    * Kapazitäten
    */

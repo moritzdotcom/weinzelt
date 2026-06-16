@@ -2,12 +2,24 @@ import {
   ArrowBackRounded,
   ArrowForwardRounded,
   CalendarMonthRounded,
+  CheckCircleRounded,
   LocalActivityRounded,
   OpenInNewRounded,
   ScheduleRounded,
+  WarningAmberRounded,
   WineBarRounded,
 } from '@mui/icons-material';
-import { Alert, Box, CircularProgress, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
+} from '@mui/material';
 import axios from 'axios';
 import type { GetServerSideProps } from 'next';
 import Link from 'next/link';
@@ -18,6 +30,7 @@ import {
   formatSpecialEventPrice,
 } from '@/lib/specialEvents';
 import { SpecialEventRegistrationForm } from '@/components/specialEventRegistrationForm';
+import { useRouter } from 'next/router';
 
 function formatDate(eventDate: PublicSpecialEvent['eventDate']) {
   if (eventDate.dow) {
@@ -54,14 +67,46 @@ function InfoPill({
 }
 
 export default function SpecialEventPage({ id }: { id: string }) {
+  const router = useRouter();
   const [event, setEvent] = useState<PublicSpecialEvent>();
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
   const price = useMemo(
     () => (event ? formatSpecialEventPrice(event) : null),
     [event],
   );
+
+  const handleClosePaymentDialog = () => {
+    setPaymentDialogOpen(false);
+
+    const nextQuery = { ...router.query };
+    delete nextQuery.registrationSuccess;
+    delete nextQuery.registrationCanceled;
+
+    router.replace(
+      {
+        pathname: router.pathname,
+        query: nextQuery,
+      },
+      undefined,
+      {
+        shallow: true,
+      },
+    );
+  };
+
+  const registrationSuccess = router?.query?.registrationSuccess === '1';
+  const registrationCanceled = router?.query?.registrationCanceled === '1';
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    if (registrationSuccess || registrationCanceled) {
+      setPaymentDialogOpen(true);
+    }
+  }, [router.isReady]);
 
   useEffect(() => {
     if (!id) return;
@@ -112,6 +157,12 @@ export default function SpecialEventPage({ id }: { id: string }) {
   return (
     <main className="min-h-screen bg-[#f8f6f2] px-4 py-6 sm:py-10">
       <Box className="mx-auto max-w-6xl">
+        <PaymentDialog
+          open={paymentDialogOpen}
+          eventName={event.name}
+          onClose={handleClosePaymentDialog}
+          registrationSuccess={registrationSuccess}
+        />
         <Link
           href="/#wine-events"
           className="inline-flex items-center gap-1 text-sm font-semibold text-gray-600 transition hover:text-black"
@@ -297,6 +348,111 @@ export default function SpecialEventPage({ id }: { id: string }) {
         </Box>
       </Box>
     </main>
+  );
+}
+
+function PaymentDialog({
+  open,
+  onClose,
+  eventName,
+  registrationSuccess,
+}: {
+  open: boolean;
+  onClose: () => void;
+  eventName: string;
+  registrationSuccess: boolean;
+}) {
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="xs"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 4,
+          p: { xs: 1, sm: 1.5 },
+        },
+      }}
+    >
+      <DialogContent sx={{ textAlign: 'center', pt: 4 }}>
+        {registrationSuccess ? (
+          <>
+            <CheckCircleRounded
+              color="success"
+              sx={{
+                fontSize: 76,
+                mb: 2,
+              }}
+            />
+
+            <DialogTitle
+              sx={{
+                p: 0,
+                fontWeight: 900,
+                fontSize: 24,
+              }}
+            >
+              Zahlung erfolgreich
+            </DialogTitle>
+
+            <Typography sx={{ mt: 1.5, color: 'text.secondary' }}>
+              Vielen Dank! Deine Anmeldung für {eventName} wurde bestätigt.
+            </Typography>
+
+            <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
+              Du erhältst in Kürze eine Bestätigung per E-Mail.
+            </Typography>
+          </>
+        ) : (
+          <>
+            <WarningAmberRounded
+              color="warning"
+              sx={{
+                fontSize: 76,
+                mb: 2,
+              }}
+            />
+
+            <DialogTitle
+              sx={{
+                p: 0,
+                fontWeight: 900,
+                fontSize: 24,
+              }}
+            >
+              Zahlung abgebrochen
+            </DialogTitle>
+
+            <Typography sx={{ mt: 1.5, color: 'text.secondary' }}>
+              Deine Anmeldung für {eventName} wurde noch nicht bestätigt.
+            </Typography>
+
+            <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
+              Du kannst das Formular erneut absenden, um die Zahlung noch einmal
+              zu starten.
+            </Typography>
+          </>
+        )}
+      </DialogContent>
+
+      <DialogActions sx={{ justifyContent: 'center', px: 3, pb: 3 }}>
+        <Button
+          onClick={onClose}
+          variant="contained"
+          sx={{
+            borderRadius: 999,
+            px: 4,
+            bgcolor: 'black',
+            '&:hover': {
+              bgcolor: '#262626',
+            },
+          }}
+        >
+          Verstanden
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 

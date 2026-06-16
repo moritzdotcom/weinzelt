@@ -1,8 +1,15 @@
+// pages/api/specialEvents/[specialEventId]/register.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prismadb';
 import { createNewsletterSubscription } from '@/lib/newsletter';
 import sendSpecialEventConfirmationMail from '@/lib/mailer/specialEventConfirmationMail';
+import { createSpecialEventStripeSession } from '@/lib/stripe';
+
+export type ApiPostSpecialEventRegisterResponse =
+  | { id: string; requiresPayment: false }
+  | { url: string; requiresPayment: true }
+  | { error: string };
 
 class RegistrationError extends Error {
   constructor(
@@ -14,6 +21,33 @@ class RegistrationError extends Error {
   ) {
     super(code);
   }
+}
+
+function validatePayload(payload: any) {
+  const name = typeof payload.name === 'string' ? payload.name.trim() : '';
+  const email = typeof payload.email === 'string' ? payload.email.trim() : '';
+  const phone = typeof payload.phone === 'string' ? payload.phone.trim() : '';
+  const personCount = Number(payload.personCount);
+
+  if (!name) {
+    throw new Error('INVALID_NAME');
+  }
+
+  if (!email || !email.includes('@')) {
+    throw new Error('INVALID_EMAIL');
+  }
+
+  if (!Number.isInteger(personCount) || personCount < 1 || personCount > 100) {
+    throw new Error('INVALID_PERSON_COUNT');
+  }
+
+  return {
+    name,
+    email,
+    phone: phone || undefined,
+    personCount,
+    newsletterConfirmation: Boolean(payload.newsletterConfirmation),
+  };
 }
 
 async function createRegistrationWithRetry(params: {
@@ -33,10 +67,14 @@ async function createRegistrationWithRetry(params: {
             },
             select: {
               id: true,
+              name: true,
               isPublished: true,
               bookingType: true,
               capacity: true,
               maxPersonsPerRegistration: true,
+              priceCents: true,
+              eventDate: true,
+              startTime: true,
             },
           });
 
@@ -52,11 +90,25 @@ async function createRegistrationWithRetry(params: {
             throw new RegistrationError('TOO_MANY_PERSONS');
           }
 
+          const isPaidEvent = Boolean(event.priceCents && event.priceCents > 0);
+
           if (event.capacity !== null) {
+            const now = new Date();
+
             const aggregate = await tx.eventRegistration.aggregate({
               where: {
                 specialEventId: event.id,
-                status: 'REGISTERED',
+                OR: [
+                  {
+                    status: 'REGISTERED',
+                  },
+                  {
+                    status: 'PENDING_PAYMENT',
+                    paymentExpiresAt: {
+                      gt: now,
+                    },
+                  },
+                ],
               },
               _sum: {
                 personCount: true,
@@ -70,6 +122,10 @@ async function createRegistrationWithRetry(params: {
             }
           }
 
+          const paymentExpiresAt = isPaidEvent
+            ? new Date(Date.now() + 30 * 60 * 1000)
+            : null;
+
           return tx.eventRegistration.create({
             data: {
               specialEventId: event.id,
@@ -77,17 +133,25 @@ async function createRegistrationWithRetry(params: {
               email: params.email.toLowerCase(),
               phone: params.phone || null,
               personCount: params.personCount,
+              status: isPaidEvent ? 'PENDING_PAYMENT' : 'REGISTERED',
+              priceCentsTotal: isPaidEvent
+                ? event.priceCents! * params.personCount
+                : null,
+              paymentExpiresAt,
             },
             select: {
               id: true,
               email: true,
               name: true,
               personCount: true,
+              status: true,
               specialEvent: {
                 select: {
+                  id: true,
+                  name: true,
+                  priceCents: true,
                   eventDate: true,
                   startTime: true,
-                  name: true,
                 },
               },
             },
@@ -113,7 +177,7 @@ async function createRegistrationWithRetry(params: {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<{ id: string } | { error: string }>,
+  res: NextApiResponse<ApiPostSpecialEventRegisterResponse>,
 ) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -123,15 +187,53 @@ export default async function handler(
   const specialEventId = String(req.query.specialEventId);
 
   try {
-    const payload = req.body;
+    const payload = validatePayload(req.body);
 
     const registration = await createRegistrationWithRetry({
       specialEventId,
-      ...payload,
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone,
+      personCount: payload.personCount,
     });
 
     if (payload.newsletterConfirmation) {
       await createNewsletterSubscription(payload.email, payload.name);
+    }
+
+    const isPaidEvent =
+      registration.specialEvent.priceCents !== null &&
+      registration.specialEvent.priceCents > 0;
+
+    if (isPaidEvent) {
+      const session = await createSpecialEventStripeSession({
+        registrationId: registration.id,
+        specialEventId: registration.specialEvent.id,
+        eventName: registration.specialEvent.name,
+        email: registration.email,
+        personCount: registration.personCount,
+        priceCentsPerPerson: registration.specialEvent.priceCents!,
+      });
+
+      await prisma.eventRegistration.update({
+        where: {
+          id: registration.id,
+        },
+        data: {
+          stripeCheckoutSessionId: session.id,
+        },
+      });
+
+      if (!session.url) {
+        return res.status(500).json({
+          error: 'Die Stripe-Zahlung konnte nicht gestartet werden.',
+        });
+      }
+
+      return res.status(200).json({
+        requiresPayment: true,
+        url: session.url,
+      });
     }
 
     await sendSpecialEventConfirmationMail(
@@ -144,10 +246,28 @@ export default async function handler(
     );
 
     return res.status(201).json({
+      requiresPayment: false,
       id: registration.id,
     });
   } catch (error) {
     console.error(error);
+
+    if (error instanceof Error) {
+      switch (error.message) {
+        case 'INVALID_NAME':
+          return res.status(400).json({ error: 'Bitte gib einen Namen ein.' });
+
+        case 'INVALID_EMAIL':
+          return res.status(400).json({
+            error: 'Bitte gib eine gültige E-Mail-Adresse ein.',
+          });
+
+        case 'INVALID_PERSON_COUNT':
+          return res.status(400).json({
+            error: 'Bitte wähle eine gültige Personenzahl aus.',
+          });
+      }
+    }
 
     if (error instanceof RegistrationError) {
       switch (error.code) {
