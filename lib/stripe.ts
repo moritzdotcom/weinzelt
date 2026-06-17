@@ -153,7 +153,11 @@ export async function createSpecialEventStripeSession(params: {
   personCount: number;
   priceCentsPerPerson: number;
 }) {
-  const totalCents = params.priceCentsPerPerson * params.personCount;
+  const taxRateId = process.env.STRIPE_TAX_RATE_DE_19;
+
+  if (!taxRateId) {
+    throw new Error('Missing STRIPE_TAX_RATE_DE_19 env variable');
+  }
 
   return stripe.checkout.sessions.create({
     mode: 'payment',
@@ -161,10 +165,12 @@ export async function createSpecialEventStripeSession(params: {
     customer_email: params.email,
     line_items: [
       {
-        quantity: 1,
+        quantity: params.personCount,
+        tax_rates: [taxRateId],
         price_data: {
           currency: 'eur',
-          unit_amount: totalCents,
+          unit_amount: params.priceCentsPerPerson,
+          tax_behavior: 'inclusive',
           product_data: {
             name: params.eventName,
             description: `${params.personCount} ${

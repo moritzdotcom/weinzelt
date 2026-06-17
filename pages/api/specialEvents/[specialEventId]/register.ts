@@ -57,6 +57,8 @@ async function createRegistrationWithRetry(params: {
   phone?: string;
   personCount: number;
 }) {
+  const normalizedEmail = params.email.toLowerCase();
+
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       return await prisma.$transaction(
@@ -90,6 +92,22 @@ async function createRegistrationWithRetry(params: {
             throw new RegistrationError('TOO_MANY_PERSONS');
           }
 
+          const existingRegistration = await tx.eventRegistration.findFirst({
+            where: {
+              specialEventId: event.id,
+              email: normalizedEmail,
+            },
+            select: {
+              id: true,
+              status: true,
+              personCount: true,
+            },
+          });
+
+          if (existingRegistration?.status === 'REGISTERED') {
+            throw new Error('ALREADY_REGISTERED');
+          }
+
           const isPaidEvent = Boolean(event.priceCents && event.priceCents > 0);
 
           if (event.capacity !== null) {
@@ -98,6 +116,18 @@ async function createRegistrationWithRetry(params: {
             const aggregate = await tx.eventRegistration.aggregate({
               where: {
                 specialEventId: event.id,
+
+                // Wichtig:
+                // Wenn wir eine alte PENDING_PAYMENT Registration desselben Users
+                // wiederverwenden, darf sie beim Capacity-Check nicht mitzählen.
+                ...(existingRegistration
+                  ? {
+                      NOT: {
+                        id: existingRegistration.id,
+                      },
+                    }
+                  : {}),
+
                 OR: [
                   {
                     status: 'REGISTERED',
@@ -126,19 +156,50 @@ async function createRegistrationWithRetry(params: {
             ? new Date(Date.now() + 30 * 60 * 1000)
             : null;
 
+          const registrationData = {
+            specialEventId: event.id,
+            name: params.name,
+            email: normalizedEmail,
+            phone: params.phone || null,
+            personCount: params.personCount,
+            status: isPaidEvent ? 'PENDING_PAYMENT' : 'REGISTERED',
+            priceCentsTotal: isPaidEvent
+              ? event.priceCents! * params.personCount
+              : null,
+            paymentExpiresAt,
+
+            // Wichtig, damit ein neuer Checkout-Versuch sauber startet.
+            // Der neue Stripe Checkout Session ID wird danach im Handler gesetzt.
+            stripeCheckoutSessionId: null,
+          } satisfies Prisma.EventRegistrationUncheckedCreateInput;
+
+          if (existingRegistration) {
+            return tx.eventRegistration.update({
+              where: {
+                id: existingRegistration.id,
+              },
+              data: registrationData,
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                personCount: true,
+                status: true,
+                specialEvent: {
+                  select: {
+                    id: true,
+                    name: true,
+                    priceCents: true,
+                    eventDate: true,
+                    startTime: true,
+                  },
+                },
+              },
+            });
+          }
+
           return tx.eventRegistration.create({
-            data: {
-              specialEventId: event.id,
-              name: params.name,
-              email: params.email.toLowerCase(),
-              phone: params.phone || null,
-              personCount: params.personCount,
-              status: isPaidEvent ? 'PENDING_PAYMENT' : 'REGISTERED',
-              priceCentsTotal: isPaidEvent
-                ? event.priceCents! * params.personCount
-                : null,
-              paymentExpiresAt,
-            },
+            data: registrationData,
             select: {
               id: true,
               email: true,
@@ -265,6 +326,12 @@ export default async function handler(
         case 'INVALID_PERSON_COUNT':
           return res.status(400).json({
             error: 'Bitte wähle eine gültige Personenzahl aus.',
+          });
+
+        case 'ALREADY_REGISTERED':
+          return res.status(409).json({
+            error:
+              'Mit dieser E-Mail-Adresse wurde bereits eine bestätigte Anmeldung vorgenommen.',
           });
       }
     }
