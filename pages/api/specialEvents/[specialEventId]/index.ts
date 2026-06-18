@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prismadb';
 import type { PublicSpecialEvent } from '@/lib/specialEvents';
 import { supabase } from '@/lib/supabase';
+import { getServerSession } from '@/lib/session';
 
 function getPublicImageUrl(titleImagePath: string | null) {
   if (!titleImagePath) return null;
@@ -23,6 +24,7 @@ export default async function handler(
   }
 
   const specialEventId = req.query.specialEventId;
+  const session = await getServerSession(req);
 
   if (typeof specialEventId !== 'string') {
     return res.status(400).json({
@@ -33,7 +35,7 @@ export default async function handler(
   const event = await prisma.specialEvent.findFirst({
     where: {
       id: specialEventId,
-      isPublished: true,
+      isPublished: session ? undefined : true,
     },
     select: {
       id: true,
