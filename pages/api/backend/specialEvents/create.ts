@@ -1,11 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import formidable, { File, Fields } from 'formidable';
-import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import prisma from '@/lib/prismadb';
 import { getServerSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
 import { validateSpecialEventPayload } from '@/lib/specialEvents/validator';
+import {
+  firstField,
+  getFirstFile,
+  parseSpecialEventForm,
+  getSafeAttachmentExtension,
+  isAllowedAttachment,
+  getSafeImageExtension,
+  parseBoolean,
+  parseOptionalNumber,
+} from '@/lib/specialEvents/upload';
 
 export const config = {
   api: {
@@ -22,72 +30,6 @@ type ApiResponse =
       details?: unknown;
     };
 
-function firstField(fields: Fields, key: string) {
-  const value = fields[key];
-
-  if (Array.isArray(value)) return value[0] ?? '';
-  return value ?? '';
-}
-
-function parseOptionalNumber(value: string): number | null {
-  if (!value.trim()) return null;
-
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function parseBoolean(value: string): boolean {
-  return value === 'true';
-}
-
-function getFirstFile(file: File | File[] | undefined) {
-  if (!file) return null;
-  return Array.isArray(file) ? (file[0] ?? null) : file;
-}
-
-function getSafeImageExtension(file: File) {
-  const extension = path
-    .extname(file.originalFilename ?? '')
-    .replace('.', '')
-    .toLowerCase();
-
-  if (['jpg', 'jpeg', 'png', 'webp'].includes(extension)) {
-    return extension === 'jpeg' ? 'jpg' : extension;
-  }
-
-  switch (file.mimetype) {
-    case 'image/png':
-      return 'png';
-    case 'image/webp':
-      return 'webp';
-    default:
-      return 'jpg';
-  }
-}
-
-async function parseForm(req: NextApiRequest) {
-  const form = formidable({
-    multiples: false,
-    maxFiles: 1,
-    maxFileSize: 8 * 1024 * 1024,
-    filter: ({ mimetype }) => Boolean(mimetype?.startsWith('image/')),
-  });
-
-  return new Promise<{
-    fields: Fields;
-    files: formidable.Files;
-  }>((resolve, reject) => {
-    form.parse(req, (error, fields, files) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      resolve({ fields, files });
-    });
-  });
-}
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ApiResponse>,
@@ -100,8 +42,10 @@ export default async function handler(
   if (!session) return res.status(401).json({ error: 'Not authenticated' });
 
   try {
-    const { fields, files } = await parseForm(req);
+    const { fields, files } = await parseSpecialEventForm(req);
+
     const titleImage = getFirstFile(files.titleImage);
+    const attachment = getFirstFile(files.attachment);
 
     const validation = validateSpecialEventPayload({
       name: firstField(fields, 'name'),
@@ -122,7 +66,9 @@ export default async function handler(
         10,
       sortOrder: parseOptionalNumber(firstField(fields, 'sortOrder')) ?? 0,
       isPublished: parseBoolean(firstField(fields, 'isPublished')),
+      attachmentLabel: firstField(fields, 'attachmentLabel') || undefined,
       removeTitleImage: false,
+      removeAttachment: false,
     });
 
     if (!validation.valid) {
@@ -152,6 +98,7 @@ export default async function handler(
         maxPersonsPerRegistration: payload.maxPersonsPerRegistration,
         sortOrder: payload.sortOrder,
         isPublished: payload.isPublished,
+        attachmentLabel: payload.attachmentLabel ?? null,
       },
       select: {
         id: true,
@@ -163,30 +110,58 @@ export default async function handler(
     }
 
     try {
-      const extension = getSafeImageExtension(titleImage);
-      const titleImagePath = `specialEvents/${specialEvent.id}/titleImage.${extension}`;
-      const fileBuffer = await readFile(titleImage.filepath);
+      let titleImagePath: string | null = null;
+      let attachmentPath: string | null = null;
 
-      const { error: uploadError } = await supabase.storage
-        .from('Weinzelt')
-        .upload(titleImagePath, fileBuffer, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: titleImage.mimetype || 'image/jpeg',
-        });
+      if (titleImage) {
+        const extension = getSafeImageExtension(titleImage);
+        titleImagePath = `specialEvents/${specialEvent.id}/titleImage.${extension}`;
 
-      if (uploadError) {
-        throw uploadError;
+        const fileBuffer = await readFile(titleImage.filepath);
+
+        const { error: uploadError } = await supabase.storage
+          .from('Weinzelt')
+          .upload(titleImagePath, fileBuffer, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: titleImage.mimetype || 'image/jpeg',
+          });
+
+        if (uploadError) throw uploadError;
       }
 
-      await prisma.specialEvent.update({
-        where: {
-          id: specialEvent.id,
-        },
-        data: {
-          titleImagePath,
-        },
-      });
+      if (attachment) {
+        if (!isAllowedAttachment(attachment)) {
+          throw new Error('INVALID_ATTACHMENT_TYPE');
+        }
+
+        const extension = getSafeAttachmentExtension(attachment);
+        attachmentPath = `specialEvents/${specialEvent.id}/attachment.${extension}`;
+
+        const fileBuffer = await readFile(attachment.filepath);
+
+        const { error: uploadError } = await supabase.storage
+          .from('Weinzelt')
+          .upload(attachmentPath, fileBuffer, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: attachment.mimetype || 'application/pdf',
+          });
+
+        if (uploadError) throw uploadError;
+      }
+
+      if (titleImagePath || attachmentPath) {
+        await prisma.specialEvent.update({
+          where: {
+            id: specialEvent.id,
+          },
+          data: {
+            titleImagePath,
+            attachmentPath,
+          },
+        });
+      }
 
       return res.status(201).json({ id: specialEvent.id });
     } catch (uploadError) {

@@ -55,11 +55,7 @@ async function handleGET(
         startTime: 'asc',
       },
     ],
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      eventDateId: true,
+    include: {
       eventDate: {
         select: {
           id: true,
@@ -67,20 +63,6 @@ async function handleGET(
           dow: true,
         },
       },
-      startTime: true,
-      endTime: true,
-      category: true,
-      badge: true,
-      titleImagePath: true,
-      priceCents: true,
-      priceLabel: true,
-      ctaLabel: true,
-      bookingType: true,
-      externalUrl: true,
-      capacity: true,
-      maxPersonsPerRegistration: true,
-      sortOrder: true,
-      isPublished: true,
       registrations: {
         where: {
           status: 'REGISTERED',
@@ -142,6 +124,8 @@ async function handleGET(
         badge: event.badge,
         titleImagePath: event.titleImagePath,
         titleImageUrl: getPublicImageUrl(event.titleImagePath),
+        attachmentUrl: getPublicImageUrl(event.attachmentPath),
+        attachmentLabel: event.attachmentLabel,
         priceCents: event.priceCents,
         priceLabel: event.priceLabel,
         ctaLabel: event.ctaLabel,

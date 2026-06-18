@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
   AddRounded,
+  AttachFileRounded,
   EditRounded,
   GroupsRounded,
   LocalActivityRounded,
@@ -382,6 +383,7 @@ type EditFormState = {
   maxPersonsPerRegistration: string;
   sortOrder: string;
   isPublished: boolean;
+  attachmentLabel: string;
 };
 
 function getInitialEditForm(event: AdminSpecialEvent): EditFormState {
@@ -408,6 +410,7 @@ function getInitialEditForm(event: AdminSpecialEvent): EditFormState {
     maxPersonsPerRegistration: String(event.maxPersonsPerRegistration),
     sortOrder: String(event.sortOrder),
     isPublished: event.isPublished,
+    attachmentLabel: event.attachmentLabel || '',
   };
 }
 
@@ -440,8 +443,19 @@ function EditSpecialEventDialog({
     null,
   );
   const [removeTitleImage, setRemoveTitleImage] = useState(false);
+  const [attachment, setAttachment] = useState<File | null>(null);
+  const [removeAttachment, setRemoveAttachment] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  const handleAttachmentChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    setAttachment(file);
+    setRemoveAttachment(false);
+  };
 
   useEffect(() => {
     if (!specialEvent) return;
@@ -451,6 +465,8 @@ function EditSpecialEventDialog({
     setTitleImagePreview(specialEvent.titleImageUrl);
     setRemoveTitleImage(false);
     setSaveError(null);
+    setAttachment(null);
+    setRemoveAttachment(false);
   }, [specialEvent]);
 
   useEffect(() => {
@@ -517,6 +533,8 @@ function EditSpecialEventDialog({
       isSoldOut:
         Boolean(form.capacity) &&
         Number(form.capacity) <= specialEvent.registeredPersonCount,
+      attachmentUrl: removeAttachment ? null : specialEvent.attachmentUrl,
+      attachmentLabel: form.attachmentLabel || null,
     };
   }, [
     form,
@@ -563,9 +581,15 @@ function EditSpecialEventDialog({
       body.append('sortOrder', form.sortOrder);
       body.append('isPublished', String(form.isPublished));
       body.append('removeTitleImage', String(removeTitleImage));
+      body.append('attachmentLabel', form.attachmentLabel);
+      body.append('removeAttachment', String(removeAttachment));
 
       if (titleImage) {
         body.append('titleImage', titleImage);
+      }
+
+      if (attachment) {
+        body.append('attachment', attachment);
       }
 
       await axios.put(
@@ -608,7 +632,7 @@ function EditSpecialEventDialog({
             WineEvent bearbeiten
           </Typography>
 
-          <Typography variant="h5" fontWeight={800}>
+          <Typography variant="h5" fontWeight={700}>
             {specialEvent.name}
           </Typography>
         </DialogTitle>
@@ -632,7 +656,7 @@ function EditSpecialEventDialog({
             }}
           >
             <Stack spacing={2.5}>
-              <Typography variant="subtitle1" fontWeight={800}>
+              <Typography variant="subtitle1" fontWeight={700}>
                 Inhalte
               </Typography>
 
@@ -697,7 +721,7 @@ function EditSpecialEventDialog({
 
               <Divider />
 
-              <Typography variant="subtitle1" fontWeight={800}>
+              <Typography variant="subtitle1" fontWeight={700}>
                 Zeitpunkt und Darstellung
               </Typography>
 
@@ -793,7 +817,7 @@ function EditSpecialEventDialog({
 
               <Divider />
 
-              <Typography variant="subtitle1" fontWeight={800}>
+              <Typography variant="subtitle1" fontWeight={700}>
                 Buchung
               </Typography>
 
@@ -884,6 +908,80 @@ function EditSpecialEventDialog({
                   updateForm('sortOrder', event.target.value)
                 }
               /> */}
+              <Divider />
+
+              <Typography variant="subtitle1" fontWeight={700}>
+                Anhang
+              </Typography>
+
+              <TextField
+                label="Anhang-Label"
+                placeholder="z. B. Speisekarte ansehen"
+                value={form.attachmentLabel}
+                onChange={(event) =>
+                  updateForm('attachmentLabel', event.target.value)
+                }
+                helperText="Optional. Wird auf der Detailseite als Titel angezeigt."
+              />
+
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={1.5}
+                alignItems={{ sm: 'center' }}
+              >
+                <Button
+                  component="label"
+                  variant="outlined"
+                  startIcon={<AttachFileRounded />}
+                  sx={{ alignSelf: 'flex-start' }}
+                >
+                  Neuen Anhang wählen
+                  <input
+                    hidden
+                    type="file"
+                    accept="application/pdf,image/jpeg,image/png,image/webp"
+                    onChange={handleAttachmentChange}
+                  />
+                </Button>
+
+                {(specialEvent.attachmentUrl || attachment) && (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={removeAttachment}
+                        onChange={(event) =>
+                          setRemoveAttachment(event.target.checked)
+                        }
+                      />
+                    }
+                    label="Anhang entfernen"
+                  />
+                )}
+              </Stack>
+
+              {specialEvent.attachmentUrl &&
+                !attachment &&
+                !removeAttachment && (
+                  <Button
+                    component="a"
+                    href={specialEvent.attachmentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="text"
+                    endIcon={<OpenInNewRounded />}
+                    sx={{ alignSelf: 'flex-start' }}
+                  >
+                    Aktuellen Anhang öffnen
+                  </Button>
+                )}
+
+              {attachment && (
+                <Typography variant="caption" color="text.secondary">
+                  Neuer Anhang: {attachment.name}
+                </Typography>
+              )}
+
+              <Divider />
 
               <FormControlLabel
                 control={

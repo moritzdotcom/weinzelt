@@ -1,83 +1,25 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import formidable, { File, Fields } from 'formidable';
 import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import prisma from '@/lib/prismadb';
 import { supabase } from '@/lib/supabase';
 import { getServerSession } from '@/lib/session';
 import { validateSpecialEventPayload } from '@/lib/specialEvents/validator';
+import {
+  firstField,
+  getFirstFile,
+  parseSpecialEventForm,
+  getSafeAttachmentExtension,
+  isAllowedAttachment,
+  getSafeImageExtension,
+  parseBoolean,
+  parseOptionalNumber,
+} from '@/lib/specialEvents/upload';
 
 export const config = {
   api: {
     bodyParser: false,
   },
 };
-
-function firstField(fields: Fields, key: string) {
-  const value = fields[key];
-
-  if (Array.isArray(value)) return value[0] ?? '';
-  return value ?? '';
-}
-
-function parseOptionalNumber(value: string): number | null {
-  if (!value.trim()) return null;
-
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function parseBoolean(value: string): boolean {
-  return value === 'true';
-}
-
-function getFirstFile(file: File | File[] | undefined) {
-  if (!file) return null;
-  return Array.isArray(file) ? (file[0] ?? null) : file;
-}
-
-function getSafeImageExtension(file: File) {
-  const extension = path
-    .extname(file.originalFilename ?? '')
-    .replace('.', '')
-    .toLowerCase();
-
-  if (['jpg', 'jpeg', 'png', 'webp'].includes(extension)) {
-    return extension === 'jpeg' ? 'jpg' : extension;
-  }
-
-  switch (file.mimetype) {
-    case 'image/png':
-      return 'png';
-    case 'image/webp':
-      return 'webp';
-    default:
-      return 'jpg';
-  }
-}
-
-async function parseForm(req: NextApiRequest) {
-  const form = formidable({
-    multiples: false,
-    maxFiles: 1,
-    maxFileSize: 8 * 1024 * 1024,
-    filter: ({ mimetype }) => Boolean(mimetype?.startsWith('image/')),
-  });
-
-  return new Promise<{
-    fields: Fields;
-    files: formidable.Files;
-  }>((resolve, reject) => {
-    form.parse(req, (error, fields, files) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      resolve({ fields, files });
-    });
-  });
-}
 
 export default async function handler(
   req: NextApiRequest,
@@ -98,8 +40,10 @@ export default async function handler(
     }
 
     const specialEventId = String(req.query.specialEventId);
-    const { fields, files } = await parseForm(req);
+    const { fields, files } = await parseSpecialEventForm(req);
+
     const titleImage = getFirstFile(files.titleImage);
+    const attachment = getFirstFile(files.attachment);
 
     const validation = validateSpecialEventPayload({
       name: firstField(fields, 'name'),
@@ -121,6 +65,8 @@ export default async function handler(
       sortOrder: parseOptionalNumber(firstField(fields, 'sortOrder')) ?? 0,
       isPublished: parseBoolean(firstField(fields, 'isPublished')),
       removeTitleImage: parseBoolean(firstField(fields, 'removeTitleImage')),
+      attachmentLabel: firstField(fields, 'attachmentLabel') || undefined,
+      removeAttachment: parseBoolean(firstField(fields, 'removeAttachment')),
     });
 
     if (!validation.valid) {
@@ -139,6 +85,7 @@ export default async function handler(
       select: {
         id: true,
         titleImagePath: true,
+        attachmentPath: true,
       },
     });
 
@@ -180,6 +127,44 @@ export default async function handler(
       titleImagePath = nextTitleImagePath;
     }
 
+    let attachmentPath = existingEvent.attachmentPath;
+
+    if (payload.removeAttachment && attachmentPath) {
+      await supabase.storage.from('Weinzelt').remove([attachmentPath]);
+      attachmentPath = null;
+    }
+
+    if (attachment) {
+      if (!isAllowedAttachment(attachment)) {
+        return res.status(400).json({
+          error: 'Der Anhang muss eine PDF- oder Bilddatei sein.',
+        });
+      }
+
+      const extension = getSafeAttachmentExtension(attachment);
+      const nextAttachmentPath = `specialEvents/${specialEventId}/attachment.${extension}`;
+
+      const fileBuffer = await readFile(attachment.filepath);
+
+      const { error: uploadError } = await supabase.storage
+        .from('Weinzelt')
+        .upload(nextAttachmentPath, fileBuffer, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: attachment.mimetype || 'application/pdf',
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      if (attachmentPath && attachmentPath !== nextAttachmentPath) {
+        await supabase.storage.from('Weinzelt').remove([attachmentPath]);
+      }
+
+      attachmentPath = nextAttachmentPath;
+    }
+
     const updatedEvent = await prisma.specialEvent.update({
       where: {
         id: specialEventId,
@@ -206,6 +191,9 @@ export default async function handler(
         sortOrder: payload.sortOrder,
         isPublished: payload.isPublished,
         titleImagePath,
+
+        attachmentPath,
+        attachmentLabel: payload.attachmentLabel || null,
       },
       select: {
         id: true,

@@ -37,22 +37,7 @@ export default async function handler(
       id: specialEventId,
       isPublished: session ? undefined : true,
     },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      startTime: true,
-      endTime: true,
-      category: true,
-      badge: true,
-      titleImagePath: true,
-      priceCents: true,
-      priceLabel: true,
-      ctaLabel: true,
-      bookingType: true,
-      externalUrl: true,
-      capacity: true,
-      maxPersonsPerRegistration: true,
+    include: {
       eventDate: {
         select: {
           id: true,
@@ -96,6 +81,8 @@ export default async function handler(
     category: event.category,
     badge: event.badge,
     titleImageUrl: getPublicImageUrl(event.titleImagePath),
+    attachmentUrl: getPublicImageUrl(event.attachmentPath),
+    attachmentLabel: event.attachmentLabel,
     priceCents: event.priceCents,
     priceLabel: event.priceLabel,
     ctaLabel: event.ctaLabel,

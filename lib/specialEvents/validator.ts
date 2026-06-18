@@ -18,6 +18,8 @@ export type SpecialEventPayload = {
   sortOrder: number;
   isPublished: boolean;
   removeTitleImage: boolean;
+  removeAttachment: boolean;
+  attachmentLabel: string | null;
 };
 
 export type UntrustedSpecialEventPayload = Omit<
@@ -122,6 +124,7 @@ export function validateSpecialEventPayload(
   const maxPersonsPerRegistration = input.maxPersonsPerRegistration ?? 10;
   const isPublished = input.isPublished ?? false;
   const removeTitleImage = input.removeTitleImage ?? false;
+  const removeAttachment = input.removeAttachment ?? false;
 
   /*
    * Grundlegende Inhalte
@@ -317,6 +320,13 @@ export function validateSpecialEventPayload(
     });
   }
 
+  if (typeof removeAttachment !== 'boolean') {
+    errors.push({
+      field: 'removeAttachment',
+      message: 'Der Anhangstatus ist ungültig.',
+    });
+  }
+
   if (errors.length > 0) {
     return {
       valid: false,
@@ -373,6 +383,9 @@ export function validateSpecialEventPayload(
       sortOrder,
       isPublished,
       removeTitleImage,
+
+      removeAttachment,
+      attachmentLabel: input.attachmentLabel?.trim() || null,
     },
   };
 }

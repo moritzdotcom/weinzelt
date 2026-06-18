@@ -19,7 +19,11 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { AddPhotoAlternateRounded, SaveRounded } from '@mui/icons-material';
+import {
+  AddPhotoAlternateRounded,
+  AttachFileRounded,
+  SaveRounded,
+} from '@mui/icons-material';
 import { SpecialEventCard } from '@/components/specialEventCard';
 import type { PublicSpecialEvent } from '@/lib/specialEvents';
 import EventSelector from '@/components/eventSelector';
@@ -43,6 +47,7 @@ type FormState = {
   maxPersonsPerRegistration: string;
   sortOrder: string;
   isPublished: boolean;
+  attachmentLabel: string;
 };
 
 const initialForm: FormState = {
@@ -62,6 +67,7 @@ const initialForm: FormState = {
   maxPersonsPerRegistration: '10',
   sortOrder: '0',
   isPublished: false,
+  attachmentLabel: '',
 };
 
 function toCents(value: string) {
@@ -84,12 +90,21 @@ export default function NewSpecialEventPage() {
   const [titleImagePreview, setTitleImagePreview] = useState<string | null>(
     null,
   );
+  const [attachment, setAttachment] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const eventDates =
     selectedEvent?.eventDates.sort((a, b) => a.date.localeCompare(b.date)) ||
     [];
+
+  const handleAttachmentChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    setAttachment(file);
+  };
 
   useEffect(() => {
     if (!titleImage) {
@@ -134,6 +149,8 @@ export default function NewSpecialEventPage() {
       remainingCapacity: form.capacity ? Number(form.capacity) : null,
       maxPersonsPerRegistration: Number(form.maxPersonsPerRegistration) || 10,
       isSoldOut: false,
+      attachmentUrl: null,
+      attachmentLabel: form.attachmentLabel || null,
     }),
     [form, selectedEventDate, titleImagePreview],
   );
@@ -180,6 +197,11 @@ export default function NewSpecialEventPage() {
       body.append('maxPersonsPerRegistration', form.maxPersonsPerRegistration);
       body.append('sortOrder', form.sortOrder);
       body.append('isPublished', String(form.isPublished));
+      body.append('attachmentLabel', form.attachmentLabel);
+
+      if (attachment) {
+        body.append('attachment', attachment);
+      }
 
       if (titleImage) {
         body.append('titleImage', titleImage);
@@ -235,7 +257,7 @@ export default function NewSpecialEventPage() {
           <Card variant="outlined" sx={{ borderRadius: 4 }}>
             <CardContent>
               <Stack spacing={3}>
-                <Typography variant="h6" fontWeight={800}>
+                <Typography variant="h6" fontWeight={700}>
                   Inhalte
                 </Typography>
 
@@ -280,7 +302,7 @@ export default function NewSpecialEventPage() {
 
                 <Divider />
 
-                <Typography variant="h6" fontWeight={800}>
+                <Typography variant="h6" fontWeight={700}>
                   Zeitpunkt und Darstellung
                 </Typography>
 
@@ -379,7 +401,7 @@ export default function NewSpecialEventPage() {
 
                 <Divider />
 
-                <Typography variant="h6" fontWeight={800}>
+                <Typography variant="h6" fontWeight={700}>
                   Buchung
                 </Typography>
 
@@ -470,6 +492,45 @@ export default function NewSpecialEventPage() {
                     updateForm('sortOrder', event.target.value)
                   }
                 /> */}
+
+                <Divider />
+
+                <Typography variant="h6" fontWeight={700}>
+                  Anhang
+                </Typography>
+
+                <TextField
+                  label="Anhang-Label"
+                  placeholder="z. B. Speisekarte ansehen oder PDF mit weiteren Infos"
+                  value={form.attachmentLabel}
+                  onChange={(event) =>
+                    updateForm('attachmentLabel', event.target.value)
+                  }
+                  helperText="Optional. Wird auf der Detailseite als Titel des Anhangs angezeigt."
+                />
+
+                <Button
+                  component="label"
+                  variant="outlined"
+                  startIcon={<AttachFileRounded />}
+                  sx={{ alignSelf: 'flex-start' }}
+                >
+                  Anhang auswählen
+                  <input
+                    hidden
+                    type="file"
+                    accept="application/pdf,image/jpeg,image/png,image/webp"
+                    onChange={handleAttachmentChange}
+                  />
+                </Button>
+
+                {attachment && (
+                  <Typography variant="caption" color="text.secondary">
+                    Anhang: {attachment.name}
+                  </Typography>
+                )}
+
+                <Divider />
 
                 <FormControlLabel
                   control={

@@ -109,6 +109,8 @@ export default async function handler(
         category: event.category,
         badge: event.badge,
         titleImageUrl,
+        attachmentUrl: null,
+        attachmentLabel: null,
         priceCents: event.priceCents,
         priceLabel: event.priceLabel,
         ctaLabel: event.ctaLabel,

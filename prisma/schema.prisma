@@ -229,6 +229,10 @@ model SpecialEvent {
   ctaLabel       String               @default("Jetzt anmelden")
   sortOrder      Int                  @default(0)
 
+  // Anhang
+  attachmentPath  String?
+  attachmentLabel String?
+
   // Buchungslogik
   bookingType SpecialEventBookingType @default(INTERNAL_REGISTRATION)
   externalUrl String?

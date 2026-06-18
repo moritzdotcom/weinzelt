@@ -21,6 +21,8 @@ export type PublicSpecialEvent = {
   remainingCapacity: number | null;
   maxPersonsPerRegistration: number;
   isSoldOut: boolean;
+  attachmentUrl: string | null;
+  attachmentLabel: string | null;
 };
 
 export type AdminSpecialEvent = PublicSpecialEvent & {

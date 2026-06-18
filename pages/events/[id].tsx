@@ -1,6 +1,7 @@
 import {
   ArrowBackRounded,
   ArrowForwardRounded,
+  AttachFileRounded,
   CalendarMonthRounded,
   CheckCircleRounded,
   LocalActivityRounded,
@@ -272,6 +273,77 @@ export default function SpecialEventPage({ id }: { id: string }) {
                   </InfoPill>
                 )}
               </div>
+
+              {event.attachmentUrl && (
+                <Box
+                  sx={{
+                    mt: 4,
+                    p: { xs: 2.5, sm: 3 },
+                    borderRadius: 4,
+                    border: '1px solid',
+                    borderColor: 'rgba(0,0,0,0.1)',
+                    bgcolor: '#fffaf2',
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    alignItems: { xs: 'flex-start', sm: 'center' },
+                    justifyContent: 'space-between',
+                    gap: 2,
+                  }}
+                >
+                  <Box
+                    sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}
+                  >
+                    <Box
+                      sx={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: '999px',
+                        bgcolor: 'black',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <AttachFileRounded />
+                    </Box>
+                    <Box>
+                      <Typography fontWeight={900}>
+                        {event.attachmentLabel || 'Weitere Informationen'}
+                      </Typography>
+
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mt: 0.5 }}
+                      >
+                        Öffne den Anhang mit Details zu diesem WineEvent.
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Button
+                    href={event.attachmentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="contained"
+                    endIcon={<OpenInNewRounded />}
+                    sx={{
+                      borderRadius: 999,
+                      px: 3,
+                      minWidth: 180,
+                      bgcolor: 'black',
+                      whiteSpace: 'nowrap',
+                      '&:hover': {
+                        bgcolor: '#262626',
+                      },
+                    }}
+                  >
+                    Anhang öffnen
+                  </Button>
+                </Box>
+              )}
 
               {event.isSoldOut && (
                 <Alert severity="warning" sx={{ mt: 4 }}>
