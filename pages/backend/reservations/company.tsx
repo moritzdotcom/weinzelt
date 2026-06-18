@@ -2,7 +2,7 @@ import { Session } from '@/hooks/useSession';
 import axios, { isAxiosError } from 'axios';
 import { useRouter } from 'next/router';
 import { forwardRef, useEffect, useMemo, useState } from 'react';
-import { ApiGetEventsResponse } from '../api/events';
+import { ApiGetEventsResponse } from '../../api/events';
 import {
   Alert,
   Box,
@@ -25,10 +25,10 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { motion } from 'framer-motion';
 import SortButton from '@/components/sortButton';
-import { ApiGetCompanyReservationsResponse } from '../api/events/[eventId]/companyReservations';
+import { ApiGetCompanyReservationsResponse } from '../../api/events/[eventId]/companyReservations';
 import { TransitionProps } from '@mui/material/transitions';
 import { ReservationType } from '@prisma/client';
-import { ApiGetReservationDataResponse } from '../api/reservationData';
+import { ApiGetReservationDataResponse } from '../../api/reservationData';
 import { Address, translateType } from '@/lib/reservation';
 import { Close } from '@mui/icons-material';
 import EventSelector from '@/components/eventSelector';

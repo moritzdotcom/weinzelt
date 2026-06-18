@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios, { isAxiosError } from 'axios';
-import { ApiGetReservationDataResponse } from '../api/reservationData';
+import { ApiGetReservationDataResponse } from '../../api/reservationData';
 import ReservationError from '@/components/reservation/error';
 import ReservationHeader from '@/components/reservation/header';
 import { Add, Remove } from '@mui/icons-material';

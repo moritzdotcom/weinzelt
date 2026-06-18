@@ -15,6 +15,7 @@ import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 import MarkAsUnreadIcon from '@mui/icons-material/MarkAsUnread';
 import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
 import BackendKpiSection from '@/components/backend/kpiSection';
+import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 
 const menuItems = [
   {
@@ -41,7 +42,7 @@ const menuItems = [
     group: 'Reservierungen',
   },
   {
-    href: '/backend/search',
+    href: '/backend/reservations/search',
     title: 'Reservierungen suchen',
     description:
       'Finde und bearbeite Reservierungen schnell nach Name, E-Mail, Datum oder Buchungsdetails.',
@@ -49,7 +50,7 @@ const menuItems = [
     group: 'Reservierungen',
   },
   {
-    href: '/backend/company',
+    href: '/backend/reservations/company',
     title: 'Firmenbereich',
     description:
       'Verwalte Firmen & Gruppenanfragen und lege Firmenreservierungen an.',
@@ -57,11 +58,19 @@ const menuItems = [
     group: 'Reservierungen',
   },
   {
-    href: '/backend/friendsFamily',
+    href: '/backend/reservations/friendsFamily',
     title: 'Friends & Family',
     description:
       'Erstelle interne Einladungen und besondere Reservierungen für Gäste des Teams.',
     Icon: Diversity1Icon,
+    group: 'Reservierungen',
+  },
+  {
+    href: '/backend/reservations/export',
+    title: 'Reservierungen exportieren',
+    description:
+      'Filtere Reservierungen, wähle Spalten aus und exportiere eine Excel-Datei.',
+    Icon: FileDownloadRoundedIcon,
     group: 'Reservierungen',
   },
   {

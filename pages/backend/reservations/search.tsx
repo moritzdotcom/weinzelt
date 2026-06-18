@@ -20,8 +20,8 @@ import {
 } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { ApiGetEventsResponse } from '../api/events';
-import { ApiGetReservationsResponse } from '../api/events/[eventId]/reservations';
+import { ApiGetEventsResponse } from '../../api/events';
+import { ApiGetReservationsResponse } from '../../api/events/[eventId]/reservations';
 import axios from 'axios';
 import { translateState, translateType } from '@/lib/reservation';
 import EditReservationDialog from '@/components/reservation/editDialog';
@@ -36,7 +36,7 @@ import { ReservationPaymentStatus } from '@prisma/client';
 import { ReservationCancelDialog } from '@/components/reservation/cancelDialog';
 import { ChangeReservationDateDialog } from '@/components/reservation/changeEventDateDialog';
 import BackendHeader from '@/components/backend/header';
-import { ApiPutReservationResponse } from '../api/reservations/[reservationId]';
+import { ApiPutReservationResponse } from '../../api/reservations/[reservationId]';
 
 export default function BackendSearchReservationPage({
   session,

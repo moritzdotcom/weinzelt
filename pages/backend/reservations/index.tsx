@@ -2,8 +2,8 @@ import { Session } from '@/hooks/useSession';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
-import { ApiGetEventsResponse } from '../api/events';
-import { ApiGetReservationsResponse } from '../api/events/[eventId]/reservations';
+import { ApiGetEventsResponse } from '../../api/events';
+import { ApiGetReservationsResponse } from '../../api/events/[eventId]/reservations';
 import {
   Box,
   CircularProgress,
