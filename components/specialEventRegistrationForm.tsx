@@ -155,7 +155,7 @@ export function SpecialEventRegistrationForm({
 
   return (
     <Box component="form" onSubmit={handleSubmit}>
-      <Stack spacing={2.5}>
+      <Stack spacing={2.5} mt={1}>
         {selectedOccurrence.remainingCapacity !== null && (
           <Alert
             severity={
