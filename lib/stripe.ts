@@ -150,6 +150,8 @@ export async function createSpecialEventStripeSession(params: {
   specialEventId: string;
   eventName: string;
   email: string;
+  eventDate: string;
+  startTime: string;
   personCount: number;
   priceCentsPerPerson: number;
 }) {
@@ -173,9 +175,7 @@ export async function createSpecialEventStripeSession(params: {
           tax_behavior: 'inclusive',
           product_data: {
             name: params.eventName,
-            description: `${params.personCount} ${
-              params.personCount === 1 ? 'Person' : 'Personen'
-            }`,
+            description: `${params.eventDate} · ${params.startTime} Uhr · ${params.personCount} Personen`,
           },
         },
       },

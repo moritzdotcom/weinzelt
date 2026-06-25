@@ -10,9 +10,10 @@ import type { PublicSpecialEvent } from '@/lib/specialEvents';
 import {
   formatSpecialEventCategory,
   formatSpecialEventPrice,
-} from '@/lib/specialEvents';
+} from '@/lib/specialEvents/format';
+import { Chip, Stack } from '@mui/material';
 
-function formatDate(eventDate: { date: string; dow?: string }) {
+function formatDate(eventDate: { date: string; dow?: string | null }) {
   if (eventDate.dow) {
     return `${eventDate.dow}, ${eventDate.date}`;
   }
@@ -28,6 +29,16 @@ function formatDate(eventDate: { date: string; dow?: string }) {
     day: '2-digit',
     month: '2-digit',
   });
+}
+
+function formatShortOccurrence(
+  occurrence: PublicSpecialEvent['occurrences'][number],
+) {
+  const dateLabel = occurrence.eventDate.dow
+    ? `${occurrence.eventDate.dow}, ${occurrence.eventDate.date}`
+    : formatDate(occurrence.eventDate);
+
+  return `${dateLabel} · ${occurrence.startTime} Uhr`;
 }
 
 export function SpecialEventCard({
@@ -85,16 +96,60 @@ export function SpecialEventCard({
 
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-          <span className="inline-flex items-center gap-1.5">
-            <CalendarMonthRounded sx={{ fontSize: 16 }} />
-            {formatDate(event.eventDate)}
-          </span>
+          {event.occurrences.length <= 1 ? (
+            <>
+              <span className="inline-flex items-center gap-1.5">
+                <CalendarMonthRounded sx={{ fontSize: 16 }} />
+                {formatDate(event.eventDate)}
+              </span>
 
-          <span className="inline-flex items-center gap-1.5">
-            <ScheduleRounded sx={{ fontSize: 16 }} />
-            {event.startTime}–{event.endTime} Uhr
-          </span>
+              <span className="inline-flex items-center gap-1.5">
+                <ScheduleRounded sx={{ fontSize: 16 }} />
+                {event.startTime}–{event.endTime} Uhr
+              </span>
+            </>
+          ) : (
+            <span className="inline-flex items-center gap-1.5">
+              <CalendarMonthRounded sx={{ fontSize: 16 }} />
+              An mehreren Tagen verfügbar
+            </span>
+          )}
         </div>
+
+        {event.occurrences.length > 1 && (
+          <Stack
+            direction="row"
+            spacing={1}
+            flexWrap="wrap"
+            useFlexGap
+            sx={{ mt: 2 }}
+          >
+            {event.occurrences.slice(0, 4).map((occurrence) => (
+              <Chip
+                key={occurrence.id}
+                size="small"
+                label={formatShortOccurrence(occurrence)}
+                variant="outlined"
+                sx={{
+                  borderRadius: 999,
+                  fontWeight: 700,
+                  bgcolor: occurrence.isSoldOut ? 'grey.100' : 'white',
+                  color: occurrence.isSoldOut
+                    ? 'text.disabled'
+                    : 'text.primary',
+                }}
+              />
+            ))}
+
+            {event.occurrences.length > 4 && (
+              <Chip
+                size="small"
+                label={`+${event.occurrences.length - 4} weitere`}
+                sx={{ borderRadius: 999, fontWeight: 700 }}
+              />
+            )}
+          </Stack>
+        )}
 
         <h3 className="mt-4 text-2xl font-cocogoose leading-tight text-black">
           {event.name}
@@ -104,11 +159,20 @@ export function SpecialEventCard({
           {event.description}
         </p>
 
-        {event.remainingCapacity !== null && !event.isSoldOut && (
+        {event.occurrences.length === 1 &&
+          event.remainingCapacity !== null &&
+          !event.isSoldOut && (
+            <p className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+              <LocalActivityRounded sx={{ fontSize: 16 }} />
+              Noch {event.remainingCapacity}{' '}
+              {event.remainingCapacity === 1 ? 'Platz' : 'Plätze'} verfügbar
+            </p>
+          )}
+
+        {event.occurrences.length > 1 && !event.isSoldOut && (
           <p className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500">
             <LocalActivityRounded sx={{ fontSize: 16 }} />
-            Noch {event.remainingCapacity}{' '}
-            {event.remainingCapacity === 1 ? 'Platz' : 'Plätze'} verfügbar
+            Wähle deinen Termin bei der Anmeldung
           </p>
         )}
 

@@ -17,7 +17,8 @@ class RegistrationError extends Error {
       | 'EVENT_NOT_FOUND'
       | 'REGISTRATION_DISABLED'
       | 'SOLD_OUT'
-      | 'TOO_MANY_PERSONS',
+      | 'TOO_MANY_PERSONS'
+      | 'OCCURRENCE_NOT_FOUND',
   ) {
     super(code);
   }
@@ -28,6 +29,10 @@ function validatePayload(payload: any) {
   const email = typeof payload.email === 'string' ? payload.email.trim() : '';
   const phone = typeof payload.phone === 'string' ? payload.phone.trim() : '';
   const personCount = Number(payload.personCount);
+  const specialEventOccurrenceId =
+    typeof payload.specialEventOccurrenceId === 'string'
+      ? payload.specialEventOccurrenceId.trim()
+      : '';
 
   if (!name) {
     throw new Error('INVALID_NAME');
@@ -41,17 +46,23 @@ function validatePayload(payload: any) {
     throw new Error('INVALID_PERSON_COUNT');
   }
 
+  if (!specialEventOccurrenceId) {
+    throw new Error('INVALID_OCCURRENCE');
+  }
+
   return {
     name,
     email,
     phone: phone || undefined,
     personCount,
+    specialEventOccurrenceId,
     newsletterConfirmation: Boolean(payload.newsletterConfirmation),
   };
 }
 
 async function createRegistrationWithRetry(params: {
   specialEventId: string;
+  specialEventOccurrenceId: string;
   name: string;
   email: string;
   phone?: string;
@@ -72,16 +83,31 @@ async function createRegistrationWithRetry(params: {
               name: true,
               isPublished: true,
               bookingType: true,
-              capacity: true,
               maxPersonsPerRegistration: true,
               priceCents: true,
-              eventDate: true,
-              startTime: true,
+              occurrences: {
+                where: {
+                  id: params.specialEventOccurrenceId,
+                },
+                select: {
+                  id: true,
+                  capacity: true,
+                  startTime: true,
+                  endTime: true,
+                  eventDate: true,
+                },
+              },
             },
           });
 
           if (!event || !event.isPublished) {
             throw new RegistrationError('EVENT_NOT_FOUND');
+          }
+
+          const occurrence = event.occurrences[0];
+
+          if (!occurrence) {
+            throw new RegistrationError('OCCURRENCE_NOT_FOUND');
           }
 
           if (event.bookingType !== 'INTERNAL_REGISTRATION') {
@@ -94,7 +120,7 @@ async function createRegistrationWithRetry(params: {
 
           const existingRegistration = await tx.eventRegistration.findFirst({
             where: {
-              specialEventId: event.id,
+              specialEventOccurrenceId: occurrence.id,
               email: normalizedEmail,
             },
             select: {
@@ -110,16 +136,13 @@ async function createRegistrationWithRetry(params: {
 
           const isPaidEvent = Boolean(event.priceCents && event.priceCents > 0);
 
-          if (event.capacity !== null) {
+          if (occurrence.capacity !== null) {
             const now = new Date();
 
             const aggregate = await tx.eventRegistration.aggregate({
               where: {
-                specialEventId: event.id,
+                specialEventOccurrenceId: occurrence.id,
 
-                // Wichtig:
-                // Wenn wir eine alte PENDING_PAYMENT Registration desselben Users
-                // wiederverwenden, darf sie beim Capacity-Check nicht mitzählen.
                 ...(existingRegistration
                   ? {
                       NOT: {
@@ -147,7 +170,7 @@ async function createRegistrationWithRetry(params: {
 
             const currentPersonCount = aggregate._sum.personCount ?? 0;
 
-            if (currentPersonCount + params.personCount > event.capacity) {
+            if (currentPersonCount + params.personCount > occurrence.capacity) {
               throw new RegistrationError('SOLD_OUT');
             }
           }
@@ -158,6 +181,7 @@ async function createRegistrationWithRetry(params: {
 
           const registrationData = {
             specialEventId: event.id,
+            specialEventOccurrenceId: occurrence.id,
             name: params.name,
             email: normalizedEmail,
             phone: params.phone || null,
@@ -167,9 +191,6 @@ async function createRegistrationWithRetry(params: {
               ? event.priceCents! * params.personCount
               : null,
             paymentExpiresAt,
-
-            // Wichtig, damit ein neuer Checkout-Versuch sauber startet.
-            // Der neue Stripe Checkout Session ID wird danach im Handler gesetzt.
             stripeCheckoutSessionId: null,
           } satisfies Prisma.EventRegistrationUncheckedCreateInput;
 
@@ -190,8 +211,14 @@ async function createRegistrationWithRetry(params: {
                     id: true,
                     name: true,
                     priceCents: true,
-                    eventDate: true,
+                  },
+                },
+                specialEventOccurrence: {
+                  select: {
+                    id: true,
                     startTime: true,
+                    endTime: true,
+                    eventDate: true,
                   },
                 },
               },
@@ -211,8 +238,14 @@ async function createRegistrationWithRetry(params: {
                   id: true,
                   name: true,
                   priceCents: true,
-                  eventDate: true,
+                },
+              },
+              specialEventOccurrence: {
+                select: {
+                  id: true,
                   startTime: true,
+                  endTime: true,
+                  eventDate: true,
                 },
               },
             },
@@ -252,6 +285,7 @@ export default async function handler(
 
     const registration = await createRegistrationWithRetry({
       specialEventId,
+      specialEventOccurrenceId: payload.specialEventOccurrenceId,
       name: payload.name,
       email: payload.email,
       phone: payload.phone,
@@ -262,6 +296,12 @@ export default async function handler(
       await createNewsletterSubscription(payload.email, payload.name);
     }
 
+    const occurrence = registration.specialEventOccurrence;
+    if (occurrence === null)
+      return res.status(400).json({
+        error: 'Bitte wähle einen Termin aus.',
+      });
+
     const isPaidEvent =
       registration.specialEvent.priceCents !== null &&
       registration.specialEvent.priceCents > 0;
@@ -271,6 +311,8 @@ export default async function handler(
         registrationId: registration.id,
         specialEventId: registration.specialEvent.id,
         eventName: registration.specialEvent.name,
+        eventDate: occurrence.eventDate.date,
+        startTime: occurrence.startTime,
         email: registration.email,
         personCount: registration.personCount,
         priceCentsPerPerson: registration.specialEvent.priceCents!,
@@ -302,8 +344,8 @@ export default async function handler(
       registration.specialEvent.name,
       registration.name,
       registration.personCount,
-      registration.specialEvent.eventDate.date,
-      registration.specialEvent.startTime,
+      occurrence.eventDate.date,
+      occurrence.startTime,
     );
 
     return res.status(201).json({
@@ -326,6 +368,11 @@ export default async function handler(
         case 'INVALID_PERSON_COUNT':
           return res.status(400).json({
             error: 'Bitte wähle eine gültige Personenzahl aus.',
+          });
+
+        case 'INVALID_OCCURRENCE':
+          return res.status(400).json({
+            error: 'Bitte wähle einen Termin aus.',
           });
 
         case 'ALREADY_REGISTERED':
@@ -351,6 +398,11 @@ export default async function handler(
         case 'SOLD_OUT':
           return res.status(409).json({
             error: 'Leider sind nicht mehr genügend Plätze verfügbar.',
+          });
+
+        case 'OCCURRENCE_NOT_FOUND':
+          return res.status(404).json({
+            error: 'Der ausgewählte Termin ist nicht mehr verfügbar.',
           });
 
         case 'TOO_MANY_PERSONS':

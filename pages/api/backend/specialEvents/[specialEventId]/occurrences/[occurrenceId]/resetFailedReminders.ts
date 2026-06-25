@@ -23,6 +23,7 @@ export default async function handler(
   }
 
   const specialEventId = req.query.specialEventId;
+  const occurrenceId = req.query.occurrenceId;
 
   if (typeof specialEventId !== 'string') {
     return res.status(400).json({
@@ -30,9 +31,16 @@ export default async function handler(
     });
   }
 
+  if (typeof occurrenceId !== 'string') {
+    return res.status(400).json({
+      error: 'Es wurde kein Termin angegeben.',
+    });
+  }
+
   const result = await prisma.eventRegistration.updateMany({
     where: {
       specialEventId,
+      specialEventOccurrenceId: occurrenceId,
       status: 'REGISTERED',
       reminderSent: null,
       reminderAttemptCount: {

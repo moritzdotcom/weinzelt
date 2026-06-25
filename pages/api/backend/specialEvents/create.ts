@@ -3,7 +3,10 @@ import { readFile } from 'node:fs/promises';
 import prisma from '@/lib/prismadb';
 import { getServerSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
-import { validateSpecialEventPayload } from '@/lib/specialEvents/validator';
+import {
+  parseOccurrences,
+  validateSpecialEventPayload,
+} from '@/lib/specialEvents/validator';
 import {
   firstField,
   getFirstFile,
@@ -50,9 +53,6 @@ export default async function handler(
     const validation = validateSpecialEventPayload({
       name: firstField(fields, 'name'),
       description: firstField(fields, 'description'),
-      eventDateId: firstField(fields, 'eventDateId'),
-      startTime: firstField(fields, 'startTime'),
-      endTime: firstField(fields, 'endTime'),
       category: firstField(fields, 'category'),
       badge: firstField(fields, 'badge') || undefined,
       ctaLabel: firstField(fields, 'ctaLabel'),
@@ -60,11 +60,9 @@ export default async function handler(
       externalUrl: firstField(fields, 'externalUrl') || undefined,
       priceCents: parseOptionalNumber(firstField(fields, 'priceCents')),
       priceLabel: firstField(fields, 'priceLabel') || undefined,
-      capacity: parseOptionalNumber(firstField(fields, 'capacity')),
       maxPersonsPerRegistration:
         parseOptionalNumber(firstField(fields, 'maxPersonsPerRegistration')) ??
         10,
-      sortOrder: parseOptionalNumber(firstField(fields, 'sortOrder')) ?? 0,
       isPublished: parseBoolean(firstField(fields, 'isPublished')),
       attachmentLabel: firstField(fields, 'attachmentLabel') || undefined,
       removeTitleImage: false,
@@ -78,15 +76,21 @@ export default async function handler(
       });
     }
 
+    const occurrences = parseOccurrences(firstField(fields, 'occurrences'));
+
+    if (occurrences.length === 0) {
+      return res.status(400).json({
+        error: 'Bitte wähle mindestens einen Veranstaltungstag aus.',
+      });
+    }
+
     const payload = validation.payload;
 
     const specialEvent = await prisma.specialEvent.create({
       data: {
+        eventId: payload.eventId,
         name: payload.name,
         description: payload.description,
-        eventDateId: payload.eventDateId,
-        startTime: payload.startTime,
-        endTime: payload.endTime,
         category: payload.category,
         badge: payload.badge ?? null,
         ctaLabel: payload.ctaLabel,
@@ -94,11 +98,21 @@ export default async function handler(
         externalUrl: payload.externalUrl ?? null,
         priceCents: payload.priceCents,
         priceLabel: payload.priceLabel ?? null,
-        capacity: payload.capacity,
         maxPersonsPerRegistration: payload.maxPersonsPerRegistration,
-        sortOrder: payload.sortOrder,
         isPublished: payload.isPublished,
         attachmentLabel: payload.attachmentLabel ?? null,
+        occurrences: {
+          create: occurrences.map((occurrence) => ({
+            eventDateId: occurrence.eventDateId,
+            startTime: occurrence.startTime,
+            endTime: occurrence.endTime,
+            capacity:
+              payload.bookingType === 'INTERNAL_REGISTRATION'
+                ? occurrence.capacity
+                : null,
+            sortOrder: occurrence.sortOrder,
+          })),
+        },
       },
       select: {
         id: true,

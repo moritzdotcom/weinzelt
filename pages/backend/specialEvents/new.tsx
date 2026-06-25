@@ -30,12 +30,17 @@ import EventSelector from '@/components/eventSelector';
 import { ApiGetEventsResponse } from '@/pages/api/events';
 import BackendHeader from '@/components/backend/header';
 
-type FormState = {
-  name: string;
-  description: string;
+type OccurrenceFormState = {
+  id?: string;
   eventDateId: string;
   startTime: string;
   endTime: string;
+  capacity: string;
+};
+
+type FormState = {
+  name: string;
+  description: string;
   category: PublicSpecialEvent['category'];
   badge: string;
   ctaLabel: string;
@@ -43,19 +48,16 @@ type FormState = {
   externalUrl: string;
   price: string;
   priceLabel: string;
-  capacity: string;
   maxPersonsPerRegistration: string;
-  sortOrder: string;
   isPublished: boolean;
   attachmentLabel: string;
+
+  occurrences: OccurrenceFormState[];
 };
 
 const initialForm: FormState = {
   name: '',
   description: '',
-  eventDateId: '',
-  startTime: '15:00',
-  endTime: '17:00',
   category: 'WINE_TASTING',
   badge: '',
   ctaLabel: 'Jetzt anmelden',
@@ -63,11 +65,10 @@ const initialForm: FormState = {
   externalUrl: '',
   price: '',
   priceLabel: '',
-  capacity: '',
   maxPersonsPerRegistration: '10',
-  sortOrder: '0',
   isPublished: false,
   attachmentLabel: '',
+  occurrences: [],
 };
 
 function toCents(value: string) {
@@ -120,9 +121,33 @@ export default function NewSpecialEventPage() {
     };
   }, [titleImage]);
 
-  const selectedEventDate =
-    eventDates.find((eventDate) => eventDate.id === form.eventDateId) ??
-    eventDates[0];
+  const previewOccurrences = form.occurrences
+    .map((occurrence) => {
+      const eventDate = eventDates.find(
+        (date) => date.id === occurrence.eventDateId,
+      );
+
+      if (!eventDate) return null;
+
+      const capacity = occurrence.capacity ? Number(occurrence.capacity) : null;
+
+      return {
+        id: occurrence.eventDateId,
+        eventDate: {
+          id: eventDate.id,
+          date: eventDate.date,
+          dow: eventDate.dow,
+        },
+        startTime: occurrence.startTime,
+        endTime: occurrence.endTime,
+        capacity,
+        remainingCapacity: capacity,
+        isSoldOut: false,
+      };
+    })
+    .filter(Boolean) as PublicSpecialEvent['occurrences'];
+
+  const firstOccurrence = previewOccurrences[0];
 
   const previewEvent = useMemo<PublicSpecialEvent>(
     () => ({
@@ -131,12 +156,6 @@ export default function NewSpecialEventPage() {
       description:
         form.description ||
         'Beschreibe hier kurz, was die Gäste bei diesem WineEvent erwartet.',
-      eventDate: {
-        id: selectedEventDate?.id ?? 'preview-date',
-        date: selectedEventDate?.date ?? new Date().toISOString(),
-      },
-      startTime: form.startTime,
-      endTime: form.endTime,
       category: form.category,
       badge: form.badge || null,
       titleImageUrl: titleImagePreview,
@@ -145,14 +164,20 @@ export default function NewSpecialEventPage() {
       ctaLabel: form.ctaLabel || 'Jetzt anmelden',
       bookingType: form.bookingType,
       externalUrl: form.externalUrl || null,
-      capacity: form.capacity ? Number(form.capacity) : null,
-      remainingCapacity: form.capacity ? Number(form.capacity) : null,
       maxPersonsPerRegistration: Number(form.maxPersonsPerRegistration) || 10,
-      isSoldOut: false,
       attachmentUrl: null,
       attachmentLabel: form.attachmentLabel || null,
+      occurrences: previewOccurrences,
+      eventDate: firstOccurrence?.eventDate ?? {
+        id: 'preview-date',
+        date: new Date().toISOString(),
+      },
+      startTime: firstOccurrence?.startTime ?? '11:00',
+      endTime: firstOccurrence?.endTime ?? '14:00',
+      remainingCapacity: null,
+      isSoldOut: false,
     }),
-    [form, selectedEventDate, titleImagePreview],
+    [form, previewOccurrences, titleImagePreview],
   );
 
   const updateForm = <Key extends keyof FormState>(
@@ -164,6 +189,23 @@ export default function NewSpecialEventPage() {
       [key]: value,
     }));
   };
+
+  function updateOccurrence(
+    eventDateId: string,
+    patch: Partial<OccurrenceFormState>,
+  ) {
+    setForm((current) => ({
+      ...current,
+      occurrences: current.occurrences.map((occurrence) =>
+        occurrence.eventDateId === eventDateId
+          ? {
+              ...occurrence,
+              ...patch,
+            }
+          : occurrence,
+      ),
+    }));
+  }
 
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -181,11 +223,9 @@ export default function NewSpecialEventPage() {
     try {
       const body = new FormData();
 
+      body.append('eventId', selectedEvent?.id || '');
       body.append('name', form.name);
       body.append('description', form.description);
-      body.append('eventDateId', form.eventDateId);
-      body.append('startTime', form.startTime);
-      body.append('endTime', form.endTime);
       body.append('category', form.category);
       body.append('badge', form.badge);
       body.append('ctaLabel', form.ctaLabel);
@@ -193,11 +233,19 @@ export default function NewSpecialEventPage() {
       body.append('externalUrl', form.externalUrl);
       body.append('priceCents', toCents(form.price));
       body.append('priceLabel', form.priceLabel);
-      body.append('capacity', form.capacity);
       body.append('maxPersonsPerRegistration', form.maxPersonsPerRegistration);
-      body.append('sortOrder', form.sortOrder);
       body.append('isPublished', String(form.isPublished));
       body.append('attachmentLabel', form.attachmentLabel);
+
+      body.append(
+        'occurrences',
+        JSON.stringify(
+          form.occurrences.map((occurrence, index) => ({
+            ...occurrence,
+            sortOrder: index,
+          })),
+        ),
+      );
 
       if (attachment) {
         body.append('attachment', attachment);
@@ -308,48 +356,127 @@ export default function NewSpecialEventPage() {
 
                 <EventSelector onChange={setSelectedEvent} />
 
-                <FormControl fullWidth>
-                  <InputLabel>Veranstaltungstag</InputLabel>
-                  <Select
-                    required
-                    label="Veranstaltungstag"
-                    value={form.eventDateId}
-                    onChange={(event) =>
-                      updateForm('eventDateId', event.target.value)
-                    }
-                  >
-                    {eventDates.map((eventDate) => (
-                      <MenuItem key={eventDate.id} value={eventDate.id}>
-                        {eventDate.date}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Typography variant="h6" fontWeight={800}>
+                  Termine
+                </Typography>
 
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <TextField
-                    required
-                    fullWidth
-                    type="time"
-                    label="Start"
-                    InputLabelProps={{ shrink: true }}
-                    value={form.startTime}
-                    onChange={(event) =>
-                      updateForm('startTime', event.target.value)
-                    }
-                  />
+                <Typography variant="body2" color="text.secondary">
+                  Wähle einen oder mehrere Tage aus. Uhrzeit und Kapazität
+                  können pro Tag unterschiedlich sein.
+                </Typography>
 
-                  <TextField
-                    required
-                    fullWidth
-                    type="time"
-                    label="Ende"
-                    InputLabelProps={{ shrink: true }}
-                    value={form.endTime}
-                    onChange={(event) =>
-                      updateForm('endTime', event.target.value)
-                    }
-                  />
+                <Stack spacing={1.5}>
+                  {eventDates.map((eventDate) => {
+                    const occurrence = form.occurrences.find(
+                      (item) => item.eventDateId === eventDate.id,
+                    );
+
+                    const checked = Boolean(occurrence);
+
+                    return (
+                      <Box
+                        key={eventDate.id}
+                        sx={{
+                          p: 2,
+                          borderRadius: 3,
+                          border: '1px solid',
+                          borderColor: checked ? 'black' : 'divider',
+                          bgcolor: checked
+                            ? 'rgba(0,0,0,0.03)'
+                            : 'background.paper',
+                        }}
+                      >
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={checked}
+                              onChange={(event) => {
+                                const nextChecked = event.target.checked;
+
+                                setForm((current) => {
+                                  if (nextChecked) {
+                                    return {
+                                      ...current,
+                                      occurrences: [
+                                        ...current.occurrences,
+                                        {
+                                          eventDateId: eventDate.id,
+                                          startTime: '11:00',
+                                          endTime: '14:00',
+                                          capacity: '',
+                                        },
+                                      ],
+                                    };
+                                  }
+
+                                  return {
+                                    ...current,
+                                    occurrences: current.occurrences.filter(
+                                      (item) =>
+                                        item.eventDateId !== eventDate.id,
+                                    ),
+                                  };
+                                });
+                              }}
+                            />
+                          }
+                          label={`${eventDate.dow}, ${eventDate.date}`}
+                        />
+
+                        {occurrence && (
+                          <Stack
+                            direction={{ xs: 'column', sm: 'row' }}
+                            spacing={2}
+                            sx={{ mt: 1.5 }}
+                          >
+                            <TextField
+                              required
+                              fullWidth
+                              type="time"
+                              label="Start"
+                              InputLabelProps={{ shrink: true }}
+                              value={occurrence.startTime}
+                              onChange={(event) =>
+                                updateOccurrence(eventDate.id, {
+                                  startTime: event.target.value,
+                                })
+                              }
+                            />
+
+                            <TextField
+                              required
+                              fullWidth
+                              type="time"
+                              label="Ende"
+                              InputLabelProps={{ shrink: true }}
+                              value={occurrence.endTime}
+                              onChange={(event) =>
+                                updateOccurrence(eventDate.id, {
+                                  endTime: event.target.value,
+                                })
+                              }
+                            />
+
+                            {form.bookingType === 'INTERNAL_REGISTRATION' && (
+                              <TextField
+                                fullWidth
+                                type="number"
+                                label="Kapazität"
+                                placeholder="Optional"
+                                inputProps={{ min: 1 }}
+                                value={occurrence.capacity}
+                                onChange={(event) =>
+                                  updateOccurrence(eventDate.id, {
+                                    capacity: event.target.value,
+                                  })
+                                }
+                              />
+                            )}
+                          </Stack>
+                        )}
+                      </Box>
+                    );
+                  })}
                 </Stack>
 
                 <FormControl fullWidth>
@@ -453,34 +580,20 @@ export default function NewSpecialEventPage() {
                 )}
 
                 {form.bookingType === 'INTERNAL_REGISTRATION' && (
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                    <TextField
-                      fullWidth
-                      type="number"
-                      label="Maximale Gesamtkapazität"
-                      placeholder="Optional"
-                      inputProps={{ min: 1 }}
-                      value={form.capacity}
-                      onChange={(event) =>
-                        updateForm('capacity', event.target.value)
-                      }
-                    />
-
-                    <TextField
-                      required
-                      fullWidth
-                      type="number"
-                      label="Max. Personen pro Anmeldung"
-                      inputProps={{ min: 1, max: 50 }}
-                      value={form.maxPersonsPerRegistration}
-                      onChange={(event) =>
-                        updateForm(
-                          'maxPersonsPerRegistration',
-                          event.target.value,
-                        )
-                      }
-                    />
-                  </Stack>
+                  <TextField
+                    required
+                    fullWidth
+                    type="number"
+                    label="Max. Personen pro Anmeldung"
+                    inputProps={{ min: 1, max: 50 }}
+                    value={form.maxPersonsPerRegistration}
+                    onChange={(event) =>
+                      updateForm(
+                        'maxPersonsPerRegistration',
+                        event.target.value,
+                      )
+                    }
+                  />
                 )}
 
                 {/* <TextField

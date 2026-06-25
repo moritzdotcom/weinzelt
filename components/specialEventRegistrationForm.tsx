@@ -24,6 +24,9 @@ export function SpecialEventRegistrationForm({
   onRegistered?: () => void;
   submitLabel?: string;
 }) {
+  const [selectedOccurrenceId, setSelectedOccurrenceId] = useState(
+    event.occurrences[0]?.id ?? '',
+  );
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -34,6 +37,7 @@ export function SpecialEventRegistrationForm({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setSelectedOccurrenceId(event.occurrences[0]?.id ?? '');
     setName('');
     setEmail('');
     setPhone('');
@@ -43,15 +47,35 @@ export function SpecialEventRegistrationForm({
     setError(null);
   }, [event.id]);
 
+  const selectedOccurrence = useMemo(
+    () =>
+      event.occurrences.find(
+        (occurrence) => occurrence.id === selectedOccurrenceId,
+      ) ?? event.occurrences[0],
+    [event.occurrences, selectedOccurrenceId],
+  );
+
   const maxSelectablePersons = useMemo(() => {
+    if (!selectedOccurrence) return 1;
+
     const remainingCapacity =
-      event.remainingCapacity ?? event.maxPersonsPerRegistration;
+      selectedOccurrence.remainingCapacity ?? event.maxPersonsPerRegistration;
 
     return Math.max(
       1,
       Math.min(event.maxPersonsPerRegistration, remainingCapacity),
     );
-  }, [event.maxPersonsPerRegistration, event.remainingCapacity]);
+  }, [event.maxPersonsPerRegistration, selectedOccurrence]);
+
+  function formatOccurrenceLabel(
+    occurrence: PublicSpecialEvent['occurrences'][number],
+  ) {
+    const dateLabel = occurrence.eventDate.dow
+      ? `${occurrence.eventDate.dow}, ${occurrence.eventDate.date}`
+      : occurrence.eventDate.date;
+
+    return `${dateLabel} · ${occurrence.startTime}–${occurrence.endTime} Uhr`;
+  }
 
   const requiresPayment = Boolean(event.priceCents && event.priceCents > 0);
 
@@ -72,6 +96,7 @@ export function SpecialEventRegistrationForm({
           phone: phone || undefined,
           personCount,
           newsletterConfirmation,
+          specialEventOccurrenceId: selectedOccurrence.id,
         },
       );
 
@@ -112,6 +137,14 @@ export function SpecialEventRegistrationForm({
     );
   }
 
+  if (!selectedOccurrence) {
+    return (
+      <Alert severity="warning">
+        Für dieses WineEvent ist aktuell kein Termin verfügbar.
+      </Alert>
+    );
+  }
+
   if (event.isSoldOut) {
     return (
       <Alert severity="warning">
@@ -123,17 +156,44 @@ export function SpecialEventRegistrationForm({
   return (
     <Box component="form" onSubmit={handleSubmit}>
       <Stack spacing={2.5}>
-        {event.remainingCapacity !== null && (
+        {selectedOccurrence.remainingCapacity !== null && (
           <Alert
-            severity={event.remainingCapacity <= 5 ? 'warning' : 'info'}
+            severity={
+              selectedOccurrence.remainingCapacity <= 5 ? 'warning' : 'info'
+            }
             icon={<LocalActivityRounded />}
           >
-            Noch {event.remainingCapacity}{' '}
-            {event.remainingCapacity === 1 ? 'Platz' : 'Plätze'} verfügbar.
+            Noch {selectedOccurrence.remainingCapacity}{' '}
+            {selectedOccurrence.remainingCapacity === 1 ? 'Platz' : 'Plätze'}{' '}
+            für diesen Termin verfügbar.
           </Alert>
         )}
 
         {error && <Alert severity="error">{error}</Alert>}
+
+        {event.occurrences.length > 1 && (
+          <TextField
+            required
+            select
+            label="Termin auswählen"
+            value={selectedOccurrenceId}
+            onChange={(inputEvent) => {
+              setSelectedOccurrenceId(inputEvent.target.value);
+              setPersonCount(1);
+            }}
+          >
+            {event.occurrences.map((occurrence) => (
+              <MenuItem
+                key={occurrence.id}
+                value={occurrence.id}
+                disabled={occurrence.isSoldOut}
+              >
+                {formatOccurrenceLabel(occurrence)}
+                {occurrence.isSoldOut ? ' · ausgebucht' : ''}
+              </MenuItem>
+            ))}
+          </TextField>
+        )}
 
         <TextField
           required

@@ -1,6 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prismadb';
-import type { PublicSpecialEvent } from '@/lib/specialEvents';
+import {
+  getActiveRegistrationWhere,
+  mapSpecialEventToPublic,
+  type PublicSpecialEvent,
+} from '@/lib/specialEvents';
 import { supabase } from '@/lib/supabase';
 import { getServerSession } from '@/lib/session';
 
@@ -38,64 +42,33 @@ export default async function handler(
       isPublished: session ? undefined : true,
     },
     include: {
-      eventDate: {
-        select: {
-          id: true,
-          date: true,
-          dow: true,
-        },
-      },
-      registrations: {
-        where: {
-          status: 'REGISTERED',
-        },
-        select: {
-          personCount: true,
+      occurrences: {
+        orderBy: [
+          {
+            sortOrder: 'asc',
+          },
+        ],
+        include: {
+          eventDate: true,
+          registrations: {
+            where: getActiveRegistrationWhere(),
+            select: {
+              id: true,
+              personCount: true,
+              status: true,
+              paymentExpiresAt: true,
+            },
+          },
         },
       },
     },
   });
 
-  if (!event) {
+  if (!event || event.occurrences.length === 0) {
     return res.status(404).json({
-      error: 'Das WineEvent wurde nicht gefunden.',
+      error: 'Dieses WineEvent wurde nicht gefunden.',
     });
   }
 
-  const registeredPersonCount = event.registrations.reduce(
-    (sum, registration) => sum + registration.personCount,
-    0,
-  );
-
-  const remainingCapacity =
-    event.capacity === null
-      ? null
-      : Math.max(0, event.capacity - registeredPersonCount);
-
-  return res.status(200).json({
-    id: event.id,
-    name: event.name,
-    description: event.description,
-    startTime: event.startTime,
-    endTime: event.endTime,
-    category: event.category,
-    badge: event.badge,
-    titleImageUrl: getPublicImageUrl(event.titleImagePath),
-    attachmentUrl: getPublicImageUrl(event.attachmentPath),
-    attachmentLabel: event.attachmentLabel,
-    priceCents: event.priceCents,
-    priceLabel: event.priceLabel,
-    ctaLabel: event.ctaLabel,
-    bookingType: event.bookingType,
-    externalUrl: event.externalUrl,
-    capacity: event.capacity,
-    remainingCapacity,
-    maxPersonsPerRegistration: event.maxPersonsPerRegistration,
-    isSoldOut: remainingCapacity === 0,
-    eventDate: {
-      id: event.eventDate.id,
-      date: event.eventDate.date,
-      dow: event.eventDate.dow,
-    },
-  });
+  return res.status(200).json(mapSpecialEventToPublic(event));
 }

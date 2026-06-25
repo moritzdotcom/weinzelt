@@ -1,11 +1,13 @@
-import { SpecialEventBookingType, SpecialEventCategory } from '@prisma/client';
+import {
+  Prisma,
+  SpecialEventBookingType,
+  SpecialEventCategory,
+} from '@prisma/client';
 
 export type SpecialEventPayload = {
+  eventId: string;
   name: string;
   description: string;
-  eventDateId: string;
-  startTime: string;
-  endTime: string;
   category: SpecialEventCategory;
   badge?: string;
   ctaLabel: string;
@@ -13,9 +15,7 @@ export type SpecialEventPayload = {
   externalUrl?: string;
   priceCents: number | null;
   priceLabel?: string;
-  capacity: number | null;
   maxPersonsPerRegistration: number;
-  sortOrder: number;
   isPublished: boolean;
   removeTitleImage: boolean;
   removeAttachment: boolean;
@@ -97,19 +97,209 @@ function isIntegerOrNull(value: unknown): value is number | null {
   );
 }
 
+export function parseOccurrences(value: string) {
+  try {
+    const parsed = JSON.parse(value);
+
+    if (!Array.isArray(parsed)) {
+      throw new Error('INVALID_OCCURRENCES');
+    }
+
+    return parsed.map((item, index) => {
+      const id = typeof item.id === 'string' ? item.id.trim() : '';
+
+      const eventDateId =
+        typeof item.eventDateId === 'string' ? item.eventDateId.trim() : '';
+
+      const startTime =
+        typeof item.startTime === 'string' ? item.startTime.trim() : '';
+
+      const endTime =
+        typeof item.endTime === 'string' ? item.endTime.trim() : '';
+
+      const capacity =
+        item.capacity === '' ||
+        item.capacity === null ||
+        item.capacity === undefined
+          ? null
+          : Number(item.capacity);
+
+      if (!eventDateId || !startTime || !endTime) {
+        throw new Error('INVALID_OCCURRENCES');
+      }
+
+      if (capacity !== null && (!Number.isInteger(capacity) || capacity < 1)) {
+        throw new Error('INVALID_OCCURRENCES');
+      }
+
+      return {
+        id,
+        eventDateId,
+        startTime,
+        endTime,
+        capacity,
+        sortOrder: Number.isInteger(Number(item.sortOrder))
+          ? Number(item.sortOrder)
+          : index,
+      };
+    });
+  } catch {
+    throw new Error('INVALID_OCCURRENCES');
+  }
+}
+
+type SyncOccurrenceInput = {
+  id?: string;
+  eventDateId: string;
+  startTime: string;
+  endTime: string;
+  capacity: number | null;
+  sortOrder: number;
+};
+
+export async function syncOccurrences(params: {
+  tx: Prisma.TransactionClient;
+  specialEventId: string;
+  occurrences: SyncOccurrenceInput[];
+  bookingType: SpecialEventBookingType;
+}) {
+  const existingOccurrences = await params.tx.specialEventOccurrence.findMany({
+    where: {
+      specialEventId: params.specialEventId,
+    },
+    select: {
+      id: true,
+      eventDateId: true,
+      capacity: true,
+      registrations: {
+        where: {
+          OR: [
+            {
+              status: 'REGISTERED',
+            },
+            {
+              status: 'PENDING_PAYMENT',
+              paymentExpiresAt: {
+                gt: new Date(),
+              },
+            },
+          ],
+        },
+        select: {
+          personCount: true,
+        },
+      },
+      _count: {
+        select: {
+          registrations: true,
+        },
+      },
+    },
+  });
+
+  const existingById = new Map(
+    existingOccurrences.map((occurrence) => [occurrence.id, occurrence]),
+  );
+
+  const nextIds = new Set(
+    params.occurrences
+      .map((occurrence) => occurrence.id)
+      .filter((id): id is string => Boolean(id)),
+  );
+
+  /*
+   * Entfernte Occurrences:
+   * - ohne Registrierungen: wirklich löschen
+   * - mit Registrierungen: behalten, damit normale Event-Bearbeitung nicht blockiert
+   */
+  for (const existingOccurrence of existingOccurrences) {
+    if (nextIds.has(existingOccurrence.id)) continue;
+
+    if (existingOccurrence._count.registrations > 0) {
+      continue;
+    }
+
+    await params.tx.specialEventOccurrence.delete({
+      where: {
+        id: existingOccurrence.id,
+      },
+    });
+  }
+
+  for (const [index, occurrence] of params.occurrences.entries()) {
+    const capacity =
+      params.bookingType === 'INTERNAL_REGISTRATION'
+        ? occurrence.capacity
+        : null;
+
+    const data = {
+      eventDateId: occurrence.eventDateId,
+      startTime: occurrence.startTime,
+      endTime: occurrence.endTime,
+      capacity,
+      sortOrder: occurrence.sortOrder ?? index,
+    };
+
+    if (occurrence.id) {
+      const existingOccurrence = existingById.get(occurrence.id);
+
+      if (!existingOccurrence) {
+        throw new Error('OCCURRENCE_NOT_FOUND');
+      }
+
+      const activePersonCount = existingOccurrence.registrations.reduce(
+        (sum, registration) => sum + registration.personCount,
+        0,
+      );
+
+      const hasRegistrations = existingOccurrence._count.registrations > 0;
+
+      /*
+       * Wenn schon Anmeldungen existieren, sollte das Datum nicht still geändert werden.
+       * Uhrzeit darf man ändern, weil das fachlich manchmal nötig ist.
+       */
+      if (
+        hasRegistrations &&
+        existingOccurrence.eventDateId !== occurrence.eventDateId
+      ) {
+        throw new Error('OCCURRENCE_DATE_CHANGE_WITH_REGISTRATIONS');
+      }
+
+      /*
+       * Kapazität darf nicht unter belegte Plätze fallen.
+       */
+      if (capacity !== null && activePersonCount > capacity) {
+        throw new Error('OCCURRENCE_CAPACITY_TOO_LOW');
+      }
+
+      await params.tx.specialEventOccurrence.update({
+        where: {
+          id: occurrence.id,
+        },
+        data,
+      });
+
+      continue;
+    }
+
+    await params.tx.specialEventOccurrence.create({
+      data: {
+        ...data,
+        specialEventId: params.specialEventId,
+      },
+    });
+  }
+}
+
 export function validateSpecialEventPayload(
   input: UntrustedSpecialEventPayload,
 ): ValidateSpecialEventPayloadResult {
   const errors: SpecialEventValidationError[] = [];
 
+  const eventId = typeof input.eventId === 'string' ? input.eventId.trim() : '';
   const name = typeof input.name === 'string' ? input.name.trim() : '';
   const description =
     typeof input.description === 'string' ? input.description.trim() : '';
-  const eventDateId =
-    typeof input.eventDateId === 'string' ? input.eventDateId.trim() : '';
-  const startTime =
-    typeof input.startTime === 'string' ? input.startTime.trim() : '';
-  const endTime = typeof input.endTime === 'string' ? input.endTime.trim() : '';
 
   const badge = normalizeOptionalString(input.badge);
   const priceLabel = normalizeOptionalString(input.priceLabel);
@@ -119,8 +309,6 @@ export function validateSpecialEventPayload(
     typeof input.ctaLabel === 'string' ? input.ctaLabel.trim() : '';
 
   const priceCents = input.priceCents ?? null;
-  const capacity = input.capacity ?? null;
-  const sortOrder = input.sortOrder ?? 0;
   const maxPersonsPerRegistration = input.maxPersonsPerRegistration ?? 10;
   const isPublished = input.isPublished ?? false;
   const removeTitleImage = input.removeTitleImage ?? false;
@@ -154,41 +342,6 @@ export function validateSpecialEventPayload(
     errors.push({
       field: 'description',
       message: 'Die Beschreibung darf maximal 5.000 Zeichen enthalten.',
-    });
-  }
-
-  if (!UUID_REGEX.test(eventDateId)) {
-    errors.push({
-      field: 'eventDateId',
-      message: 'Es muss ein gültiger Veranstaltungstag ausgewählt werden.',
-    });
-  }
-
-  /*
-   * Uhrzeiten
-   */
-  if (!TIME_REGEX.test(startTime)) {
-    errors.push({
-      field: 'startTime',
-      message: 'Die Startzeit muss im Format HH:mm angegeben werden.',
-    });
-  }
-
-  if (!TIME_REGEX.test(endTime)) {
-    errors.push({
-      field: 'endTime',
-      message: 'Die Endzeit muss im Format HH:mm angegeben werden.',
-    });
-  }
-
-  if (
-    TIME_REGEX.test(startTime) &&
-    TIME_REGEX.test(endTime) &&
-    getTimeInMinutes(endTime) <= getTimeInMinutes(startTime)
-  ) {
-    errors.push({
-      field: 'endTime',
-      message: 'Die Endzeit muss nach der Startzeit liegen.',
     });
   }
 
@@ -240,8 +393,6 @@ export function validateSpecialEventPayload(
     });
   }
 
-  const isPaidEvent = typeof priceCents === 'number' && priceCents > 0;
-
   /*
    * Buchungslogik
    */
@@ -262,16 +413,6 @@ export function validateSpecialEventPayload(
     });
   }
 
-  /*
-   * Kapazitäten
-   */
-  if (!isIntegerOrNull(capacity) || (capacity !== null && capacity < 1)) {
-    errors.push({
-      field: 'capacity',
-      message: 'Die Kapazität muss mindestens 1 betragen.',
-    });
-  }
-
   if (
     !Number.isInteger(maxPersonsPerRegistration) ||
     maxPersonsPerRegistration < 1 ||
@@ -281,28 +422,6 @@ export function validateSpecialEventPayload(
       field: 'maxPersonsPerRegistration',
       message:
         'Die maximale Personenzahl pro Anmeldung muss zwischen 1 und 50 liegen.',
-    });
-  }
-
-  if (
-    input.bookingType === SpecialEventBookingType.INTERNAL_REGISTRATION &&
-    capacity !== null &&
-    maxPersonsPerRegistration > capacity
-  ) {
-    errors.push({
-      field: 'maxPersonsPerRegistration',
-      message:
-        'Die maximale Personenzahl pro Anmeldung darf nicht größer als die Gesamtkapazität sein.',
-    });
-  }
-
-  /*
-   * Sonstige numerische und boolesche Felder
-   */
-  if (!Number.isInteger(sortOrder)) {
-    errors.push({
-      field: 'sortOrder',
-      message: 'Die Sortierung muss eine Ganzzahl sein.',
     });
   }
 
@@ -345,11 +464,9 @@ export function validateSpecialEventPayload(
     valid: true,
     errors: [],
     payload: {
+      eventId,
       name,
       description,
-      eventDateId,
-      startTime,
-      endTime,
       category,
       badge,
       ctaLabel:
@@ -371,16 +488,7 @@ export function validateSpecialEventPayload(
       priceCents,
       priceLabel,
 
-      /*
-       * Eine Kapazität ist nur für interne Registrierungen relevant.
-       */
-      capacity:
-        bookingType === SpecialEventBookingType.INTERNAL_REGISTRATION
-          ? capacity
-          : null,
-
       maxPersonsPerRegistration,
-      sortOrder,
       isPublished,
       removeTitleImage,
 

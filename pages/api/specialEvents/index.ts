@@ -1,6 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prismadb';
-import type { PublicSpecialEvent } from '@/lib/specialEvents';
+import {
+  getActiveRegistrationWhere,
+  mapSpecialEventToPublic,
+  type PublicSpecialEvent,
+} from '@/lib/specialEvents';
 import { supabase } from '@/lib/supabase';
 
 export default async function handler(
@@ -30,98 +34,30 @@ export default async function handler(
           startTime: 'asc',
         },
       ],
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        eventDate: {
-          select: {
-            id: true,
-            date: true,
-          },
-        },
-        startTime: true,
-        endTime: true,
-        category: true,
-        badge: true,
-        titleImagePath: true,
-        priceCents: true,
-        priceLabel: true,
-        ctaLabel: true,
-        bookingType: true,
-        externalUrl: true,
-        capacity: true,
-        maxPersonsPerRegistration: true,
-        registrations: {
-          where: {
-            status: 'REGISTERED',
-          },
-          select: {
-            status: true,
-            paymentExpiresAt: true,
-            personCount: true,
+      include: {
+        occurrences: {
+          orderBy: [
+            {
+              sortOrder: 'asc',
+            },
+          ],
+          include: {
+            eventDate: true,
+            registrations: {
+              where: getActiveRegistrationWhere(),
+              select: {
+                id: true,
+                personCount: true,
+                status: true,
+                paymentExpiresAt: true,
+              },
+            },
           },
         },
       },
     });
 
-    const result: PublicSpecialEvent[] = events.map((event) => {
-      const now = new Date();
-
-      const registeredPersons = event.registrations.reduce(
-        (sum, registration) => {
-          const isConfirmed = registration.status === 'REGISTERED';
-
-          const isActivePendingPayment =
-            registration.status === 'PENDING_PAYMENT' &&
-            registration.paymentExpiresAt &&
-            registration.paymentExpiresAt > now;
-
-          if (!isConfirmed && !isActivePendingPayment) {
-            return sum;
-          }
-
-          return sum + registration.personCount;
-        },
-        0,
-      );
-
-      const remainingCapacity =
-        event.capacity === null
-          ? null
-          : Math.max(0, event.capacity - registeredPersons);
-
-      const titleImageUrl = event.titleImagePath
-        ? supabase.storage.from('Weinzelt').getPublicUrl(event.titleImagePath)
-            .data.publicUrl
-        : null;
-
-      return {
-        id: event.id,
-        name: event.name,
-        description: event.description,
-        eventDate: {
-          id: event.eventDate.id,
-          date: event.eventDate.date,
-        },
-        startTime: event.startTime,
-        endTime: event.endTime,
-        category: event.category,
-        badge: event.badge,
-        titleImageUrl,
-        attachmentUrl: null,
-        attachmentLabel: null,
-        priceCents: event.priceCents,
-        priceLabel: event.priceLabel,
-        ctaLabel: event.ctaLabel,
-        bookingType: event.bookingType,
-        externalUrl: event.externalUrl,
-        capacity: event.capacity,
-        remainingCapacity,
-        maxPersonsPerRegistration: event.maxPersonsPerRegistration,
-        isSoldOut: remainingCapacity === 0,
-      };
-    });
+    const result: PublicSpecialEvent[] = events.map(mapSpecialEventToPublic);
 
     return res.status(200).json(result);
   } catch (error) {

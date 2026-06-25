@@ -39,14 +39,79 @@ import EventSelector from '@/components/eventSelector';
 import { compareEventDates } from '@/lib/eventDates';
 import type { Session } from '@/hooks/useSession';
 import type { ApiGetEventsResponse } from '../../api/events';
-import type { AdminSpecialEvent } from '@/lib/specialEvents';
 import type { PublicSpecialEvent } from '@/lib/specialEvents';
+import { SpecialEventCard } from '@/components/specialEventCard';
+import BackendHeader from '@/components/backend/header';
 import {
   formatSpecialEventCategory,
   formatSpecialEventPrice,
-} from '@/lib/specialEvents';
-import { SpecialEventCard } from '@/components/specialEventCard';
-import BackendHeader from '@/components/backend/header';
+} from '@/lib/specialEvents/format';
+
+type BackendSpecialEventOccurrence = {
+  id: string;
+  eventDate: {
+    id: string;
+    date: string;
+    dow?: string | null;
+  };
+  startTime: string;
+  endTime: string;
+  capacity: number | null;
+  stats?: {
+    registrationCount: number;
+    registeredPersonCount: number;
+    remainingCapacity: number | null;
+  };
+};
+
+type BackendSpecialEventListItem = {
+  id: string;
+  name: string;
+  description: string;
+  category: PublicSpecialEvent['category'];
+  badge: string | null;
+  titleImageUrl: string | null;
+  priceCents: number | null;
+  priceLabel: string | null;
+  ctaLabel: string;
+  bookingType: PublicSpecialEvent['bookingType'];
+  externalUrl: string | null;
+  maxPersonsPerRegistration: number;
+  sortOrder: number;
+  isPublished: boolean;
+  attachmentUrl: string | null;
+  attachmentLabel: string | null;
+  occurrences: BackendSpecialEventOccurrence[];
+  stats?: {
+    registrationCount: number;
+    registeredPersonCount: number;
+    remainingCapacity: number | null;
+  };
+};
+
+type OccurrenceFormState = {
+  id?: string;
+  eventDateId: string;
+  startTime: string;
+  endTime: string;
+  capacity: string;
+};
+
+type EditFormState = {
+  name: string;
+  description: string;
+  category: PublicSpecialEvent['category'];
+  badge: string;
+  ctaLabel: string;
+  bookingType: PublicSpecialEvent['bookingType'];
+  externalUrl: string;
+  price: string;
+  priceLabel: string;
+  maxPersonsPerRegistration: string;
+  isPublished: boolean;
+  attachmentLabel: string;
+  occurrences: OccurrenceFormState[];
+};
 
 function getBookingTypeLabel(bookingType: PublicSpecialEvent['bookingType']) {
   switch (bookingType) {
@@ -72,6 +137,214 @@ function getBookingTypeColor(
   }
 }
 
+function toCents(value: string) {
+  if (!value.trim()) return '';
+
+  const parsed = Number(value.replace(',', '.'));
+
+  if (!Number.isFinite(parsed)) return '';
+
+  return String(Math.round(parsed * 100));
+}
+
+function getOccurrenceRegisteredPersonCount(
+  occurrence: BackendSpecialEventOccurrence,
+) {
+  return occurrence.stats?.registeredPersonCount ?? 0;
+}
+
+function getEventRegisteredPersonCount(event: BackendSpecialEventListItem) {
+  if (event.stats) return event.stats.registeredPersonCount;
+
+  return event.occurrences.reduce(
+    (sum, occurrence) => sum + getOccurrenceRegisteredPersonCount(occurrence),
+    0,
+  );
+}
+
+function getEventRemainingCapacity(event: BackendSpecialEventListItem) {
+  if (event.stats) return event.stats.remainingCapacity;
+
+  const hasUnlimitedOccurrence = event.occurrences.some(
+    (occurrence) => occurrence.capacity === null,
+  );
+
+  if (hasUnlimitedOccurrence) return null;
+
+  return event.occurrences.reduce((sum, occurrence) => {
+    const remaining =
+      occurrence.stats?.remainingCapacity ??
+      Math.max(
+        0,
+        (occurrence.capacity ?? 0) -
+          getOccurrenceRegisteredPersonCount(occurrence),
+      );
+
+    return sum + remaining;
+  }, 0);
+}
+
+function getFirstOccurrence(event: BackendSpecialEventListItem) {
+  return event.occurrences[0] ?? null;
+}
+
+function getOccurrenceLabel(occurrence: BackendSpecialEventOccurrence) {
+  const dateLabel = occurrence.eventDate.dow
+    ? `${occurrence.eventDate.dow}, ${occurrence.eventDate.date}`
+    : occurrence.eventDate.date;
+
+  return `${dateLabel} · ${occurrence.startTime}–${occurrence.endTime} Uhr`;
+}
+
+function getShortOccurrencesLabel(event: BackendSpecialEventListItem) {
+  if (event.occurrences.length === 0) return 'Kein Termin hinterlegt';
+
+  if (event.occurrences.length === 1) {
+    return getOccurrenceLabel(event.occurrences[0]);
+  }
+
+  return `${event.occurrences.length} Termine hinterlegt`;
+}
+
+function sortSpecialEvents(
+  events: BackendSpecialEventListItem[],
+): BackendSpecialEventListItem[] {
+  return [...events].sort((a, b) => {
+    const firstA = getFirstOccurrence(a);
+    const firstB = getFirstOccurrence(b);
+
+    if (firstA && firstB) {
+      const dateComparison = compareEventDates(
+        firstA.eventDate.date,
+        firstB.eventDate.date,
+      );
+
+      if (dateComparison !== 0) return dateComparison;
+
+      const timeComparison = firstA.startTime.localeCompare(firstB.startTime);
+      if (timeComparison !== 0) return timeComparison;
+    }
+
+    if (a.sortOrder !== b.sortOrder) {
+      return a.sortOrder - b.sortOrder;
+    }
+
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function getInitialEditForm(
+  specialEvent: BackendSpecialEventListItem,
+): EditFormState {
+  return {
+    name: specialEvent.name,
+    description: specialEvent.description,
+    category: specialEvent.category,
+    badge: specialEvent.badge || '',
+    ctaLabel: specialEvent.ctaLabel,
+    bookingType: specialEvent.bookingType,
+    externalUrl: specialEvent.externalUrl || '',
+    price: specialEvent.priceCents
+      ? String(specialEvent.priceCents / 100).replace('.', ',')
+      : '',
+    priceLabel: specialEvent.priceLabel || '',
+    maxPersonsPerRegistration: String(specialEvent.maxPersonsPerRegistration),
+    isPublished: specialEvent.isPublished,
+    attachmentLabel: specialEvent.attachmentLabel || '',
+    occurrences: specialEvent.occurrences.map((occurrence) => ({
+      id: occurrence.id,
+      eventDateId: occurrence.eventDate.id,
+      startTime: occurrence.startTime,
+      endTime: occurrence.endTime,
+      capacity: occurrence.capacity === null ? '' : String(occurrence.capacity),
+    })),
+  };
+}
+
+function buildPreviewEvent(params: {
+  form: EditFormState;
+  specialEvent: BackendSpecialEventListItem;
+  eventDates: ApiGetEventsResponse[number]['eventDates'];
+  titleImagePreview: string | null;
+  removeTitleImage: boolean;
+  removeAttachment: boolean;
+}): PublicSpecialEvent {
+  const {
+    form,
+    specialEvent,
+    eventDates,
+    titleImagePreview,
+    removeTitleImage,
+    removeAttachment,
+  } = params;
+
+  const occurrences = form.occurrences
+    .map((occurrence) => {
+      const eventDate = eventDates.find(
+        (date) => date.id === occurrence.eventDateId,
+      );
+
+      if (!eventDate) return null;
+
+      const capacity = occurrence.capacity ? Number(occurrence.capacity) : null;
+
+      return {
+        id: occurrence.id ?? occurrence.eventDateId,
+        eventDate: {
+          id: eventDate.id,
+          date: eventDate.date,
+          dow: eventDate.dow,
+        },
+        startTime: occurrence.startTime,
+        endTime: occurrence.endTime,
+        capacity,
+        remainingCapacity: capacity,
+        isSoldOut: false,
+      };
+    })
+    .filter(Boolean) as PublicSpecialEvent['occurrences'];
+
+  const firstOccurrence = occurrences[0];
+
+  return {
+    id: specialEvent.id,
+    name: form.name || 'Name des WineEvents',
+    description:
+      form.description ||
+      'Beschreibe hier kurz, was die Gäste bei diesem WineEvent erwartet.',
+    category: form.category,
+    badge: form.badge || null,
+    titleImageUrl: removeTitleImage ? null : titleImagePreview,
+    priceCents: toCents(form.price) ? Number(toCents(form.price)) : null,
+    priceLabel: form.priceLabel || null,
+    ctaLabel: form.ctaLabel || 'Jetzt anmelden',
+    bookingType: form.bookingType,
+    externalUrl: form.externalUrl || null,
+    maxPersonsPerRegistration: Number(form.maxPersonsPerRegistration) || 10,
+    attachmentUrl: removeAttachment ? null : specialEvent.attachmentUrl,
+    attachmentLabel: form.attachmentLabel || null,
+    occurrences,
+    eventDate: firstOccurrence?.eventDate ?? {
+      id: 'preview-date',
+      date: 'Noch kein Termin',
+      dow: null,
+    },
+    startTime: firstOccurrence?.startTime ?? '11:00',
+    endTime: firstOccurrence?.endTime ?? '14:00',
+    remainingCapacity: occurrences.some(
+      (occurrence) => occurrence.remainingCapacity === null,
+    )
+      ? null
+      : occurrences.reduce(
+          (sum, occurrence) => sum + (occurrence.remainingCapacity ?? 0),
+          0,
+        ),
+    isSoldOut:
+      occurrences.length > 0 &&
+      occurrences.every((occurrence) => occurrence.isSoldOut),
+  };
+}
+
 export default function BackendSpecialEventsPage({
   session,
 }: {
@@ -81,20 +354,25 @@ export default function BackendSpecialEventsPage({
 
   const [selectedEvent, setSelectedEvent] =
     useState<ApiGetEventsResponse[number]>();
-  const [specialEvents, setSpecialEvents] = useState<AdminSpecialEvent[]>([]);
+  const [specialEvents, setSpecialEvents] = useState<
+    BackendSpecialEventListItem[]
+  >([]);
   const [selectedSpecialEvent, setSelectedSpecialEvent] =
-    useState<AdminSpecialEvent>();
+    useState<BackendSpecialEventListItem>();
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const fetchSpecialEvents = async () => {
-    if (!selectedEvent?.id) return;
+    if (!selectedEvent?.id) {
+      setSpecialEvents([]);
+      return;
+    }
 
     setLoading(true);
     setLoadError(null);
 
     try {
-      const { data } = await axios.get<AdminSpecialEvent[]>(
+      const { data } = await axios.get<BackendSpecialEventListItem[]>(
         '/api/backend/specialEvents',
         {
           params: {
@@ -103,22 +381,7 @@ export default function BackendSpecialEventsPage({
         },
       );
 
-      const sorted = [...data].sort((a, b) => {
-        const dateComparison = compareEventDates(
-          a.eventDate.date,
-          b.eventDate.date,
-        );
-
-        if (dateComparison !== 0) return dateComparison;
-
-        if (a.sortOrder !== b.sortOrder) {
-          return a.sortOrder - b.sortOrder;
-        }
-
-        return a.startTime.localeCompare(b.startTime);
-      });
-
-      setSpecialEvents(sorted);
+      setSpecialEvents(sortSpecialEvents(data));
     } catch (error) {
       console.error(error);
       setLoadError('Die WineEvents konnten nicht geladen werden.');
@@ -137,14 +400,13 @@ export default function BackendSpecialEventsPage({
     if (session.status === 'unauthenticated') {
       void router.push('/backend/login');
     }
-  }, [session.status, router.isReady]);
+  }, [session.status, router.isReady, router]);
 
   return (
     <Box className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
       <BackendHeader
         title="WineEvents verwalten"
-        subtitle="Verwalte WineWalks, Tastings und weitere Veranstaltungen inklusive
-            Buchungslogik, Bildern und Teilnehmerzahlen."
+        subtitle="Verwalte WineWalks, Tastings, Brunches und weitere Veranstaltungen inklusive Terminen, Buchungslogik, Bildern und Teilnehmerzahlen."
         action={
           <Link
             href="/backend/specialEvents/new"
@@ -159,6 +421,13 @@ export default function BackendSpecialEventsPage({
       <Box className="my-7 max-w-md">
         <EventSelector onChange={setSelectedEvent} />
       </Box>
+
+      {!selectedEvent && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          Wähle zuerst das Weinzelt-Event aus, für das du die WineEvents
+          verwalten möchtest.
+        </Alert>
+      )}
 
       {loadError && (
         <Alert severity="error" sx={{ mb: 3 }}>
@@ -178,7 +447,7 @@ export default function BackendSpecialEventsPage({
             </Grid>
           ))}
         </Grid>
-      ) : specialEvents.length === 0 ? (
+      ) : selectedEvent && specialEvents.length === 0 ? (
         <Box className="rounded-[2rem] border border-dashed border-black/20 bg-stone-50 px-6 py-16 text-center">
           <WineBarRounded sx={{ fontSize: 56, opacity: 0.35 }} />
 
@@ -187,8 +456,8 @@ export default function BackendSpecialEventsPage({
           </Typography>
 
           <Typography className="mx-auto mt-2 max-w-lg text-sm text-gray-500">
-            Für dieses Weinzelt-Event existieren noch keine WineWalks, Tastings
-            oder weiteren Veranstaltungen.
+            Für dieses Weinzelt-Event existieren noch keine WineWalks, Tastings,
+            Brunches oder weiteren Veranstaltungen.
           </Typography>
 
           <Link
@@ -215,7 +484,7 @@ export default function BackendSpecialEventsPage({
       <EditSpecialEventDialog
         open={Boolean(selectedSpecialEvent)}
         specialEvent={selectedSpecialEvent}
-        eventDates={selectedEvent?.eventDates}
+        eventDates={selectedEvent?.eventDates ?? []}
         onClose={() => setSelectedSpecialEvent(undefined)}
         onSuccess={() => {
           setSelectedSpecialEvent(undefined);
@@ -230,10 +499,12 @@ function AdminSpecialEventCard({
   event,
   onEdit,
 }: {
-  event: AdminSpecialEvent;
+  event: BackendSpecialEventListItem;
   onEdit: () => void;
 }) {
   const price = formatSpecialEventPrice(event);
+  const registeredPersonCount = getEventRegisteredPersonCount(event);
+  const remainingCapacity = getEventRemainingCapacity(event);
 
   return (
     <Box className="flex h-full flex-col overflow-hidden rounded-[2rem] border border-black/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
@@ -285,16 +556,15 @@ function AdminSpecialEventCard({
               </Typography>
 
               <Typography className="mt-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                {event.eventDate.dow && `${event.eventDate.dow}, `}
-                {event.eventDate.date} · {event.startTime}–{event.endTime} Uhr
+                {getShortOccurrencesLabel(event)}
               </Typography>
             </Box>
 
-            {event.registeredPersonCount > 0 && (
+            {registeredPersonCount > 0 && (
               <Chip
                 size="small"
                 icon={<GroupsRounded sx={{ fontSize: '16px !important' }} />}
-                label={event.registeredPersonCount}
+                label={registeredPersonCount}
                 color="error"
                 variant="outlined"
                 sx={{ fontWeight: 700, pl: 0.5 }}
@@ -306,6 +576,38 @@ function AdminSpecialEventCard({
             {event.description}
           </Typography>
 
+          {event.occurrences.length > 1 && (
+            <Stack
+              direction="row"
+              spacing={1}
+              flexWrap="wrap"
+              useFlexGap
+              sx={{ mt: 3 }}
+            >
+              {event.occurrences.slice(0, 4).map((occurrence) => (
+                <Chip
+                  key={occurrence.id}
+                  size="small"
+                  variant="outlined"
+                  label={
+                    occurrence.eventDate.dow
+                      ? `${occurrence.eventDate.dow}, ${occurrence.eventDate.date}`
+                      : occurrence.eventDate.date
+                  }
+                  sx={{ borderRadius: 999, fontWeight: 700 }}
+                />
+              ))}
+
+              {event.occurrences.length > 4 && (
+                <Chip
+                  size="small"
+                  label={`+${event.occurrences.length - 4} weitere`}
+                  sx={{ borderRadius: 999, fontWeight: 700 }}
+                />
+              )}
+            </Stack>
+          )}
+
           <Box className="mt-4 flex flex-wrap gap-1.5">
             <Chip
               size="small"
@@ -316,12 +618,20 @@ function AdminSpecialEventCard({
 
             {price && <Chip size="small" label={price} variant="outlined" />}
 
-            {event.capacity !== null && (
+            {event.bookingType === 'INTERNAL_REGISTRATION' && (
               <Chip
                 size="small"
-                label={`${event.remainingCapacity ?? 0} von ${event.capacity} frei`}
+                label={
+                  remainingCapacity === null
+                    ? 'Unbegrenzte Plätze'
+                    : `${remainingCapacity} Plätze frei`
+                }
                 variant="outlined"
               />
+            )}
+
+            {event.attachmentUrl && (
+              <Chip size="small" label="Anhang" variant="outlined" />
             )}
           </Box>
         </Box>
@@ -366,64 +676,6 @@ function AdminSpecialEventCard({
   );
 }
 
-type EditFormState = {
-  name: string;
-  description: string;
-  eventDateId: string;
-  startTime: string;
-  endTime: string;
-  category: PublicSpecialEvent['category'];
-  badge: string;
-  ctaLabel: string;
-  bookingType: PublicSpecialEvent['bookingType'];
-  externalUrl: string;
-  price: string;
-  priceLabel: string;
-  capacity: string;
-  maxPersonsPerRegistration: string;
-  sortOrder: string;
-  isPublished: boolean;
-  attachmentLabel: string;
-};
-
-function getInitialEditForm(event: AdminSpecialEvent): EditFormState {
-  return {
-    name: event.name,
-    description: event.description,
-    eventDateId: event.eventDateId,
-    startTime: event.startTime,
-    endTime: event.endTime,
-    category: event.category,
-    badge: event.badge ?? '',
-    ctaLabel: event.ctaLabel,
-    bookingType: event.bookingType,
-    externalUrl: event.externalUrl ?? '',
-    price:
-      event.priceCents === null
-        ? ''
-        : (event.priceCents / 100).toLocaleString('de-DE', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }),
-    priceLabel: event.priceLabel ?? '',
-    capacity: event.capacity === null ? '' : String(event.capacity),
-    maxPersonsPerRegistration: String(event.maxPersonsPerRegistration),
-    sortOrder: String(event.sortOrder),
-    isPublished: event.isPublished,
-    attachmentLabel: event.attachmentLabel || '',
-  };
-}
-
-function toCents(value: string) {
-  if (!value.trim()) return '';
-
-  const parsed = Number(value.replace(',', '.'));
-
-  if (!Number.isFinite(parsed)) return '';
-
-  return String(Math.round(parsed * 100));
-}
-
 function EditSpecialEventDialog({
   open,
   specialEvent,
@@ -432,8 +684,8 @@ function EditSpecialEventDialog({
   onSuccess,
 }: {
   open: boolean;
-  specialEvent: AdminSpecialEvent | undefined;
-  eventDates: ApiGetEventsResponse[number]['eventDates'] | undefined;
+  specialEvent: BackendSpecialEventListItem | undefined;
+  eventDates: ApiGetEventsResponse[number]['eventDates'];
   onClose: () => void;
   onSuccess: () => void;
 }) {
@@ -448,15 +700,6 @@ function EditSpecialEventDialog({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const handleAttachmentChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-
-    if (!file) return;
-
-    setAttachment(file);
-    setRemoveAttachment(false);
-  };
-
   useEffect(() => {
     if (!specialEvent) return;
 
@@ -464,9 +707,9 @@ function EditSpecialEventDialog({
     setTitleImage(null);
     setTitleImagePreview(specialEvent.titleImageUrl);
     setRemoveTitleImage(false);
-    setSaveError(null);
     setAttachment(null);
     setRemoveAttachment(false);
+    setSaveError(null);
   }, [specialEvent]);
 
   useEffect(() => {
@@ -494,54 +737,28 @@ function EditSpecialEventDialog({
     );
   };
 
-  const selectedEventDate = eventDates?.find(
-    (eventDate) => eventDate.id === form?.eventDateId,
-  );
+  const updateOccurrences = (occurrences: OccurrenceFormState[]) => {
+    updateForm('occurrences', occurrences);
+  };
 
   const previewEvent = useMemo<PublicSpecialEvent | null>(() => {
     if (!form || !specialEvent) return null;
 
-    return {
-      id: specialEvent.id,
-      name: form.name || 'Name des WineEvents',
-      description:
-        form.description ||
-        'Beschreibe hier kurz, was die Gäste bei diesem WineEvent erwartet.',
-      eventDate: {
-        id: selectedEventDate?.id ?? specialEvent.eventDate.id,
-        date: selectedEventDate?.date ?? specialEvent.eventDate.date,
-        dow: selectedEventDate?.dow ?? specialEvent.eventDate.dow,
-      },
-      startTime: form.startTime,
-      endTime: form.endTime,
-      category: form.category,
-      badge: form.badge || null,
-      titleImageUrl: removeTitleImage ? null : titleImagePreview,
-      priceCents: toCents(form.price) ? Number(toCents(form.price)) : null,
-      priceLabel: form.priceLabel || null,
-      ctaLabel: form.ctaLabel || 'Jetzt anmelden',
-      bookingType: form.bookingType,
-      externalUrl: form.externalUrl || null,
-      capacity: form.capacity ? Number(form.capacity) : null,
-      remainingCapacity: form.capacity
-        ? Math.max(
-            0,
-            Number(form.capacity) - specialEvent.registeredPersonCount,
-          )
-        : null,
-      maxPersonsPerRegistration: Number(form.maxPersonsPerRegistration) || 10,
-      isSoldOut:
-        Boolean(form.capacity) &&
-        Number(form.capacity) <= specialEvent.registeredPersonCount,
-      attachmentUrl: removeAttachment ? null : specialEvent.attachmentUrl,
-      attachmentLabel: form.attachmentLabel || null,
-    };
+    return buildPreviewEvent({
+      form,
+      specialEvent,
+      eventDates,
+      titleImagePreview,
+      removeTitleImage,
+      removeAttachment,
+    });
   }, [
     form,
-    removeTitleImage,
-    selectedEventDate,
     specialEvent,
+    eventDates,
     titleImagePreview,
+    removeTitleImage,
+    removeAttachment,
   ]);
 
   if (!form || !specialEvent || !previewEvent) return null;
@@ -555,8 +772,31 @@ function EditSpecialEventDialog({
     setRemoveTitleImage(false);
   };
 
+  const handleAttachmentChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    setAttachment(file);
+    setRemoveAttachment(false);
+
+    if (!form.attachmentLabel.trim()) {
+      updateForm(
+        'attachmentLabel',
+        file.type === 'application/pdf'
+          ? 'PDF mit weiteren Informationen'
+          : 'Anhang ansehen',
+      );
+    }
+  };
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+
+    if (form.occurrences.length === 0) {
+      setSaveError('Bitte wähle mindestens einen Termin aus.');
+      return;
+    }
 
     setSaving(true);
     setSaveError(null);
@@ -566,9 +806,6 @@ function EditSpecialEventDialog({
 
       body.append('name', form.name);
       body.append('description', form.description);
-      body.append('eventDateId', form.eventDateId);
-      body.append('startTime', form.startTime);
-      body.append('endTime', form.endTime);
       body.append('category', form.category);
       body.append('badge', form.badge);
       body.append('ctaLabel', form.ctaLabel);
@@ -576,13 +813,21 @@ function EditSpecialEventDialog({
       body.append('externalUrl', form.externalUrl);
       body.append('priceCents', toCents(form.price));
       body.append('priceLabel', form.priceLabel);
-      body.append('capacity', form.capacity);
       body.append('maxPersonsPerRegistration', form.maxPersonsPerRegistration);
-      body.append('sortOrder', form.sortOrder);
       body.append('isPublished', String(form.isPublished));
       body.append('removeTitleImage', String(removeTitleImage));
       body.append('attachmentLabel', form.attachmentLabel);
       body.append('removeAttachment', String(removeAttachment));
+
+      body.append(
+        'occurrences',
+        JSON.stringify(
+          form.occurrences.map((occurrence, index) => ({
+            ...occurrence,
+            sortOrder: index,
+          })),
+        ),
+      );
 
       if (titleImage) {
         body.append('titleImage', titleImage);
@@ -632,7 +877,7 @@ function EditSpecialEventDialog({
             WineEvent bearbeiten
           </Typography>
 
-          <Typography variant="h5" fontWeight={700}>
+          <Typography variant="h5" fontWeight={800}>
             {specialEvent.name}
           </Typography>
         </DialogTitle>
@@ -656,7 +901,7 @@ function EditSpecialEventDialog({
             }}
           >
             <Stack spacing={2.5}>
-              <Typography variant="subtitle1" fontWeight={700}>
+              <Typography variant="subtitle1" fontWeight={800}>
                 Inhalte
               </Typography>
 
@@ -721,54 +966,27 @@ function EditSpecialEventDialog({
 
               <Divider />
 
-              <Typography variant="subtitle1" fontWeight={700}>
-                Zeitpunkt und Darstellung
+              <Typography variant="subtitle1" fontWeight={800}>
+                Termine
               </Typography>
 
-              <FormControl fullWidth>
-                <InputLabel>Tag wählen</InputLabel>
-                <Select
-                  label="Tag wählen"
-                  value={form.eventDateId}
-                  onChange={(event) =>
-                    updateForm('eventDateId', event.target.value)
-                  }
-                >
-                  {eventDates
-                    ?.sort((a, b) => a.date.localeCompare(b.date))
-                    .map((date) => (
-                      <MenuItem key={date.id} value={date.id}>
-                        {date.dow}, {date.date}
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
+              <Typography variant="body2" color="text.secondary">
+                Wähle einen oder mehrere Tage aus. Uhrzeit und Kapazität können
+                pro Tag unterschiedlich sein.
+              </Typography>
 
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <TextField
-                  required
-                  fullWidth
-                  type="time"
-                  label="Startzeit"
-                  InputLabelProps={{ shrink: true }}
-                  value={form.startTime}
-                  onChange={(event) =>
-                    updateForm('startTime', event.target.value)
-                  }
-                />
+              <SpecialEventOccurrencesEditor
+                eventDates={eventDates}
+                bookingType={form.bookingType}
+                occurrences={form.occurrences}
+                onChange={updateOccurrences}
+              />
 
-                <TextField
-                  required
-                  fullWidth
-                  type="time"
-                  label="Endzeit"
-                  InputLabelProps={{ shrink: true }}
-                  value={form.endTime}
-                  onChange={(event) =>
-                    updateForm('endTime', event.target.value)
-                  }
-                />
-              </Stack>
+              <Divider />
+
+              <Typography variant="subtitle1" fontWeight={800}>
+                Darstellung
+              </Typography>
 
               <FormControl fullWidth>
                 <InputLabel>Kategorie</InputLabel>
@@ -817,7 +1035,7 @@ function EditSpecialEventDialog({
 
               <Divider />
 
-              <Typography variant="subtitle1" fontWeight={700}>
+              <Typography variant="subtitle1" fontWeight={800}>
                 Buchung
               </Typography>
 
@@ -869,48 +1087,22 @@ function EditSpecialEventDialog({
               )}
 
               {form.bookingType === 'INTERNAL_REGISTRATION' && (
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <TextField
-                    fullWidth
-                    type="number"
-                    label="Maximale Gesamtkapazität"
-                    placeholder="Optional"
-                    inputProps={{ min: 1 }}
-                    value={form.capacity}
-                    onChange={(event) =>
-                      updateForm('capacity', event.target.value)
-                    }
-                  />
-
-                  <TextField
-                    required
-                    fullWidth
-                    type="number"
-                    label="Max. Personen pro Anmeldung"
-                    inputProps={{ min: 1, max: 50 }}
-                    value={form.maxPersonsPerRegistration}
-                    onChange={(event) =>
-                      updateForm(
-                        'maxPersonsPerRegistration',
-                        event.target.value,
-                      )
-                    }
-                  />
-                </Stack>
+                <TextField
+                  required
+                  fullWidth
+                  type="number"
+                  label="Max. Personen pro Anmeldung"
+                  inputProps={{ min: 1, max: 50 }}
+                  value={form.maxPersonsPerRegistration}
+                  onChange={(event) =>
+                    updateForm('maxPersonsPerRegistration', event.target.value)
+                  }
+                />
               )}
 
-              {/* <TextField
-                type="number"
-                label="Sortierung"
-                helperText="Kleinere Zahlen erscheinen zuerst."
-                value={form.sortOrder}
-                onChange={(event) =>
-                  updateForm('sortOrder', event.target.value)
-                }
-              /> */}
               <Divider />
 
-              <Typography variant="subtitle1" fontWeight={700}>
+              <Typography variant="subtitle1" fontWeight={800}>
                 Anhang
               </Typography>
 
@@ -1028,5 +1220,159 @@ function EditSpecialEventDialog({
         </DialogActions>
       </Box>
     </Dialog>
+  );
+}
+
+function SpecialEventOccurrencesEditor({
+  eventDates,
+  bookingType,
+  occurrences,
+  onChange,
+}: {
+  eventDates: ApiGetEventsResponse[number]['eventDates'];
+  bookingType: PublicSpecialEvent['bookingType'];
+  occurrences: OccurrenceFormState[];
+  onChange: (occurrences: OccurrenceFormState[]) => void;
+}) {
+  const sortedEventDates = [...eventDates].sort((a, b) =>
+    compareEventDates(a.date, b.date),
+  );
+
+  const updateOccurrence = (
+    eventDateId: string,
+    patch: Partial<OccurrenceFormState>,
+  ) => {
+    onChange(
+      occurrences.map((occurrence) =>
+        occurrence.eventDateId === eventDateId
+          ? {
+              ...occurrence,
+              ...patch,
+            }
+          : occurrence,
+      ),
+    );
+  };
+
+  const toggleOccurrence = (
+    eventDate: ApiGetEventsResponse[number]['eventDates'][number],
+    checked: boolean,
+  ) => {
+    if (checked) {
+      onChange([
+        ...occurrences,
+        {
+          eventDateId: eventDate.id,
+          startTime: '11:00',
+          endTime: '14:00',
+          capacity: '',
+        },
+      ]);
+      return;
+    }
+
+    onChange(
+      occurrences.filter(
+        (occurrence) => occurrence.eventDateId !== eventDate.id,
+      ),
+    );
+  };
+
+  if (sortedEventDates.length === 0) {
+    return (
+      <Alert severity="warning">
+        Für das ausgewählte Weinzelt-Event sind keine Veranstaltungstage
+        vorhanden.
+      </Alert>
+    );
+  }
+
+  return (
+    <Stack spacing={1.5}>
+      {sortedEventDates.map((eventDate) => {
+        const occurrence = occurrences.find(
+          (item) => item.eventDateId === eventDate.id,
+        );
+
+        const checked = Boolean(occurrence);
+
+        return (
+          <Box
+            key={eventDate.id}
+            sx={{
+              p: 2,
+              borderRadius: 3,
+              border: '1px solid',
+              borderColor: checked ? 'black' : 'divider',
+              bgcolor: checked ? 'rgba(0,0,0,0.03)' : 'background.paper',
+            }}
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={checked}
+                  onChange={(event) =>
+                    toggleOccurrence(eventDate, event.target.checked)
+                  }
+                />
+              }
+              label={`${eventDate.dow}, ${eventDate.date}`}
+            />
+
+            {occurrence && (
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={2}
+                sx={{ mt: 1.5 }}
+              >
+                <TextField
+                  required
+                  fullWidth
+                  type="time"
+                  label="Start"
+                  InputLabelProps={{ shrink: true }}
+                  value={occurrence.startTime}
+                  onChange={(event) =>
+                    updateOccurrence(eventDate.id, {
+                      startTime: event.target.value,
+                    })
+                  }
+                />
+
+                <TextField
+                  required
+                  fullWidth
+                  type="time"
+                  label="Ende"
+                  InputLabelProps={{ shrink: true }}
+                  value={occurrence.endTime}
+                  onChange={(event) =>
+                    updateOccurrence(eventDate.id, {
+                      endTime: event.target.value,
+                    })
+                  }
+                />
+
+                {bookingType === 'INTERNAL_REGISTRATION' && (
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Kapazität"
+                    placeholder="Optional"
+                    inputProps={{ min: 1 }}
+                    value={occurrence.capacity}
+                    onChange={(event) =>
+                      updateOccurrence(eventDate.id, {
+                        capacity: event.target.value,
+                      })
+                    }
+                  />
+                )}
+              </Stack>
+            )}
+          </Box>
+        );
+      })}
+    </Stack>
   );
 }

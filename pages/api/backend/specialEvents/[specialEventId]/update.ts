@@ -3,7 +3,11 @@ import { readFile } from 'node:fs/promises';
 import prisma from '@/lib/prismadb';
 import { supabase } from '@/lib/supabase';
 import { getServerSession } from '@/lib/session';
-import { validateSpecialEventPayload } from '@/lib/specialEvents/validator';
+import {
+  parseOccurrences,
+  syncOccurrences,
+  validateSpecialEventPayload,
+} from '@/lib/specialEvents/validator';
 import {
   firstField,
   getFirstFile,
@@ -48,9 +52,6 @@ export default async function handler(
     const validation = validateSpecialEventPayload({
       name: firstField(fields, 'name'),
       description: firstField(fields, 'description'),
-      eventDateId: firstField(fields, 'eventDateId'),
-      startTime: firstField(fields, 'startTime'),
-      endTime: firstField(fields, 'endTime'),
       category: firstField(fields, 'category'),
       badge: firstField(fields, 'badge') || undefined,
       ctaLabel: firstField(fields, 'ctaLabel'),
@@ -58,11 +59,9 @@ export default async function handler(
       externalUrl: firstField(fields, 'externalUrl') || undefined,
       priceCents: parseOptionalNumber(firstField(fields, 'priceCents')),
       priceLabel: firstField(fields, 'priceLabel') || undefined,
-      capacity: parseOptionalNumber(firstField(fields, 'capacity')),
       maxPersonsPerRegistration:
         parseOptionalNumber(firstField(fields, 'maxPersonsPerRegistration')) ??
         10,
-      sortOrder: parseOptionalNumber(firstField(fields, 'sortOrder')) ?? 0,
       isPublished: parseBoolean(firstField(fields, 'isPublished')),
       removeTitleImage: parseBoolean(firstField(fields, 'removeTitleImage')),
       attachmentLabel: firstField(fields, 'attachmentLabel') || undefined,
@@ -165,48 +164,76 @@ export default async function handler(
       attachmentPath = nextAttachmentPath;
     }
 
-    const updatedEvent = await prisma.specialEvent.update({
-      where: {
-        id: specialEventId,
-      },
-      data: {
-        name: payload.name,
-        description: payload.description,
-        eventDateId: payload.eventDateId,
-        startTime: payload.startTime,
-        endTime: payload.endTime,
-        category: payload.category,
-        badge: payload.badge || null,
-        ctaLabel: payload.ctaLabel,
-        bookingType: payload.bookingType,
-        externalUrl:
-          payload.bookingType === 'EXTERNAL_LINK' ? payload.externalUrl : null,
-        priceCents: payload.priceCents,
-        priceLabel: payload.priceLabel || null,
-        capacity:
-          payload.bookingType === 'INTERNAL_REGISTRATION'
-            ? payload.capacity
-            : null,
-        maxPersonsPerRegistration: payload.maxPersonsPerRegistration,
-        sortOrder: payload.sortOrder,
-        isPublished: payload.isPublished,
-        titleImagePath,
+    const occurrences = parseOccurrences(firstField(fields, 'occurrences'));
 
-        attachmentPath,
-        attachmentLabel: payload.attachmentLabel || null,
-      },
-      select: {
-        id: true,
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.specialEvent.update({
+        where: {
+          id: specialEventId,
+        },
+        data: {
+          name: payload.name,
+          description: payload.description,
+          category: payload.category,
+          badge: payload.badge || null,
+          ctaLabel: payload.ctaLabel,
+          bookingType: payload.bookingType,
+          externalUrl:
+            payload.bookingType === 'EXTERNAL_LINK'
+              ? payload.externalUrl
+              : null,
+          priceCents: payload.priceCents,
+          priceLabel: payload.priceLabel || null,
+          maxPersonsPerRegistration: payload.maxPersonsPerRegistration,
+          isPublished: payload.isPublished,
+          titleImagePath,
+
+          attachmentPath,
+          attachmentLabel: payload.attachmentLabel || null,
+        },
+      });
+
+      await syncOccurrences({
+        tx,
+        specialEventId,
+        occurrences,
+        bookingType: payload.bookingType,
+      });
     });
 
-    return res.status(200).json(updatedEvent);
+    return res.status(200).json({ id: existingEvent.id });
   } catch (error) {
     console.error(error);
 
     if (error instanceof Error && error.message === 'UNAUTHORIZED') {
       return res.status(401).json({
         error: 'Nicht autorisiert.',
+      });
+    }
+
+    if (
+      error instanceof Error &&
+      error.message === 'OCCURRENCE_DATE_CHANGE_WITH_REGISTRATIONS'
+    ) {
+      return res.status(409).json({
+        error:
+          'Ein Termin mit bestehenden Anmeldungen kann nicht auf einen anderen Veranstaltungstag verschoben werden. Bitte lege stattdessen einen neuen Termin an.',
+      });
+    }
+
+    if (
+      error instanceof Error &&
+      error.message === 'OCCURRENCE_CAPACITY_TOO_LOW'
+    ) {
+      return res.status(409).json({
+        error:
+          'Die Kapazität eines Termins darf nicht kleiner sein als die bereits angemeldete Personenzahl.',
+      });
+    }
+
+    if (error instanceof Error && error.message === 'OCCURRENCE_NOT_FOUND') {
+      return res.status(404).json({
+        error: 'Ein ausgewählter Termin wurde nicht gefunden.',
       });
     }
 

@@ -40,49 +40,20 @@ async function getSpecialEvent(id: string) {
     where: {
       id,
     },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      eventDateId: true,
-      eventDate: {
-        select: {
-          id: true,
-          date: true,
-          dow: true,
-        },
-      },
-      startTime: true,
-      endTime: true,
-      category: true,
-      badge: true,
-      titleImagePath: true,
-      priceCents: true,
-      priceLabel: true,
-      ctaLabel: true,
-      bookingType: true,
-      externalUrl: true,
-      capacity: true,
-      maxPersonsPerRegistration: true,
-      sortOrder: true,
-      isPublished: true,
-      registrations: {
-        orderBy: {
-          createdAt: 'desc',
-        },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
-          personCount: true,
-          status: true,
-          createdAt: true,
-          canceledAt: true,
-          reminderSent: true,
-          reminderLastAttemptAt: true,
-          reminderAttemptCount: true,
-          reminderFailureReason: true,
+    include: {
+      occurrences: {
+        orderBy: [
+          {
+            sortOrder: 'asc',
+          },
+        ],
+        include: {
+          eventDate: true,
+          registrations: {
+            orderBy: {
+              createdAt: 'asc',
+            },
+          },
         },
       },
     },
@@ -90,45 +61,71 @@ async function getSpecialEvent(id: string) {
 
   if (!event) return null;
 
-  const activeRegistrations = event.registrations.filter(
-    (registration) => registration.status === 'REGISTERED',
-  );
+  const occurrences = event.occurrences.map((occ) => {
+    const activeRegistrations = occ.registrations.filter(
+      (registration) => registration.status === 'REGISTERED',
+    );
 
-  const registeredPersonCount = activeRegistrations.reduce(
-    (sum, registration) => sum + registration.personCount,
-    0,
-  );
+    const registeredPersonCount = activeRegistrations.reduce(
+      (sum, registration) => sum + registration.personCount,
+      0,
+    );
 
-  const pendingReminderCount = activeRegistrations.filter(
-    (registration) => !registration.reminderSent,
-  ).length;
+    const pendingReminderCount = activeRegistrations.filter(
+      (registration) => !registration.reminderSent,
+    ).length;
 
-  const failedReminderCount = activeRegistrations.filter(
-    (registration) =>
-      !registration.reminderSent && registration.reminderAttemptCount > 0,
-  ).length;
+    const failedReminderCount = activeRegistrations.filter(
+      (registration) =>
+        !registration.reminderSent && registration.reminderAttemptCount > 0,
+    ).length;
 
-  const sentReminderCount = activeRegistrations.filter((registration) =>
-    Boolean(registration.reminderSent),
-  ).length;
+    const remainingCapacity =
+      occ.capacity === null
+        ? null
+        : Math.max(0, occ.capacity - registeredPersonCount);
 
-  const remainingCapacity =
-    event.capacity === null
-      ? null
-      : Math.max(0, event.capacity - registeredPersonCount);
+    return {
+      ...occ,
+      stats: {
+        registrationCount: activeRegistrations.length,
+        registeredPersonCount,
+        remainingCapacity,
+        pendingReminderCount,
+        failedReminderCount,
+      },
+    };
+  });
 
   return {
     ...event,
+    occurrences,
     titleImageUrl: getPublicImageUrl(event.titleImagePath),
     stats: {
-      registrationCount: activeRegistrations.length,
-      registeredPersonCount,
-      canceledRegistrationCount:
-        event.registrations.length - activeRegistrations.length,
-      remainingCapacity,
-      pendingReminderCount,
-      failedReminderCount,
-      sentReminderCount,
+      registrationCount: occurrences.reduce(
+        (sum, occ) => sum + occ.stats.registrationCount,
+        0,
+      ),
+      registeredPersonCount: occurrences.reduce(
+        (sum, occ) => sum + occ.stats.registeredPersonCount,
+        0,
+      ),
+      remainingCapacity: occurrences.some(
+        (occ) => occ.stats.remainingCapacity === null,
+      )
+        ? null
+        : occurrences.reduce(
+            (sum, occ) => sum + (occ.stats.remainingCapacity ?? 0),
+            0,
+          ),
+      pendingReminderCount: occurrences.reduce(
+        (sum, occ) => sum + occ.stats.pendingReminderCount,
+        0,
+      ),
+      failedReminderCount: occurrences.reduce(
+        (sum, occ) => sum + occ.stats.failedReminderCount,
+        0,
+      ),
     },
   };
 }

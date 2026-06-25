@@ -30,21 +30,23 @@ model Session {
 }
 
 model Event {
-  id         String      @id @default(uuid())
-  name       String
-  current    Boolean
-  eventDates EventDate[]
-  createdAt  DateTime    @default(now())
+  id            String         @id @default(uuid())
+  name          String
+  current       Boolean
+  eventDates    EventDate[]
+  createdAt     DateTime       @default(now())
+  specialEvents SpecialEvent[]
 }
 
 model EventDate {
-  id            String         @id @default(uuid())
-  date          String
-  dow           String
-  eventId       String
-  event         Event          @relation(fields: [eventId], references: [id])
-  seatings      Seating[]
-  specialEvents SpecialEvent[]
+  id                      String                   @id @default(uuid())
+  date                    String
+  dow                     String
+  eventId                 String
+  event                   Event                    @relation(fields: [eventId], references: [id])
+  seatings                Seating[]
+  specialEvents           SpecialEvent[]
+  specialEventOccurrences SpecialEventOccurrence[]
 }
 
 model Seating {
@@ -214,11 +216,14 @@ model SpecialEvent {
   name        String
   description String
 
-  eventDate   EventDate @relation(fields: [eventDateId], references: [id], onDelete: Cascade)
-  eventDateId String
+  eventId String?
+  event   Event?  @relation(fields: [eventId], references: [id])
 
-  startTime String
-  endTime   String
+  // alt temporär behalten
+  eventDateId String?
+  startTime   String?
+  endTime     String?
+  capacity    Int?
 
   // Darstellung
   category       SpecialEventCategory @default(OTHER)
@@ -237,50 +242,79 @@ model SpecialEvent {
   bookingType SpecialEventBookingType @default(INTERNAL_REGISTRATION)
   externalUrl String?
 
-  // Kapazitäten
-  capacity                  Int?
-  maxPersonsPerRegistration Int  @default(10)
+  // Globale Logik
+  maxPersonsPerRegistration Int @default(10)
 
   // Veröffentlichung
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
 
+  occurrences   SpecialEventOccurrence[]
+  registrations EventRegistration[]
+  eventDate     EventDate?               @relation(fields: [eventDateId], references: [id])
+
+  @@index([isPublished])
+  @@index([sortOrder])
+}
+
+model SpecialEventOccurrence {
+  id String @id @default(uuid())
+
+  specialEvent   SpecialEvent @relation(fields: [specialEventId], references: [id], onDelete: Cascade)
+  specialEventId String
+
+  eventDate   EventDate @relation(fields: [eventDateId], references: [id], onDelete: Cascade)
+  eventDateId String
+
+  startTime String
+  endTime   String
+
+  // Kapazität pro Datum
+  capacity Int?
+
+  sortOrder Int @default(0)
+
   registrations EventRegistration[]
 
-  @@index([eventDateId, sortOrder])
-  @@index([isPublished])
+  @@unique([specialEventId, eventDateId])
+  @@index([specialEventId, sortOrder])
+  @@index([eventDateId])
 }
 
 model EventRegistration {
-  id             String       @id @default(uuid())
+  id String @id @default(uuid())
+
   specialEvent   SpecialEvent @relation(fields: [specialEventId], references: [id], onDelete: Cascade)
   specialEventId String
+
+  specialEventOccurrence   SpecialEventOccurrence? @relation(fields: [specialEventOccurrenceId], references: [id], onDelete: Cascade)
+  specialEventOccurrenceId String?
 
   name        String
   email       String
   phone       String?
   personCount Int
 
-  status     EventRegistrationStatus @default(REGISTERED)
-  createdAt  DateTime                @default(now())
-  canceledAt DateTime?
+  status EventRegistrationStatus @default(REGISTERED)
 
-  // Payment
-  priceCentsTotal         Int?
-  stripeCheckoutSessionId String?   @unique
+  priceCentsTotal Int?
+
+  stripeCheckoutSessionId String?
   stripePaymentIntentId   String?
   paidAt                  DateTime?
   paymentExpiresAt        DateTime?
 
   reminderSent          DateTime?
   reminderLastAttemptAt DateTime?
-  reminderAttemptCount  Int       @default(0)
   reminderFailureReason String?
+  reminderAttemptCount  Int       @default(0)
 
-  @@unique([specialEventId, email])
-  @@index([specialEventId, status])
-  @@index([specialEventId, reminderSent])
-  @@index([stripeCheckoutSessionId])
+  canceledAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([specialEventId])
+  @@index([specialEventOccurrenceId])
+  @@index([email])
 }
 
 model ReservationReminder {

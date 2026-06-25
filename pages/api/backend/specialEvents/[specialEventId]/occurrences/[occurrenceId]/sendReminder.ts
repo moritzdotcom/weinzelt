@@ -59,10 +59,17 @@ export default async function handler(
   }
 
   const specialEventId = req.query.specialEventId;
+  const occurrenceId = req.query.occurrenceId;
 
   if (typeof specialEventId !== 'string') {
     return res.status(400).json({
       error: 'Es wurde kein WineEvent angegeben.',
+    });
+  }
+
+  if (typeof occurrenceId !== 'string') {
+    return res.status(400).json({
+      error: 'Es wurde kein Termin angegeben.',
     });
   }
 
@@ -99,6 +106,7 @@ export default async function handler(
   const registrations = await prisma.eventRegistration.findMany({
     where: {
       specialEventId,
+      specialEventOccurrenceId: occurrenceId,
       status: 'REGISTERED',
       reminderSent: null,
       reminderAttemptCount: {
@@ -113,6 +121,14 @@ export default async function handler(
       id: true,
       email: true,
       name: true,
+      specialEventOccurrence: {
+        select: {
+          eventDate: {
+            select: { date: true },
+          },
+          startTime: true,
+        },
+      },
     },
   });
 
@@ -140,8 +156,8 @@ export default async function handler(
           registration.email,
           event.name,
           registration.name,
-          event.eventDate.date,
-          event.startTime,
+          registration.specialEventOccurrence?.eventDate.date || '',
+          registration.specialEventOccurrence?.startTime || '',
         );
 
         await prisma.eventRegistration.update({

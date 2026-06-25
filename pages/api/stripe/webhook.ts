@@ -163,8 +163,16 @@ async function markSpecialEventRegistrationPaidAndSendMail(params: {
       personCount: true,
       specialEvent: {
         select: {
+          id: true,
           name: true,
+          priceCents: true,
+        },
+      },
+      specialEventOccurrence: {
+        select: {
+          id: true,
           startTime: true,
+          endTime: true,
           eventDate: true,
         },
       },
@@ -176,8 +184,8 @@ async function markSpecialEventRegistrationPaidAndSendMail(params: {
     registration.specialEvent.name,
     registration.name,
     registration.personCount,
-    registration.specialEvent.eventDate.date,
-    registration.specialEvent.startTime,
+    registration.specialEventOccurrence?.eventDate.date || '',
+    registration.specialEventOccurrence?.startTime || '',
   );
 }
 

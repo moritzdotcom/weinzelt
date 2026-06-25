@@ -27,10 +27,8 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   IconButton,
   LinearProgress,
-  Paper,
   Snackbar,
   Stack,
   Table,
@@ -44,8 +42,8 @@ import {
 } from '@mui/material';
 import type { Session } from '@/hooks/useSession';
 import type { ApiGetSpecialEventResponse } from '@/pages/api/backend/specialEvents/[specialEventId]';
-import type { ApiSendSpecialEventReminderResponse } from '@/pages/api/backend/specialEvents/[specialEventId]/sendReminder';
-import { formatSpecialEventCategory } from '@/lib/specialEvents';
+import type { ApiSendSpecialEventReminderResponse } from '@/pages/api/backend/specialEvents/[specialEventId]/occurrences/[occurrenceId]/sendReminder';
+import { formatSpecialEventCategory } from '@/lib/specialEvents/format';
 
 function formatDate(value: string | Date | null | undefined) {
   if (!value) return '-';
@@ -166,14 +164,6 @@ export default function BackendSpecialEventPage({
     );
   }
 
-  const activeRegistrations = specialEvent.registrations.filter(
-    (registration) => registration.status === 'REGISTERED',
-  );
-
-  const canceledRegistrations = specialEvent.registrations.filter(
-    (registration) => registration.status === 'CANCELED',
-  );
-
   return (
     <Box className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
       <Link
@@ -244,13 +234,18 @@ export default function BackendSpecialEventPage({
                 >
                   <span className="inline-flex items-center gap-1.5 text-sm">
                     <CalendarMonthRounded fontSize="small" />
-                    {specialEvent.eventDate.dow}, {specialEvent.eventDate.date}
+                    {specialEvent.occurrences.length === 1
+                      ? `${specialEvent.occurrences[0].eventDate.dow}, ${specialEvent.occurrences[0].eventDate.date}`
+                      : `${specialEvent.occurrences.length} Termine`}
                   </span>
 
-                  <span className="inline-flex items-center gap-1.5 text-sm">
-                    <ScheduleRounded fontSize="small" />
-                    {specialEvent.startTime}-{specialEvent.endTime} Uhr
-                  </span>
+                  {specialEvent.occurrences.length === 1 && (
+                    <span className="inline-flex items-center gap-1.5 text-sm">
+                      <ScheduleRounded fontSize="small" />
+                      {specialEvent.occurrences[0].startTime}–
+                      {specialEvent.occurrences[0].endTime} Uhr
+                    </span>
+                  )}
                 </Stack>
               </Box>
 
@@ -271,6 +266,23 @@ export default function BackendSpecialEventPage({
             <Typography className="mt-5 max-w-3xl text-sm leading-relaxed text-gray-600">
               {specialEvent.description}
             </Typography>
+
+            {specialEvent.occurrences.length > 1 && (
+              <Box className="mt-5 flex flex-wrap gap-2">
+                {specialEvent.occurrences.map((occurrence) => (
+                  <Chip
+                    key={occurrence.id}
+                    variant="outlined"
+                    icon={<CalendarMonthRounded />}
+                    label={`${occurrence.eventDate.dow}, ${occurrence.eventDate.date} · ${occurrence.startTime}–${occurrence.endTime} Uhr`}
+                    sx={{
+                      borderRadius: 999,
+                      fontWeight: 700,
+                    }}
+                  />
+                ))}
+              </Box>
+            )}
           </Box>
         </Box>
       </Box>
@@ -306,145 +318,25 @@ export default function BackendSpecialEventPage({
         />
       </Box>
 
-      <Box className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Box>
-          <Typography variant="h5" fontWeight={800}>
-            Teilnehmer
-          </Typography>
+      <Box className="mt-8">
+        <Typography variant="h5" fontWeight={800}>
+          Termine und Teilnehmer
+        </Typography>
 
-          <Typography className="mt-1 text-sm text-gray-500">
-            {activeRegistrations.length} aktive Anmeldungen
-            {canceledRegistrations.length > 0 &&
-              ` · ${canceledRegistrations.length} storniert`}
-          </Typography>
-        </Box>
-
-        {specialEvent.bookingType === 'INTERNAL_REGISTRATION' && (
-          <ReminderEmailButton
-            specialEvent={specialEvent}
-            onFinished={fetchSpecialEvent}
-          />
-        )}
+        <Stack spacing={4} sx={{ mt: 4 }}>
+          {specialEvent.occurrences.map((occurrence) => (
+            <OccurrenceSection
+              key={occurrence.id}
+              specialEvent={specialEvent}
+              occurrence={occurrence}
+              onCancel={(registrationId) =>
+                setCancelRegistrationId(registrationId)
+              }
+              onFinished={fetchSpecialEvent}
+            />
+          ))}
+        </Stack>
       </Box>
-
-      <TableContainer
-        component={Paper}
-        variant="outlined"
-        className="mt-5 overflow-x-auto rounded-3xl"
-      >
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                <strong>Name</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Kontakt</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Personen</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Registriert am</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Reminder</strong>
-              </TableCell>
-              <TableCell align="right" />
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {activeRegistrations.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6}>
-                  <Box className="py-10 text-center">
-                    <GroupsRounded sx={{ fontSize: 46, opacity: 0.25 }} />
-
-                    <Typography className="mt-2 font-semibold">
-                      Noch keine Anmeldungen
-                    </Typography>
-
-                    <Typography className="mt-1 text-sm text-gray-500">
-                      Sobald sich Gäste anmelden, erscheinen sie hier.
-                    </Typography>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ) : (
-              activeRegistrations.map((registration) => (
-                <TableRow key={registration.id} hover>
-                  <TableCell sx={{ minWidth: 170 }}>
-                    <Typography className="font-semibold">
-                      {registration.name}
-                    </Typography>
-                  </TableCell>
-
-                  <TableCell sx={{ minWidth: 220 }}>
-                    <Typography className="text-sm">
-                      {registration.email}
-                    </Typography>
-
-                    {registration.phone && (
-                      <Typography className="mt-0.5 text-xs text-gray-500">
-                        {registration.phone}
-                      </Typography>
-                    )}
-                  </TableCell>
-
-                  <TableCell>{registration.personCount}</TableCell>
-
-                  <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                    {formatDate(registration.createdAt)}
-                  </TableCell>
-
-                  <TableCell sx={{ minWidth: 190 }}>
-                    <ReminderStatus registration={registration} />
-                  </TableCell>
-
-                  <TableCell align="right">
-                    <Tooltip title="Anmeldung stornieren">
-                      <IconButton
-                        color="error"
-                        onClick={() => setCancelRegistrationId(registration.id)}
-                      >
-                        <CancelRounded />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {canceledRegistrations.length > 0 && (
-        <Box className="mt-8">
-          <Typography variant="h6" fontWeight={800}>
-            Stornierte Anmeldungen
-          </Typography>
-
-          <Box className="mt-3 grid gap-2">
-            {canceledRegistrations.map((registration) => (
-              <Box
-                key={registration.id}
-                className="flex flex-col gap-1 rounded-2xl border border-black/10 bg-stone-50 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
-              >
-                <span>
-                  <strong>{registration.name}</strong> · {registration.email} ·{' '}
-                  {registration.personCount}{' '}
-                  {registration.personCount === 1 ? 'Person' : 'Personen'}
-                </span>
-
-                <span className="text-xs text-gray-500">
-                  Storniert am {formatDate(registration.canceledAt)}
-                </span>
-              </Box>
-            ))}
-          </Box>
-        </Box>
-      )}
 
       <Dialog
         open={Boolean(cancelRegistrationId)}
@@ -526,7 +418,7 @@ function StatCard({
 function ReminderStatus({
   registration,
 }: {
-  registration: ApiGetSpecialEventResponse['registrations'][number];
+  registration: ApiGetSpecialEventResponse['occurrences'][number]['registrations'][number];
 }) {
   if (registration.reminderSent) {
     return (
@@ -565,11 +457,17 @@ function ReminderStatus({
 }
 
 function ReminderEmailButton({
-  specialEvent,
+  specialEventId,
+  occurrenceId,
+  pendingCount,
+  failedCount,
   onFinished,
 }: {
-  specialEvent: ApiGetSpecialEventResponse;
-  onFinished: () => Promise<void>;
+  specialEventId: string;
+  occurrenceId: string;
+  pendingCount: number;
+  failedCount: number;
+  onFinished: () => void;
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [sending, setSending] = useState(false);
@@ -579,9 +477,6 @@ function ReminderEmailButton({
   const [sent, setSent] = useState(0);
   const [failed, setFailed] = useState(0);
   const [initialPendingCount, setInitialPendingCount] = useState(0);
-
-  const pendingCount = specialEvent.stats.pendingReminderCount;
-  const failedCount = specialEvent.stats.failedReminderCount;
 
   const progress = initialPendingCount
     ? Math.min(100, (processed / initialPendingCount) * 100)
@@ -607,7 +502,7 @@ function ReminderEmailButton({
     try {
       while (shouldContinue) {
         const { data } = await axios.post<ApiSendSpecialEventReminderResponse>(
-          `/api/backend/specialEvents/${specialEvent.id}/sendReminder`,
+          `/api/backend/specialEvents/${specialEventId}/occurrences/${occurrenceId}/sendReminder`,
         );
 
         totalProcessed += data.attempted;
@@ -661,7 +556,7 @@ function ReminderEmailButton({
 
     try {
       const { data } = await axios.post<{ reset: number }>(
-        `/api/backend/specialEvents/${specialEvent.id}/resetFailedReminders`,
+        `/api/backend/specialEvents/${specialEventId}/occurrences/${occurrenceId}/resetFailedReminders`,
       );
 
       await onFinished();
@@ -778,6 +673,166 @@ function ReminderEmailButton({
         onClose={() => setFeedbackMessage('')}
       />
     </>
+  );
+}
+
+function OccurrenceSection({
+  specialEvent,
+  occurrence,
+  onCancel,
+  onFinished,
+}: {
+  specialEvent: ApiGetSpecialEventResponse;
+  occurrence: ApiGetSpecialEventResponse['occurrences'][number];
+  onCancel: (registrationId: string) => void;
+  onFinished: () => Promise<void>;
+}) {
+  const activeRegistrations = occurrence.registrations.filter(
+    (registration) => registration.status === 'REGISTERED',
+  );
+
+  const canceledRegistrations = occurrence.registrations.filter(
+    (registration) => registration.status === 'CANCELED',
+  );
+
+  return (
+    <Box className="overflow-hidden rounded-[2rem] border border-black/10 bg-white shadow-sm">
+      <Box className="flex flex-col gap-4 border-b border-black/10 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <Box>
+          <Typography variant="h6" fontWeight={900}>
+            {occurrence.eventDate.dow}, {occurrence.eventDate.date}
+          </Typography>
+
+          <Typography className="mt-1 text-sm text-gray-500">
+            {occurrence.startTime}–{occurrence.endTime} Uhr ·{' '}
+            {occurrence.stats.registeredPersonCount} Teilnehmer
+            {occurrence.stats.remainingCapacity !== null &&
+              ` · ${occurrence.stats.remainingCapacity} Plätze frei`}
+          </Typography>
+        </Box>
+
+        {specialEvent.bookingType === 'INTERNAL_REGISTRATION' && (
+          <ReminderEmailButton
+            specialEventId={specialEvent.id}
+            occurrenceId={occurrence.id}
+            pendingCount={occurrence.stats.pendingReminderCount}
+            failedCount={occurrence.stats.failedReminderCount}
+            onFinished={onFinished}
+          />
+        )}
+      </Box>
+
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>
+                <strong>Name</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Kontakt</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Personen</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Registriert am</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Reminder</strong>
+              </TableCell>
+              <TableCell align="right" />
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {activeRegistrations.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6}>
+                  <Box className="py-8 text-center">
+                    <GroupsRounded sx={{ fontSize: 40, opacity: 0.25 }} />
+
+                    <Typography className="mt-2 font-semibold">
+                      Noch keine Anmeldungen für diesen Termin
+                    </Typography>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ) : (
+              activeRegistrations.map((registration) => (
+                <TableRow key={registration.id} hover>
+                  <TableCell sx={{ minWidth: 170 }}>
+                    <Typography className="font-semibold">
+                      {registration.name}
+                    </Typography>
+                  </TableCell>
+
+                  <TableCell sx={{ minWidth: 220 }}>
+                    <Typography className="text-sm">
+                      {registration.email}
+                    </Typography>
+
+                    {registration.phone && (
+                      <Typography className="mt-0.5 text-xs text-gray-500">
+                        {registration.phone}
+                      </Typography>
+                    )}
+                  </TableCell>
+
+                  <TableCell>{registration.personCount}</TableCell>
+
+                  <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                    {formatDate(registration.createdAt)}
+                  </TableCell>
+
+                  <TableCell sx={{ minWidth: 190 }}>
+                    <ReminderStatus registration={registration} />
+                  </TableCell>
+
+                  <TableCell align="right">
+                    <Tooltip title="Anmeldung stornieren">
+                      <IconButton
+                        color="error"
+                        onClick={() => onCancel(registration.id)}
+                      >
+                        <CancelRounded />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {canceledRegistrations.length > 0 && (
+        <Box className="border-t border-black/10 bg-stone-50 p-5">
+          <Typography variant="subtitle2" fontWeight={800}>
+            Stornierte Anmeldungen
+          </Typography>
+
+          <Box className="mt-3 grid gap-2">
+            {canceledRegistrations.map((registration) => (
+              <Box
+                key={registration.id}
+                className="flex flex-col gap-1 rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
+              >
+                <span>
+                  <strong>{registration.name}</strong> · {registration.email} ·{' '}
+                  {registration.personCount}{' '}
+                  {registration.personCount === 1 ? 'Person' : 'Personen'}
+                </span>
+
+                <span className="text-xs text-gray-500">
+                  Storniert am {formatDate(registration.canceledAt)}
+                </span>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      )}
+    </Box>
   );
 }
 

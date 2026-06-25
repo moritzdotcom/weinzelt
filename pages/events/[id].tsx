@@ -14,6 +14,7 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -29,7 +30,7 @@ import type { PublicSpecialEvent } from '@/lib/specialEvents';
 import {
   formatSpecialEventCategory,
   formatSpecialEventPrice,
-} from '@/lib/specialEvents';
+} from '@/lib/specialEvents/format';
 import { SpecialEventRegistrationForm } from '@/components/specialEventRegistrationForm';
 import { useRouter } from 'next/router';
 
@@ -273,6 +274,58 @@ export default function SpecialEventPage({ id }: { id: string }) {
                   </InfoPill>
                 )}
               </div>
+
+              {event.occurrences.length > 1 && (
+                <Box sx={{ mt: 5 }}>
+                  <Typography variant="h6" fontWeight={900}>
+                    Verfügbare Termine
+                  </Typography>
+
+                  <Box sx={{ mt: 2, display: 'grid', gap: 1.5 }}>
+                    {event.occurrences.map((occurrence) => (
+                      <Box
+                        key={occurrence.id}
+                        sx={{
+                          p: 2,
+                          borderRadius: 3,
+                          border: '1px solid',
+                          borderColor: 'rgba(0,0,0,0.1)',
+                          bgcolor: occurrence.isSoldOut ? 'grey.50' : 'white',
+                          display: 'flex',
+                          flexDirection: { xs: 'column', sm: 'row' },
+                          justifyContent: 'space-between',
+                          gap: 1,
+                        }}
+                      >
+                        <Box>
+                          <Typography fontWeight={800}>
+                            {occurrence.eventDate.dow},{' '}
+                            {occurrence.eventDate.date}
+                          </Typography>
+
+                          <Typography variant="body2" color="text.secondary">
+                            {occurrence.startTime}–{occurrence.endTime} Uhr
+                          </Typography>
+                        </Box>
+
+                        <Chip
+                          size="small"
+                          color={occurrence.isSoldOut ? 'default' : 'success'}
+                          variant="outlined"
+                          label={
+                            occurrence.isSoldOut
+                              ? 'Ausgebucht'
+                              : occurrence.remainingCapacity === null
+                                ? 'Verfügbar'
+                                : `${occurrence.remainingCapacity} Plätze frei`
+                          }
+                          sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
+                        />
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              )}
 
               {event.attachmentUrl && (
                 <Box
