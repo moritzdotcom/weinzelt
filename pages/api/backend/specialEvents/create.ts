@@ -51,6 +51,7 @@ export default async function handler(
     const attachment = getFirstFile(files.attachment);
 
     const validation = validateSpecialEventPayload({
+      eventId: firstField(fields, 'eventId'),
       name: firstField(fields, 'name'),
       description: firstField(fields, 'description'),
       category: firstField(fields, 'category'),
