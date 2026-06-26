@@ -31,18 +31,6 @@ export type EventDay = {
   }>;
 };
 
-export type WineEvent = {
-  id: string;
-  date: string;
-  image: string;
-  title: string;
-  time?: string;
-  badge?: string;
-  description: string;
-  link?: string;
-  ctaLabel?: string;
-};
-
 const JHEEZ = {
   name: 'JHEEZ',
   genre: 'Afro House',
@@ -145,6 +133,24 @@ const PANPOT = {
   instagramUrl: 'https://www.instagram.com/panpotofficial/',
 };
 
+const AYMEN = {
+  name: 'Aymen',
+  genre: 'House',
+  instagramUrl: 'https://www.instagram.com/aymenrhalib/',
+};
+
+const DELCAMPO = {
+  name: 'Del Campo',
+  genre: 'House',
+  instagramUrl: 'https://www.instagram.com/valtinhodelcampo/',
+};
+
+const KIMBERLY = {
+  name: 'Kimberly',
+  genre: 'House',
+  instagramUrl: 'https://www.instagram.com/itskimberlydj/',
+};
+
 export const eventDays: EventDay[] = [
   {
     id: '2026-07-17',
@@ -183,7 +189,7 @@ export const eventDays: EventDay[] = [
     specials: [
       {
         title: 'Spiel um dritten Platz',
-        time: '23:00',
+        time: '23:00 Uhr',
         description:
           'Der Abend wird durch das Spiel um dritten Platz der Fußball WM zusätzlich aufgeladen und sorgt für besondere Stimmung im Zelt.',
       },
@@ -207,13 +213,13 @@ export const eventDays: EventDay[] = [
     specials: [
       {
         title: 'Kiesgrube im Weinzelt',
-        time: 'ab 11:00',
+        time: 'ab 11:00 Uhr',
         description:
           'Kiesgrube bringt ihren unverwechselbaren Sunday-Spirit ins Weinzelt: starke Musik, besondere Atmosphäre und ein Tag mit echtem Kultcharakter.',
       },
       {
         title: 'WM Finale',
-        time: '21:00',
+        time: '21:00 Uhr',
         description:
           'Gemeinsam schauen, anstoßen und den Abend mit besonderer Stimmung im Weinzelt erleben.',
       },
@@ -338,17 +344,33 @@ export const eventDays: EventDay[] = [
     id: '2026-07-26',
     date: '26.07.2026',
     weekday: 'Sonntag',
-    motto: 'CLOSING Sunday',
-    subtitle: 'Das Motto wird in den kommenden Tagen angekündigt.',
+    motto: 'YE Goes Düsseldorf',
+    subtitle:
+      'YE feiert sein Düsseldorf-Debüt im Weinzelt mit House Music, Terrace Sessions und Fairground-Vibes.',
     vibeText:
-      'Nur so viel Vorab: Auch dieses Jahr sind die legendären WINE WALKS wieder mit im Programm. Gemeinsam mit Sommelier, ausgewählten Weinen und dem perfekten Sonntag zwischen Carlsplatz, Rheinbrücke und Weinzelt.',
-    highlights: ['Closing', 'WINE WALK'],
+      'Zum ersten Mal kommt YE nach Düsseldorf und übernimmt für einen Tag das Weinzelt auf der Rheinkirmes. Zwischen Terrasse, Sommerstimmung und späterer Energie im Zelt entsteht ein Sonntag, der Tradition und moderne House Music zusammenbringt. Tagsüber entspannte Sunshine Sessions, abends volle Atmosphäre: YE bringt seinen Sound, seine Community und besondere Momente an einen der ikonischsten Orte der Kirmes.',
+    highlights: ['YE Düsseldorf Debüt', 'WineWalks'],
     reservationLink: '/reservation?date=26.07.26',
     image: '/events/winewalk.jpg',
+    accentClassName:
+      'from-stone-100 via-white to-yellow-50 border-stone-900/70',
     djs: {
-      support: [],
-      headliner: [],
+      support: [AYMEN],
+      headliner: [DELCAMPO, KIMBERLY],
     },
-    specials: [],
+    specials: [
+      {
+        title: 'YE Goes Düsseldorf',
+        time: 'ab 11:00 Uhr',
+        description:
+          'YE kommt zum ersten Mal nach Düsseldorf und hostet eine eigene Stage im Weinzelt - mit ausgewählten DJs, House Music und besonderer Atmosphäre mitten auf der Rheinkirmes.',
+      },
+      {
+        title: 'WineWalks ins Weinzelt',
+        time: 'Vier Termine',
+        description:
+          'Auch in diesem Jahr gibt es wieder vier WineWalks. Die Touren starten am Carlsplatz bei Concept Riesling und führen mit Sommelier-Begleitung rüber ins Weinzelt.',
+      },
+    ],
   },
 ];

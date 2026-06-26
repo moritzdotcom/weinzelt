@@ -98,7 +98,7 @@ function SpecialsGrid({ specials }: { specials: EventDay['specials'] }) {
             <div className="min-w-0">
               {special.time && (
                 <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
-                  {special.time} Uhr
+                  {special.time}
                 </p>
               )}
             </div>
