@@ -219,13 +219,17 @@ export default function SpecialEventPage({ id }: { id: string }) {
               <div className="mt-3 flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/35 px-3 py-1.5 text-sm font-semibold text-white backdrop-blur">
                   <CalendarMonthRounded sx={{ fontSize: 18 }} />
-                  {formatDate(event.eventDate)}
+                  {event.occurrences.length > 1
+                    ? 'Mehrere Termine'
+                    : formatDate(event.eventDate)}
                 </span>
 
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/35 px-3 py-1.5 text-sm font-semibold text-white backdrop-blur">
-                  <ScheduleRounded sx={{ fontSize: 18 }} />
-                  {event.startTime}–{event.endTime} Uhr
-                </span>
+                {event.occurrences.length == 1 && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/35 px-3 py-1.5 text-sm font-semibold text-white backdrop-blur">
+                    <ScheduleRounded sx={{ fontSize: 18 }} />
+                    {event.startTime} - {event.endTime} Uhr
+                  </span>
+                )}
               </div>
             </Box>
           </Box>
@@ -245,25 +249,22 @@ export default function SpecialEventPage({ id }: { id: string }) {
                 Das erwartet dich
               </Typography>
 
-              <Typography
-                component="h2"
-                className="mt-2 text-2xl font-bold text-black sm:text-3xl"
-              >
-                Ein besonderes Erlebnis rund um Wein.
-              </Typography>
-
               <Typography className="mt-5 max-w-3xl whitespace-pre-line text-base leading-relaxed text-gray-700">
                 {event.description}
               </Typography>
 
               <div className="mt-7 flex flex-wrap gap-2">
                 <InfoPill icon={<CalendarMonthRounded sx={{ fontSize: 17 }} />}>
-                  {formatDate(event.eventDate)}
+                  {event.occurrences.length > 1
+                    ? 'Mehrere Termine'
+                    : formatDate(event.eventDate)}
                 </InfoPill>
 
-                <InfoPill icon={<ScheduleRounded sx={{ fontSize: 17 }} />}>
-                  {event.startTime}–{event.endTime} Uhr
-                </InfoPill>
+                {event.occurrences.length == 1 && (
+                  <InfoPill icon={<ScheduleRounded sx={{ fontSize: 17 }} />}>
+                    {event.startTime} - {event.endTime} Uhr
+                  </InfoPill>
+                )}
 
                 {event.remainingCapacity !== null && !event.isSoldOut && (
                   <InfoPill
@@ -304,7 +305,7 @@ export default function SpecialEventPage({ id }: { id: string }) {
                           </Typography>
 
                           <Typography variant="body2" color="text.secondary">
-                            {occurrence.startTime}–{occurrence.endTime} Uhr
+                            {occurrence.startTime} - {occurrence.endTime} Uhr
                           </Typography>
                         </Box>
 

@@ -11,9 +11,37 @@ import {
   Typography,
 } from '@mui/material';
 import { CheckCircleRounded, LocalActivityRounded } from '@mui/icons-material';
-import type { PublicSpecialEvent } from '@/lib/specialEvents';
+import type {
+  PublicSpecialEvent,
+  PublicSpecialEventOccurrence,
+} from '@/lib/specialEvents';
 import NewsletterConfirmation from './reservation/newsletterConfirmation';
 import { ApiPostSpecialEventRegisterResponse } from '@/pages/api/specialEvents/[specialEventId]/register';
+
+function RenderAlert({
+  occurrence,
+}: {
+  occurrence: PublicSpecialEventOccurrence;
+}) {
+  if (occurrence.remainingCapacity === null) return null;
+  if (occurrence.isSoldOut) {
+    return (
+      <Alert severity="error" icon={<LocalActivityRounded />}>
+        Dieser Termin ist leider schon ausgebucht.
+      </Alert>
+    );
+  }
+  return (
+    <Alert
+      severity={occurrence.remainingCapacity <= 5 ? 'warning' : 'info'}
+      icon={<LocalActivityRounded />}
+    >
+      Noch {occurrence.remainingCapacity}{' '}
+      {occurrence.remainingCapacity === 1 ? 'Platz' : 'Plätze'} für diesen
+      Termin verfügbar.
+    </Alert>
+  );
+}
 
 export function SpecialEventRegistrationForm({
   event,
@@ -121,6 +149,10 @@ export function SpecialEventRegistrationForm({
     }
   };
 
+  useEffect(() => {
+    setError(null);
+  }, [selectedOccurrenceId]);
+
   if (success) {
     return (
       <Box className="py-5 text-center">
@@ -156,18 +188,7 @@ export function SpecialEventRegistrationForm({
   return (
     <Box component="form" onSubmit={handleSubmit}>
       <Stack spacing={2.5} mt={1}>
-        {selectedOccurrence.remainingCapacity !== null && (
-          <Alert
-            severity={
-              selectedOccurrence.remainingCapacity <= 5 ? 'warning' : 'info'
-            }
-            icon={<LocalActivityRounded />}
-          >
-            Noch {selectedOccurrence.remainingCapacity}{' '}
-            {selectedOccurrence.remainingCapacity === 1 ? 'Platz' : 'Plätze'}{' '}
-            für diesen Termin verfügbar.
-          </Alert>
-        )}
+        <RenderAlert occurrence={selectedOccurrence} />
 
         {error && <Alert severity="error">{error}</Alert>}
 
@@ -246,7 +267,7 @@ export function SpecialEventRegistrationForm({
           type="submit"
           variant="contained"
           size="large"
-          disabled={saving}
+          disabled={saving || selectedOccurrence.isSoldOut}
           startIcon={saving ? <CircularProgress size={18} /> : undefined}
           sx={{
             borderRadius: 999,
