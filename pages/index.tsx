@@ -10,6 +10,7 @@ import HeroFade from '@/components/heroFade';
 import EventDaysSection from '@/components/home/eventDaysSection';
 import HtmlHead from '@/components/htmlHead';
 import SpecialEventsSection from '@/components/home/specialEventSection';
+import NewsletterSection from '@/components/home/newsletterSection';
 
 export default function Home({ session }: { session: Session }) {
   return (
@@ -264,6 +265,8 @@ export default function Home({ session }: { session: Session }) {
         </div>
         <FoodGrid />
       </section>
+
+      <NewsletterSection />
 
       <section
         id="countdown"
