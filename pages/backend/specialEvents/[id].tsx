@@ -132,8 +132,8 @@ export default function BackendSpecialEventPage({
     if (!cancelRegistrationId) return;
 
     try {
-      await axios.post(
-        `/api/backend/eventRegistrations/${cancelRegistrationId}/cancel`,
+      await axios.delete(
+        `/api/backend/eventRegistrations/${cancelRegistrationId}`,
       );
 
       setFeedbackMessage('Die Anmeldung wurde storniert.');
