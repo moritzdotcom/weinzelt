@@ -1,6 +1,7 @@
 import AdsClickOutlinedIcon from '@mui/icons-material/AdsClickOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import {
   Alert,
   Box,
@@ -20,46 +21,10 @@ import { useRouter } from 'next/router';
 import { useCallback, useEffect, useState } from 'react';
 import { MarkEmailReadOutlined } from '@mui/icons-material';
 import BackendHeader from '@/components/backend/header';
-
-type Recipient = {
-  id: string;
-  email: string;
-  name?: string | null;
-  status: 'PENDING' | 'SENDING' | 'SENT' | 'FAILED';
-  attemptCount: number;
-  sentAt?: string | null;
-  failureReason?: string | null;
-  ctaClickCount: number;
-};
-
-type DetailResponse = {
-  newsletter: {
-    id: string;
-    subject: string;
-    headline: string;
-    body: string;
-    imageUrl?: string | null;
-    ctaLabel?: string | null;
-    ctaUrl?: string | null;
-    status: 'DRAFT' | 'SENDING' | 'SENT';
-    createdAt: string;
-    startedAt?: string | null;
-    sentAt?: string | null;
-    recipients: Recipient[];
-  };
-  stats: {
-    total: number;
-    pending: number;
-    sending: number;
-    sent: number;
-    failed: number;
-    totalClicks: number;
-    uniqueClickRecipients: number;
-  };
-};
+import { ApiGetNewsletterBackendResponse } from '@/pages/api/backend/newsletters/[newsletterId]';
 
 function formatDate(value?: string | null) {
-  if (!value) return '–';
+  if (!value) return '-';
 
   return new Intl.DateTimeFormat('de-DE', {
     dateStyle: 'medium',
@@ -67,7 +32,11 @@ function formatDate(value?: string | null) {
   }).format(new Date(value));
 }
 
-function RecipientStatusChip({ recipient }: { recipient: Recipient }) {
+function RecipientStatusChip({
+  recipient,
+}: {
+  recipient: ApiGetNewsletterBackendResponse['newsletter']['recipients'][number];
+}) {
   if (recipient.status === 'SENT') {
     return <Chip size="small" color="success" label="Versendet" />;
   }
@@ -90,7 +59,7 @@ export default function NewsletterDetailPage() {
       ? router.query.newsletterId
       : undefined;
 
-  const [data, setData] = useState<DetailResponse>();
+  const [data, setData] = useState<ApiGetNewsletterBackendResponse>();
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
 
@@ -102,7 +71,7 @@ export default function NewsletterDetailPage() {
   const loadData = useCallback(async () => {
     if (!newsletterId) return;
 
-    const response = await axios.get<DetailResponse>(
+    const response = await axios.get<ApiGetNewsletterBackendResponse>(
       `/api/backend/newsletters/${newsletterId}`,
     );
 
@@ -200,22 +169,37 @@ export default function NewsletterDetailPage() {
         backLabel="Zurück"
         action={
           newsletter.status !== 'SENT' ? (
-            <Button
-              variant="contained"
-              startIcon={
-                sending ? (
-                  <CircularProgress size={18} color="inherit" />
-                ) : (
-                  <SendOutlinedIcon />
-                )
-              }
-              disabled={sending}
-              onClick={sendAllBatches}
-            >
-              {newsletter.status === 'DRAFT'
-                ? 'Versand starten'
-                : 'Versand fortsetzen'}
-            </Button>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+              {newsletter.status === 'DRAFT' && (
+                <Button
+                  variant="outlined"
+                  startIcon={<EditOutlinedIcon />}
+                  disabled={sending}
+                  onClick={() =>
+                    router.push(`/backend/newsletter/${newsletter.id}/edit`)
+                  }
+                >
+                  Bearbeiten
+                </Button>
+              )}
+
+              <Button
+                variant="contained"
+                startIcon={
+                  sending ? (
+                    <CircularProgress size={18} color="inherit" />
+                  ) : (
+                    <SendOutlinedIcon />
+                  )
+                }
+                disabled={sending}
+                onClick={sendAllBatches}
+              >
+                {newsletter.status === 'DRAFT'
+                  ? 'Versand starten'
+                  : 'Versand fortsetzen'}
+              </Button>
+            </Stack>
           ) : null
         }
       />

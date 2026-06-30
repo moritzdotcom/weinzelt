@@ -2,6 +2,43 @@ import prisma from '@/lib/prismadb';
 import { getServerSession } from '@/lib/session';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+type Recipient = {
+  id: string;
+  email: string;
+  name?: string | null;
+  status: 'PENDING' | 'SENDING' | 'SENT' | 'FAILED';
+  attemptCount: number;
+  sentAt?: string | null;
+  failureReason?: string | null;
+  ctaClickCount: number;
+};
+
+export type ApiGetNewsletterBackendResponse = {
+  newsletter: {
+    id: string;
+    subject: string;
+    headline: string;
+    body: string;
+    imageUrl?: string | null;
+    ctaLabel?: string | null;
+    ctaUrl?: string | null;
+    status: 'DRAFT' | 'SENDING' | 'SENT';
+    createdAt: string;
+    startedAt?: string | null;
+    sentAt?: string | null;
+    recipients: Recipient[];
+  };
+  stats: {
+    total: number;
+    pending: number;
+    sending: number;
+    sent: number;
+    failed: number;
+    totalClicks: number;
+    uniqueClickRecipients: number;
+  };
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
