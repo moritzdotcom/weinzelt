@@ -5,7 +5,6 @@ import {
   mapSpecialEventToPublic,
   type PublicSpecialEvent,
 } from '@/lib/specialEvents';
-import { supabase } from '@/lib/supabase';
 
 export default async function handler(
   req: NextApiRequest,

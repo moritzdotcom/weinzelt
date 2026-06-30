@@ -41,6 +41,7 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
                 },
                 select: {
                   people: true,
+                  tableCount: true,
                   minimumSpend: true,
                   paymentStatus: true,
                 },
@@ -69,12 +70,16 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
       )
     );
   }, 0);
-  const reservationCount = event.eventDates.reduce((prev, curr) => {
-    return prev + curr.seatings.reduce((a, b) => a + b.reservations.length, 0);
+  const tableCount = event.eventDates.reduce((prev, curr) => {
+    return (
+      prev +
+      curr.seatings.reduce(
+        (a, b) => a + b.reservations.reduce((sum, r) => sum + r.tableCount, 0),
+        0,
+      )
+    );
   }, 0);
-  const occupancyRate = Math.round(
-    (reservationCount * 100) / availableSeatings,
-  );
+  const occupancyRate = Math.round((tableCount * 100) / availableSeatings);
 
   const confirmedGuests = event.eventDates.reduce((prev, curr) => {
     return (
