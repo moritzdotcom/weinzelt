@@ -21,19 +21,6 @@ export default async function handler(
       where: {
         isPublished: true,
       },
-      orderBy: [
-        {
-          eventDate: {
-            date: 'asc',
-          },
-        },
-        {
-          sortOrder: 'asc',
-        },
-        {
-          startTime: 'asc',
-        },
-      ],
       include: {
         occurrences: {
           orderBy: [
@@ -57,7 +44,13 @@ export default async function handler(
       },
     });
 
-    const result: PublicSpecialEvent[] = events.map(mapSpecialEventToPublic);
+    const result: PublicSpecialEvent[] = events
+      .map(mapSpecialEventToPublic)
+      .sort((a, b) =>
+        a.occurrences[0].eventDate.date.localeCompare(
+          b.occurrences[0].eventDate.date,
+        ),
+      );
 
     return res.status(200).json(result);
   } catch (error) {
