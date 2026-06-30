@@ -30,9 +30,10 @@ import {
   Cancel,
   Edit,
   MoreVert,
+  PaidRounded,
   ReceiptLong,
 } from '@mui/icons-material';
-import { ReservationPaymentStatus } from '@prisma/client';
+import { Reservation, ReservationPaymentStatus } from '@prisma/client';
 import { ReservationCancelDialog } from '@/components/reservation/cancelDialog';
 import { ChangeReservationDateDialog } from '@/components/reservation/changeEventDateDialog';
 import BackendHeader from '@/components/backend/header';
@@ -71,6 +72,7 @@ export default function BackendSearchReservationPage({
   );
   const [menuReservationPaymentStatus, setMenuReservationPaymentStatus] =
     useState<ReservationPaymentStatus>();
+  const [markingAsPaidId, setMarkingAsPaidId] = useState<string | null>(null);
 
   const menuOpen = Boolean(menuAnchorEl);
 
@@ -129,6 +131,22 @@ export default function BackendSearchReservationPage({
         r.id === updatedReservation.id ? updatedReservation : r,
       ),
     );
+  };
+
+  const handleMarkAsPaid = async (
+    reservation: ApiGetReservationsResponse[number],
+  ) => {
+    setMarkingAsPaidId(reservation.id);
+    const { data } = await axios.post<Reservation>(
+      `/api/reservations/${reservation.id}/trackManualPayment`,
+    );
+    updateReservations({
+      ...reservation,
+      paymentStatus: data.paymentStatus,
+      manualPaymentTrackedBy: data.manualPaymentTrackedBy,
+    });
+    setMarkingAsPaidId(null);
+    closeMenu();
   };
 
   const handleSave = (
@@ -378,6 +396,23 @@ export default function BackendSearchReservationPage({
             <CalendarMonth fontSize="small" />
           </ListItemIcon>
           <ListItemText>Reservierung umbuchen</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            const r = filteredReservations.find(
+              (x) => x.id === menuReservationId,
+            );
+            if (r) handleMarkAsPaid(r);
+          }}
+          disabled={
+            menuReservationPaymentStatus !== 'PENDING_PAYMENT' ||
+            markingAsPaidId == menuReservationId
+          }
+        >
+          <ListItemIcon>
+            <PaidRounded fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Als bezahlt markieren</ListItemText>
         </MenuItem>
         <MenuItem
           onClick={() => {
