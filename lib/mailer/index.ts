@@ -18,6 +18,7 @@ type MailAttachment = {
 };
 
 export function sendMail({
+  fromName,
   to,
   subject,
   text,
@@ -28,20 +29,21 @@ export function sendMail({
   cc,
   bcc,
 }: {
+  fromName?: string;
   to: string;
   subject: string;
   text: string;
   html?: string;
   sendCopy?: boolean;
-
-  // NEW:
   attachments?: MailAttachment[];
   replyTo?: string;
   cc?: string | string[];
   bcc?: string | string[];
 }) {
-  const from = process.env.MAIL_FROM;
-  if (!from) throw new Error('MAIL_FROM is not set');
+  const address = process.env.MAIL_FROM;
+  if (!address) throw new Error('MAIL_FROM is not set');
+
+  const from = { name: fromName || 'Weinzelt', address };
 
   // 기존 behaviour: sendCopy -> bcc to MAIL_FROM
   const finalBcc = bcc ?? (sendCopy ? process.env.MAIL_FROM : undefined);
