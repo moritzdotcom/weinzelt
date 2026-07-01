@@ -774,7 +774,7 @@ export default function ARGBPage() {
         <p>Weinzelt GmbH</p>
         <p>Heesenstraße 74, Halle 7f</p>
         <p>40549 Düsseldorf</p>
-        <p>Telefon: 0211 93679940</p>
+        <p>Telefon: 0211-87973994999</p>
         <p>E-Mail Reservierung: reservierung@dasweinzelt.de</p>
         <p>Allgemeine E-Mail: info@dasweinzelt.de</p>
       </div>
