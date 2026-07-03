@@ -8,6 +8,7 @@ import {
   CalendarMonthRounded,
   CancelRounded,
   CheckCircleRounded,
+  DescriptionOutlined,
   EmailRounded,
   ErrorOutlineRounded,
   GroupsRounded,
@@ -704,7 +705,7 @@ function OccurrenceSection({
           </Typography>
 
           <Typography className="mt-1 text-sm text-gray-500">
-            {occurrence.startTime}–{occurrence.endTime} Uhr ·{' '}
+            {occurrence.startTime} - {occurrence.endTime} Uhr ·{' '}
             {occurrence.stats.registeredPersonCount} Teilnehmer
             {occurrence.stats.remainingCapacity !== null &&
               ` · ${occurrence.stats.remainingCapacity} Plätze frei`}
@@ -712,13 +713,40 @@ function OccurrenceSection({
         </Box>
 
         {specialEvent.bookingType === 'INTERNAL_REGISTRATION' && (
-          <ReminderEmailButton
-            specialEventId={specialEvent.id}
-            occurrenceId={occurrence.id}
-            pendingCount={occurrence.stats.pendingReminderCount}
-            failedCount={occurrence.stats.failedReminderCount}
-            onFinished={onFinished}
-          />
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+            <Button
+              component="a"
+              href={`/api/backend/specialEvents/${specialEvent.id}/occurrences/${occurrence.id}/guestListPdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="contained"
+              startIcon={<DescriptionOutlined />}
+              sx={{
+                bgcolor: 'grey.900',
+                color: 'white',
+                borderRadius: 999,
+                fontWeight: 700,
+                letterSpacing: '-0.01em',
+                '& .MuiButton-startIcon': {
+                  mr: 1,
+                },
+                '&:hover': {
+                  bgcolor: 'black',
+                  transform: 'translateY(-1px)',
+                },
+                transition: 'all 160ms ease',
+              }}
+            >
+              Gästeliste
+            </Button>
+            <ReminderEmailButton
+              specialEventId={specialEvent.id}
+              occurrenceId={occurrence.id}
+              pendingCount={occurrence.stats.pendingReminderCount}
+              failedCount={occurrence.stats.failedReminderCount}
+              onFinished={onFinished}
+            />
+          </Stack>
         )}
       </Box>
 
