@@ -5,33 +5,50 @@ import { getServerSession } from '@/lib/session';
 import fs from 'fs';
 import path from 'path';
 
+const PAGE_MARGIN = 40;
+const ROW_MIN_HEIGHT = 28;
+const TABLE_HEADER_HEIGHT = 26;
+
 export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   const session = await getServerSession(req);
-  if (!session) return res.status(401).json('Not authenticated');
-  const { occurrenceId } = req.query;
-  if (typeof occurrenceId !== 'string')
-    return res.status(401).json('Event required');
 
-  if (req.method === 'GET') {
-    await handleGET(req, res, occurrenceId);
-  } else {
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`,
-    );
+  if (!session) {
+    return res.status(401).json({ error: 'Not authenticated' });
   }
+
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).json({
+      error: `The HTTP ${req.method} method is not supported at this route.`,
+    });
+  }
+
+  const { specialEventId, occurrenceId } = req.query;
+
+  if (typeof specialEventId !== 'string') {
+    return res.status(400).json({ error: 'Special event required' });
+  }
+
+  if (typeof occurrenceId !== 'string') {
+    return res.status(400).json({ error: 'Occurrence required' });
+  }
+
+  return handleGET(req, res, specialEventId, occurrenceId);
 }
 
 async function handleGET(
   req: NextApiRequest,
   res: NextApiResponse,
-  id: string,
+  specialEventId: string,
+  occurrenceId: string,
 ) {
   const eventOccurrence = await prisma.specialEventOccurrence.findFirst({
     where: {
-      id,
+      id: occurrenceId,
+      specialEventId,
     },
     select: {
       startTime: true,
@@ -60,96 +77,257 @@ async function handleGET(
     },
   });
 
-  const doc = new PDFDocument({ margin: 40 });
+  if (!eventOccurrence) {
+    return res.status(404).json({
+      error: 'Event occurrence not found',
+    });
+  }
+
+  const doc = new PDFDocument({
+    size: 'A4',
+    margin: PAGE_MARGIN,
+  });
 
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', 'inline; filename=gaesteliste.pdf');
+
   doc.pipe(res);
 
-  // Logo
-  const logoPath = path.resolve('./public/logo.png');
-  if (fs.existsSync(logoPath)) {
-    doc.image(logoPath, doc.page.width / 2 - 100, 20, { width: 200 });
-  }
-  doc.moveDown(4);
+  const tableWidth = doc.page.width - PAGE_MARGIN * 2;
 
-  const nameStr = eventOccurrence?.specialEvent.name || 'Gästeliste';
-  const dateStr = eventOccurrence?.eventDate.date || '';
-  const timeStr = eventOccurrence?.startTime || '';
+  const colWidths = [tableWidth * 0.6, tableWidth * 0.2, tableWidth * 0.2];
+
+  const title = eventOccurrence.specialEvent.name || 'Gästeliste';
+  const date = formatDate(eventOccurrence.eventDate.date);
+  const time = formatTime(eventOccurrence.startTime);
+
+  drawLogo(doc);
 
   doc
+    .moveDown(4)
+    .font('Helvetica-Bold')
     .fontSize(18)
-    .text(`${nameStr} - ${dateStr} - ${timeStr}`, { align: 'center' });
-  doc.moveDown(1);
+    .fillColor('black')
+    .text(title, {
+      align: 'center',
+    });
 
-  // Tabelle
-  let tableTop = doc.y;
-  const colWidths = [
-    ((doc.page.width - 80) / 100) * 60,
-    ((doc.page.width - 80) / 100) * 20,
-    ((doc.page.width - 80) / 100) * 20,
-  ];
-  const headers = ['Name', 'Personen', 'Eingecheckt'];
+  doc
+    .moveDown(0.4)
+    .font('Helvetica')
+    .fontSize(11)
+    .fillColor('#555555')
+    .text([date, time].filter(Boolean).join(' · '), {
+      align: 'center',
+    });
 
-  // Header-Zeile zeichnen
-  let x = 40;
-  headers.forEach((text, i) => {
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(12)
-      .fillColor('black')
-      .text(text, x + 4, tableTop, {
-        width: colWidths[i],
-        align: 'left',
-      });
-    x += colWidths[i];
-  });
+  doc.moveDown(1.5);
 
-  let rowIndex = 0;
-  eventOccurrence?.registrations.forEach((r) => {
-    let rowTop = tableTop + 20 + rowIndex * 25; // 25pt Zeilenhöhe
-    rowIndex += 1;
+  doc
+    .font('Helvetica')
+    .fontSize(10)
+    .fillColor('#555555')
+    .text(`${eventOccurrence.registrations.length} Reservierungen`, {
+      align: 'right',
+    });
 
-    const values = [r.name, r.personCount.toString(), ''];
+  let y = doc.y + 12;
 
-    // Horizontale Linie oben
-    doc
-      .moveTo(40, rowTop - 5)
-      .lineTo(40 + colWidths.reduce((a, b) => a + b, 0), rowTop - 5)
-      .strokeColor('#000000')
-      .stroke();
+  y = drawTableHeader(doc, y, colWidths);
 
-    if (rowTop > doc.page.height - 40) {
+  for (const registration of eventOccurrence.registrations) {
+    const values = [
+      registration.name || '-',
+      registration.personCount.toString(),
+      '',
+    ];
+
+    const rowHeight = getRowHeight(doc, values, colWidths);
+
+    if (y + rowHeight > doc.page.height - PAGE_MARGIN) {
       doc.addPage();
-      tableTop = 40;
-      rowTop = 60;
-      rowIndex = 0;
+      y = PAGE_MARGIN;
+      y = drawTableHeader(doc, y, colWidths);
     }
 
-    let xPos = 40;
-    values.forEach((text, i) => {
-      doc
-        .font('Helvetica')
-        .fontSize(12)
-        .fillColor('black')
-        .text(text, xPos + 6, rowTop + 3, {
-          width: colWidths[i] - 8,
-          align: 'left',
-        });
+    y = drawTableRow(doc, y, values, colWidths, rowHeight);
+  }
 
-      xPos += colWidths[i];
-    });
-  });
-
-  // horizontale Linie unter letzter Zeile
-  const endY = doc.y + 18;
-  doc
-    .moveTo(40, endY)
-    .lineTo(40 + colWidths.reduce((a, b) => a + b, 0), endY)
-    .strokeColor('#000000')
-    .stroke();
-
-  doc.moveDown(4);
+  drawTableBottomLine(doc, y, tableWidth);
 
   doc.end();
+}
+
+function drawLogo(doc: PDFKit.PDFDocument) {
+  const logoPath = path.resolve(process.cwd(), 'public', 'logo.png');
+
+  if (!fs.existsSync(logoPath)) return;
+
+  try {
+    doc.image(logoPath, doc.page.width / 2 - 100, 20, {
+      width: 200,
+    });
+  } catch (error) {
+    console.error('[guestListPdf] Could not render logo:', error);
+  }
+}
+
+function drawTableHeader(
+  doc: PDFKit.PDFDocument,
+  y: number,
+  colWidths: number[],
+) {
+  const headers = ['Name', 'Personen', 'Eingecheckt'];
+
+  doc
+    .rect(PAGE_MARGIN, y, doc.page.width - PAGE_MARGIN * 2, TABLE_HEADER_HEIGHT)
+    .fillColor('#F2F2F2')
+    .fill();
+
+  let x = PAGE_MARGIN;
+
+  doc.font('Helvetica-Bold').fontSize(10).fillColor('black');
+
+  headers.forEach((header, index) => {
+    doc.text(header, x + 8, y + 8, {
+      width: colWidths[index] - 16,
+      align: index === 1 ? 'center' : 'left',
+    });
+
+    x += colWidths[index];
+  });
+
+  doc
+    .moveTo(PAGE_MARGIN, y + TABLE_HEADER_HEIGHT)
+    .lineTo(doc.page.width - PAGE_MARGIN, y + TABLE_HEADER_HEIGHT)
+    .strokeColor('#000000')
+    .lineWidth(1)
+    .stroke();
+
+  return y + TABLE_HEADER_HEIGHT;
+}
+
+function drawTableRow(
+  doc: PDFKit.PDFDocument,
+  y: number,
+  values: string[],
+  colWidths: number[],
+  rowHeight: number,
+) {
+  const tableWidth = doc.page.width - PAGE_MARGIN * 2;
+
+  doc
+    .moveTo(PAGE_MARGIN, y)
+    .lineTo(PAGE_MARGIN + tableWidth, y)
+    .strokeColor('#D9D9D9')
+    .lineWidth(0.5)
+    .stroke();
+
+  let x = PAGE_MARGIN;
+
+  doc.font('Helvetica').fontSize(11).fillColor('black');
+
+  values.forEach((value, index) => {
+    if (index === 2) {
+      drawCheckbox(doc, x, y, colWidths[index], rowHeight);
+    } else {
+      doc.text(value, x + 8, y + 8, {
+        width: colWidths[index] - 16,
+        align: index === 1 ? 'center' : 'left',
+      });
+    }
+
+    x += colWidths[index];
+  });
+
+  return y + rowHeight;
+}
+
+function drawCheckbox(
+  doc: PDFKit.PDFDocument,
+  x: number,
+  y: number,
+  colWidth: number,
+  rowHeight: number,
+) {
+  const size = 13;
+  const checkboxX = x + colWidth / 2 - size / 2;
+  const checkboxY = y + rowHeight / 2 - size / 2;
+
+  doc
+    .rect(checkboxX, checkboxY, size, size)
+    .strokeColor('#000000')
+    .lineWidth(1)
+    .stroke();
+}
+
+function drawTableBottomLine(
+  doc: PDFKit.PDFDocument,
+  y: number,
+  tableWidth: number,
+) {
+  doc
+    .moveTo(PAGE_MARGIN, y)
+    .lineTo(PAGE_MARGIN + tableWidth, y)
+    .strokeColor('#000000')
+    .lineWidth(1)
+    .stroke();
+}
+
+function getRowHeight(
+  doc: PDFKit.PDFDocument,
+  values: string[],
+  colWidths: number[],
+) {
+  doc.font('Helvetica').fontSize(11);
+
+  const nameHeight = doc.heightOfString(values[0], {
+    width: colWidths[0] - 16,
+  });
+
+  return Math.max(ROW_MIN_HEIGHT, nameHeight + 16);
+}
+
+function formatDate(value: Date | string | null | undefined) {
+  if (!value) return '';
+
+  const date = value instanceof Date ? value : new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return new Intl.DateTimeFormat('de-DE', {
+    weekday: 'short',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(date);
+}
+
+function formatTime(value: Date | string | null | undefined) {
+  if (!value) return '';
+
+  if (value instanceof Date) {
+    return new Intl.DateTimeFormat('de-DE', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(value);
+  }
+
+  // Falls startTime bei dir z.B. schon "17:00" ist
+  if (/^\d{1,2}:\d{2}$/.test(value)) {
+    return `${value} Uhr`;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return new Intl.DateTimeFormat('de-DE', {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
 }
