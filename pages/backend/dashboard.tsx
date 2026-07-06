@@ -21,6 +21,8 @@ import { Refresh } from '@mui/icons-material';
 import { calculateMetrics, Metrics } from '@/lib/dashboard';
 import EventSelector from '@/components/eventSelector';
 import BackendHeader from '@/components/backend/header';
+import BackendPermissionGuard from '@/components/backend/BackendPermissionGuard';
+import { BACKEND_PERMISSIONS } from '@/lib/backend/permissions';
 
 // ----- Typdefinitionen -----
 interface PieData {
@@ -244,80 +246,93 @@ export default function EventDashboard({ session }: { session: Session }) {
   }, [eventData]);
 
   return (
-    <div className="px-6 py-16 bg-gray-50">
-      <BackendHeader title="Statistiken" />
+    <BackendPermissionGuard
+      session={session}
+      permission={BACKEND_PERMISSIONS.DASHBOARD}
+      deniedTitle="Kein Zugriff auf Statistiken"
+      deniedDescription="Du hast keine Berechtigung, Statistiken im Backend zu sehen."
+    >
+      <div className="px-6 py-16 bg-gray-50">
+        <BackendHeader title="Statistiken" />
 
-      <div className="mt-6 flex items-center flex-col sm:flex-row justify-between gap-5">
-        <EventSelector onChange={setSelectedEvent} />
-        <button
-          className="rounded-full bg-black text-white px-5 py-2 flex items-center gap-2 hover:bg-neutral-600 transition disabled:bg-neutral-500"
-          onClick={() => fetchData(selectedEvent?.id || '')}
-          disabled={!selectedEvent?.id || loadingData}
-        >
-          <Refresh />
-          {loadingData ? 'Aktualisiert...' : 'Aktualisieren'}
-        </button>
-      </div>
-      {metrics && eventData && (
-        <div className="grid grid-cols-12 gap-6 py-6">
-          {/* Kennzahlen */}
-          <NumberChartCard title="Reservierungen" number={metrics.totalCount} />
-          <NumberChartCard title="VIP-Tische" number={metrics.vipCount} />
-          <NumberChartCard title="Stehtische" number={metrics.standingCount} />
-          <NumberChartCard
-            title="Umsatz durch Reservierungen"
-            number={metrics.revenue}
-            type="CURRENCY"
-          />
-          <NumberChartCard
-            title="Auslastung Gesamt"
-            number={metrics.totalUtilizationPercent * 100}
-            type="PERCENT"
-          />
-          <NumberChartCard
-            title="Auslastung Stehtische"
-            number={metrics.standingUtilizationPercent * 100}
-            type="PERCENT"
-          />
-          <NumberChartCard
-            title="Auslastung VIP"
-            number={metrics.vipUtilizationPercent * 100}
-            type="PERCENT"
-          />
-          <NumberChartCard
-            title="Ausstehender Umsatz"
-            number={metrics.accountsReceivable}
-            type="CURRENCY"
-          />
-          {/* Diagramme */}
-          <LineChartCard
-            title="Reservierungen pro Tag"
-            data={metrics.reservationCountByDay}
-            yLabel="Reservierungen"
-          />
-          <MultiLineChartCard
-            title="Auslastung"
-            data={metrics.capacity}
-            formatter={(value: number) => `${Math.round(value)}%`}
-            y1Label="VIP"
-            y2Label="Stehtisch"
-          />
-          <LineChartCard
-            title="VIP-Personen pro Tag"
-            data={metrics.vipCountByDay}
-            yLabel="Personen"
-          />
-          <LineChartCard
-            title="Reservierungen pro Referral Code"
-            data={metrics.referralCodes}
-            yLabel="Reservierungen"
-          />
-          <TableChartCard
-            title="Neuste Reservierungen"
-            data={metrics.lastTenReservations}
-          />
+        <div className="mt-6 flex items-center flex-col sm:flex-row justify-between gap-5">
+          <EventSelector onChange={setSelectedEvent} />
+          <button
+            className="rounded-full bg-black text-white px-5 py-2 flex items-center gap-2 hover:bg-neutral-600 transition disabled:bg-neutral-500"
+            onClick={() => fetchData(selectedEvent?.id || '')}
+            disabled={!selectedEvent?.id || loadingData}
+          >
+            <Refresh />
+            {loadingData ? 'Aktualisiert...' : 'Aktualisieren'}
+          </button>
         </div>
-      )}
-    </div>
+        {metrics && eventData && (
+          <div className="grid grid-cols-12 gap-6 py-6">
+            {/* Kennzahlen */}
+            <NumberChartCard
+              title="Reservierungen"
+              number={metrics.totalCount}
+            />
+            <NumberChartCard title="VIP-Tische" number={metrics.vipCount} />
+            <NumberChartCard
+              title="Stehtische"
+              number={metrics.standingCount}
+            />
+            <NumberChartCard
+              title="Umsatz durch Reservierungen"
+              number={metrics.revenue}
+              type="CURRENCY"
+            />
+            <NumberChartCard
+              title="Auslastung Gesamt"
+              number={metrics.totalUtilizationPercent * 100}
+              type="PERCENT"
+            />
+            <NumberChartCard
+              title="Auslastung Stehtische"
+              number={metrics.standingUtilizationPercent * 100}
+              type="PERCENT"
+            />
+            <NumberChartCard
+              title="Auslastung VIP"
+              number={metrics.vipUtilizationPercent * 100}
+              type="PERCENT"
+            />
+            <NumberChartCard
+              title="Ausstehender Umsatz"
+              number={metrics.accountsReceivable}
+              type="CURRENCY"
+            />
+            {/* Diagramme */}
+            <LineChartCard
+              title="Reservierungen pro Tag"
+              data={metrics.reservationCountByDay}
+              yLabel="Reservierungen"
+            />
+            <MultiLineChartCard
+              title="Auslastung"
+              data={metrics.capacity}
+              formatter={(value: number) => `${Math.round(value)}%`}
+              y1Label="VIP"
+              y2Label="Stehtisch"
+            />
+            <LineChartCard
+              title="VIP-Personen pro Tag"
+              data={metrics.vipCountByDay}
+              yLabel="Personen"
+            />
+            <LineChartCard
+              title="Reservierungen pro Referral Code"
+              data={metrics.referralCodes}
+              yLabel="Reservierungen"
+            />
+            <TableChartCard
+              title="Neuste Reservierungen"
+              data={metrics.lastTenReservations}
+            />
+          </div>
+        )}
+      </div>
+    </BackendPermissionGuard>
   );
 }

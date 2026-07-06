@@ -18,6 +18,9 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { SaveOutlined } from '@mui/icons-material';
 import BackendHeader from '@/components/backend/header';
+import { Session } from '@/hooks/useSession';
+import BackendPermissionGuard from '@/components/backend/BackendPermissionGuard';
+import { BACKEND_PERMISSIONS } from '@/lib/backend/permissions';
 
 type Fields = {
   subject: string;
@@ -37,7 +40,7 @@ const initialFields: Fields = {
   ctaUrl: '',
 };
 
-export default function NewNewsletterPage() {
+export default function NewNewsletterPage({ session }: { session: Session }) {
   const router = useRouter();
 
   const [fields, setFields] = useState(initialFields);
@@ -139,210 +142,221 @@ export default function NewNewsletterPage() {
   }, [titleImage]);
 
   return (
-    <Stack
-      spacing={3}
-      sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f8f6f2', minHeight: '100vh' }}
+    <BackendPermissionGuard
+      session={session}
+      permission={BACKEND_PERMISSIONS.NEWSLETTER}
+      deniedTitle="Kein Zugriff auf Newsletter"
+      deniedDescription="Du hast keine Berechtigung, Newsletter im Backend zu verwalten."
     >
-      <BackendHeader
-        title="Newsletter erstellen"
-        subtitle="Speichere zunächst einen Entwurf. Der Versand wird anschließend
+      <Stack
+        spacing={3}
+        sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f8f6f2', minHeight: '100vh' }}
+      >
+        <BackendHeader
+          title="Newsletter erstellen"
+          subtitle="Speichere zunächst einen Entwurf. Der Versand wird anschließend
           separat auf der Detailseite gestartet."
-        backHref="/backend/newsletter"
-        backLabel="Zurück"
-      />
+          backHref="/backend/newsletter"
+          backLabel="Zurück"
+        />
 
-      {globalError && <Alert severity="error">{globalError}</Alert>}
+        {globalError && <Alert severity="error">{globalError}</Alert>}
 
-      <Stack direction={{ xs: 'column', lg: 'row' }} spacing={3}>
-        <Card sx={{ flex: 1 }}>
-          <CardContent>
-            <Stack spacing={2.5}>
-              <TextField
-                label="E-Mail-Betreff"
-                value={fields.subject}
-                onChange={(event) => updateField('subject', event.target.value)}
-                error={Boolean(errors.subject)}
-                helperText={errors.subject}
-                fullWidth
-              />
+        <Stack direction={{ xs: 'column', lg: 'row' }} spacing={3}>
+          <Card sx={{ flex: 1 }}>
+            <CardContent>
+              <Stack spacing={2.5}>
+                <TextField
+                  label="E-Mail-Betreff"
+                  value={fields.subject}
+                  onChange={(event) =>
+                    updateField('subject', event.target.value)
+                  }
+                  error={Boolean(errors.subject)}
+                  helperText={errors.subject}
+                  fullWidth
+                />
 
-              <TextField
-                label="Überschrift"
-                value={fields.headline}
-                onChange={(event) =>
-                  updateField('headline', event.target.value)
-                }
-                error={Boolean(errors.headline)}
-                helperText={errors.headline}
-                fullWidth
-              />
+                <TextField
+                  label="Überschrift"
+                  value={fields.headline}
+                  onChange={(event) =>
+                    updateField('headline', event.target.value)
+                  }
+                  error={Boolean(errors.headline)}
+                  helperText={errors.headline}
+                  fullWidth
+                />
 
-              <Stack spacing={1}>
-                <Typography fontWeight={700}>Titelbild</Typography>
+                <Stack spacing={1}>
+                  <Typography fontWeight={700}>Titelbild</Typography>
 
-                {titleImagePreviewUrl ? (
-                  <Box
-                    sx={{
-                      position: 'relative',
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                    }}
-                  >
+                  {titleImagePreviewUrl ? (
                     <Box
-                      component="img"
-                      src={titleImagePreviewUrl}
-                      alt="Newsletter Titelbild"
                       sx={{
-                        display: 'block',
-                        width: '100%',
-                        maxHeight: 240,
-                        objectFit: 'cover',
-                      }}
-                    />
-
-                    <IconButton
-                      onClick={() => setTitleImage(undefined)}
-                      sx={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        bgcolor: 'background.paper',
-                        '&:hover': {
-                          bgcolor: 'background.paper',
-                        },
+                        position: 'relative',
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                        border: '1px solid',
+                        borderColor: 'divider',
                       }}
                     >
-                      <DeleteOutlineIcon />
-                    </IconButton>
-                  </Box>
-                ) : (
-                  <Button
-                    component="label"
-                    variant="outlined"
-                    startIcon={<ImageOutlinedIcon />}
-                    sx={{
-                      minHeight: 100,
-                      borderStyle: 'dashed',
-                    }}
-                  >
-                    Titelbild auswählen
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      hidden
-                      onChange={handleImageChange}
-                    />
-                  </Button>
-                )}
+                      <Box
+                        component="img"
+                        src={titleImagePreviewUrl}
+                        alt="Newsletter Titelbild"
+                        sx={{
+                          display: 'block',
+                          width: '100%',
+                          maxHeight: 240,
+                          objectFit: 'cover',
+                        }}
+                      />
 
-                {errors.titleImage && (
-                  <Typography color="error" variant="caption">
-                    {errors.titleImage}
-                  </Typography>
-                )}
-
-                <Typography color="text.secondary" variant="caption">
-                  Optional. Unterstützt werden JPG, PNG und WebP bis maximal 8
-                  MB.
-                </Typography>
-              </Stack>
-
-              <TextField
-                label="Text"
-                value={fields.body}
-                onChange={(event) => updateField('body', event.target.value)}
-                error={Boolean(errors.body)}
-                helperText={errors.body}
-                minRows={8}
-                multiline
-                fullWidth
-              />
-
-              <Divider />
-
-              <Typography fontWeight={700}>CTA-Button</Typography>
-
-              <TextField
-                label="Button-Beschriftung"
-                value={fields.ctaLabel}
-                onChange={(event) =>
-                  updateField('ctaLabel', event.target.value)
-                }
-                error={Boolean(errors.ctaLabel)}
-                helperText={errors.ctaLabel}
-                fullWidth
-              />
-
-              <TextField
-                label="Button-Ziel"
-                value={fields.ctaUrl}
-                onChange={(event) => updateField('ctaUrl', event.target.value)}
-                error={Boolean(errors.ctaUrl)}
-                helperText={errors.ctaUrl}
-                placeholder="https://dasweinzelt.de/..."
-                fullWidth
-              />
-
-              <Button
-                variant="contained"
-                startIcon={
-                  saving ? (
-                    <CircularProgress size={18} color="inherit" />
+                      <IconButton
+                        onClick={() => setTitleImage(undefined)}
+                        sx={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 8,
+                          bgcolor: 'background.paper',
+                          '&:hover': {
+                            bgcolor: 'background.paper',
+                          },
+                        }}
+                      >
+                        <DeleteOutlineIcon />
+                      </IconButton>
+                    </Box>
                   ) : (
-                    <SaveOutlined />
-                  )
-                }
-                disabled={saving}
-                onClick={handleSave}
-              >
-                Entwurf speichern
-              </Button>
-            </Stack>
-          </CardContent>
-        </Card>
+                    <Button
+                      component="label"
+                      variant="outlined"
+                      startIcon={<ImageOutlinedIcon />}
+                      sx={{
+                        minHeight: 100,
+                        borderStyle: 'dashed',
+                      }}
+                    >
+                      Titelbild auswählen
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        hidden
+                        onChange={handleImageChange}
+                      />
+                    </Button>
+                  )}
 
-        <Card sx={{ flex: 1, alignSelf: 'flex-start' }}>
-          <Box px={2.5} py={2}>
-            <Typography fontWeight={800}>Vorschau</Typography>
-          </Box>
+                  {errors.titleImage && (
+                    <Typography color="error" variant="caption">
+                      {errors.titleImage}
+                    </Typography>
+                  )}
 
-          <Divider />
+                  <Typography color="text.secondary" variant="caption">
+                    Optional. Unterstützt werden JPG, PNG und WebP bis maximal 8
+                    MB.
+                  </Typography>
+                </Stack>
 
-          {titleImagePreviewUrl && (
-            <Box
-              component="img"
-              src={titleImagePreviewUrl}
-              alt=""
-              sx={{
-                display: 'block',
-                width: '100%',
-                maxHeight: 260,
-                objectFit: 'cover',
-              }}
-            />
-          )}
+                <TextField
+                  label="Text"
+                  value={fields.body}
+                  onChange={(event) => updateField('body', event.target.value)}
+                  error={Boolean(errors.body)}
+                  helperText={errors.body}
+                  minRows={8}
+                  multiline
+                  fullWidth
+                />
 
-          <CardContent>
-            <Stack spacing={2}>
-              <Typography variant="h5" fontWeight={800} textAlign="center">
-                {fields.headline || 'Deine Überschrift'}
-              </Typography>
+                <Divider />
 
-              <Typography whiteSpace="pre-wrap">
-                {fields.body || 'Hier erscheint dein Newsletter-Text.'}
-              </Typography>
+                <Typography fontWeight={700}>CTA-Button</Typography>
 
-              {fields.ctaLabel && (
-                <Box textAlign="center">
-                  <Button variant="contained">{fields.ctaLabel}</Button>
-                </Box>
-              )}
-            </Stack>
-          </CardContent>
-        </Card>
+                <TextField
+                  label="Button-Beschriftung"
+                  value={fields.ctaLabel}
+                  onChange={(event) =>
+                    updateField('ctaLabel', event.target.value)
+                  }
+                  error={Boolean(errors.ctaLabel)}
+                  helperText={errors.ctaLabel}
+                  fullWidth
+                />
+
+                <TextField
+                  label="Button-Ziel"
+                  value={fields.ctaUrl}
+                  onChange={(event) =>
+                    updateField('ctaUrl', event.target.value)
+                  }
+                  error={Boolean(errors.ctaUrl)}
+                  helperText={errors.ctaUrl}
+                  placeholder="https://dasweinzelt.de/..."
+                  fullWidth
+                />
+
+                <Button
+                  variant="contained"
+                  startIcon={
+                    saving ? (
+                      <CircularProgress size={18} color="inherit" />
+                    ) : (
+                      <SaveOutlined />
+                    )
+                  }
+                  disabled={saving}
+                  onClick={handleSave}
+                >
+                  Entwurf speichern
+                </Button>
+              </Stack>
+            </CardContent>
+          </Card>
+
+          <Card sx={{ flex: 1, alignSelf: 'flex-start' }}>
+            <Box px={2.5} py={2}>
+              <Typography fontWeight={800}>Vorschau</Typography>
+            </Box>
+
+            <Divider />
+
+            {titleImagePreviewUrl && (
+              <Box
+                component="img"
+                src={titleImagePreviewUrl}
+                alt=""
+                sx={{
+                  display: 'block',
+                  width: '100%',
+                  maxHeight: 260,
+                  objectFit: 'cover',
+                }}
+              />
+            )}
+
+            <CardContent>
+              <Stack spacing={2}>
+                <Typography variant="h5" fontWeight={800} textAlign="center">
+                  {fields.headline || 'Deine Überschrift'}
+                </Typography>
+
+                <Typography whiteSpace="pre-wrap">
+                  {fields.body || 'Hier erscheint dein Newsletter-Text.'}
+                </Typography>
+
+                {fields.ctaLabel && (
+                  <Box textAlign="center">
+                    <Button variant="contained">{fields.ctaLabel}</Button>
+                  </Box>
+                )}
+              </Stack>
+            </CardContent>
+          </Card>
+        </Stack>
       </Stack>
-    </Stack>
+    </BackendPermissionGuard>
   );
 }

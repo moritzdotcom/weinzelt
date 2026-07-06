@@ -19,6 +19,8 @@ import { ApiPostReferralCodeToggleResponse } from '../api/referralCodes/[referra
 import CheckIcon from '@mui/icons-material/Check';
 import CopyAllIcon from '@mui/icons-material/CopyAll';
 import BackendHeader from '@/components/backend/header';
+import BackendPermissionGuard from '@/components/backend/BackendPermissionGuard';
+import { BACKEND_PERMISSIONS } from '@/lib/backend/permissions';
 
 export default function BackendEventsPage({ session }: { session: Session }) {
   const [referralCodes, setreferralCodes] =
@@ -55,40 +57,55 @@ export default function BackendEventsPage({ session }: { session: Session }) {
   }, [session.status, router.isReady]);
 
   return (
-    <Box className="max-w-5xl mx-auto px-4 py-16">
-      <BackendHeader
-        title="Referral Codes verwalten"
-        action={
-          <button
-            className="rounded-full bg-black text-white px-6 py-2 text-sm font-medium shadow-sm hover:bg-gray-800 transition"
-            onClick={() => setCreateDialogOpen(true)}
-          >
-            Neuen Code erstellen
-          </button>
-        }
-      />
-      {loading && (
+    <BackendPermissionGuard
+      session={session}
+      permission={BACKEND_PERMISSIONS.REFERRAL_CODES}
+      deniedTitle="Kein Zugriff auf Referral Codes"
+      deniedDescription="Du hast keine Berechtigung, Referral Codes im Backend zu verwalten."
+    >
+      <Box className="max-w-5xl mx-auto px-4 py-16">
+        <BackendHeader
+          title="Referral Codes verwalten"
+          action={
+            <button
+              className="rounded-full bg-black text-white px-6 py-2 text-sm font-medium shadow-sm hover:bg-gray-800 transition"
+              onClick={() => setCreateDialogOpen(true)}
+            >
+              Neuen Code erstellen
+            </button>
+          }
+        />
+        {loading && (
+          <Grid container spacing={4}>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Skeleton
+                variant="rounded"
+                height={164}
+                sx={{ borderRadius: 4 }}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Skeleton
+                variant="rounded"
+                height={164}
+                sx={{ borderRadius: 4 }}
+              />
+            </Grid>
+          </Grid>
+        )}
         <Grid container spacing={4}>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Skeleton variant="rounded" height={164} sx={{ borderRadius: 4 }} />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Skeleton variant="rounded" height={164} sx={{ borderRadius: 4 }} />
-          </Grid>
+          {referralCodes.map((code) => (
+            <CodeCard key={code.id} code={code} onUpdate={handleUpdate} />
+          ))}
         </Grid>
-      )}
-      <Grid container spacing={4}>
-        {referralCodes.map((code) => (
-          <CodeCard key={code.id} code={code} onUpdate={handleUpdate} />
-        ))}
-      </Grid>
 
-      <NewCodeDialog
-        open={createDialogOpen}
-        onClose={() => setCreateDialogOpen(false)}
-        onSuccess={fetchCodes}
-      />
-    </Box>
+        <NewCodeDialog
+          open={createDialogOpen}
+          onClose={() => setCreateDialogOpen(false)}
+          onSuccess={fetchCodes}
+        />
+      </Box>
+    </BackendPermissionGuard>
   );
 }
 

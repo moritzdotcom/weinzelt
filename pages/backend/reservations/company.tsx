@@ -36,6 +36,8 @@ import AddressInput, {
   defaultAddress,
 } from '@/components/reservation/addressInput';
 import BackendHeader from '@/components/backend/header';
+import BackendPermissionGuard from '@/components/backend/BackendPermissionGuard';
+import { BACKEND_PERMISSIONS } from '@/lib/backend/permissions';
 
 export default function BackendCompanyPage({ session }: { session: Session }) {
   const router = useRouter();
@@ -131,133 +133,140 @@ export default function BackendCompanyPage({ session }: { session: Session }) {
   }, [selectedEvent?.id]);
 
   return (
-    <Box className="max-w-5xl mx-auto px-4 py-8 sm:py-16 overflow-x-hidden">
-      <BackendHeader title="Firmen & Gruppenanfragen" />
+    <BackendPermissionGuard
+      session={session}
+      permission={BACKEND_PERMISSIONS.COMPANY_RESERVATIONS}
+      deniedTitle="Kein Zugriff auf Firmenreservierungen"
+      deniedDescription="Du hast keine Berechtigung, Firmenreservierungen im Backend zu verwalten."
+    >
+      <Box className="max-w-5xl mx-auto px-4 py-8 sm:py-16 overflow-x-hidden">
+        <BackendHeader title="Firmen & Gruppenanfragen" />
 
-      <div className="my-7 flex items-center flex-col sm:flex-row justify-between gap-5">
-        <EventSelector onChange={setSelectedEvent} />
-        <button
-          className="rounded-full bg-black text-white px-5 py-2 text-sm"
-          onClick={() => setNewDialogOpen(true)}
-        >
-          Reservierung erstellen
-        </button>
-      </div>
-
-      <Fade in={Boolean(selectedEventDate)} timeout={300}>
-        <div>
-          <div className="flex justify-between items-center text-2xl font-semibold max-w-sm mx-auto mb-5">
-            <button
-              onClick={() =>
-                setSelectedEventDateIndex((i) => (i == null ? null : i - 1))
-              }
-              className="disabled:opacity-0 transition-opacity"
-              disabled={selectedEventDateIndex === 0}
-            >
-              <ArrowBackIosIcon fontSize="inherit" />
-            </button>
-            {selectedEventDate?.dow}, {selectedEventDate?.date}
-            <button
-              onClick={() =>
-                setSelectedEventDateIndex((i) => (i == null ? null : i + 1))
-              }
-              className="disabled:opacity-0 transition-opacity"
-              disabled={
-                selectedEventDateIndex === (sortedEventDates?.length || 0) - 1
-              }
-            >
-              <ArrowForwardIosIcon fontSize="inherit" />
-            </button>
-          </div>
-          <div className="flex justify-end text-sky-600">
-            <SortButton
-              options={[
-                'Preis absteigend',
-                'Preis aufsteigend',
-                'Neuste zuerst',
-                'Personen aufsteigend',
-                'Personen absteigend',
-              ]}
-              defaultSelected="Neuste zuerst"
-              onChange={setSortOption}
-            />
-          </div>
-          {!filteredReservations ? (
-            <Box className="flex justify-center items-center">
-              <CircularProgress />
-            </Box>
-          ) : filteredReservations?.length === 0 ? (
-            <Typography>Keine Anfragen.</Typography>
-          ) : (
-            <motion.div
-              key={`${selectedEventDate?.id}`}
-              variants={{
-                hidden: {},
-                show: {
-                  transition: {
-                    staggerChildren: 0.1,
-                  },
-                },
-              }}
-              initial="hidden"
-              animate="show"
-              className="space-y-4"
-            >
-              {Object.entries(groupedByTimeslot).map(
-                ([timeslot, reservations]) => (
-                  <div key={timeslot}>
-                    <Typography variant="h6" className="mt-6">
-                      {timeslot}
-                    </Typography>
-                    {sortReservations(reservations, sortOption).map(
-                      (reservation) => (
-                        <ReservationCard
-                          key={reservation.id}
-                          reservation={reservation}
-                          onSelect={() => {
-                            setSelectedReservation(reservation);
-                            setNewDialogOpen(true);
-                          }}
-                          onDelete={handleDelete}
-                          onUpdate={(updatedReservation) => {
-                            setReservations((res) =>
-                              res?.map((r) =>
-                                r.id === updatedReservation.id
-                                  ? updatedReservation
-                                  : r,
-                              ),
-                            );
-                          }}
-                          session={session}
-                          variants={{
-                            hidden: { opacity: 0, x: -50 },
-                            show: {
-                              opacity: 1,
-                              x: 0,
-                              transition: { duration: 0.4, ease: 'easeOut' },
-                            },
-                          }}
-                        />
-                      ),
-                    )}
-                  </div>
-                ),
-              )}
-            </motion.div>
-          )}
+        <div className="my-7 flex items-center flex-col sm:flex-row justify-between gap-5">
+          <EventSelector onChange={setSelectedEvent} />
+          <button
+            className="rounded-full bg-black text-white px-5 py-2 text-sm"
+            onClick={() => setNewDialogOpen(true)}
+          >
+            Reservierung erstellen
+          </button>
         </div>
-      </Fade>
 
-      <NewReservationDialog
-        open={newDialogOpen}
-        onClose={() => {
-          setSelectedReservation(undefined);
-          setNewDialogOpen(false);
-        }}
-        onDelete={handleDelete}
-        reservation={selectedReservation}
-      />
-    </Box>
+        <Fade in={Boolean(selectedEventDate)} timeout={300}>
+          <div>
+            <div className="flex justify-between items-center text-2xl font-semibold max-w-sm mx-auto mb-5">
+              <button
+                onClick={() =>
+                  setSelectedEventDateIndex((i) => (i == null ? null : i - 1))
+                }
+                className="disabled:opacity-0 transition-opacity"
+                disabled={selectedEventDateIndex === 0}
+              >
+                <ArrowBackIosIcon fontSize="inherit" />
+              </button>
+              {selectedEventDate?.dow}, {selectedEventDate?.date}
+              <button
+                onClick={() =>
+                  setSelectedEventDateIndex((i) => (i == null ? null : i + 1))
+                }
+                className="disabled:opacity-0 transition-opacity"
+                disabled={
+                  selectedEventDateIndex === (sortedEventDates?.length || 0) - 1
+                }
+              >
+                <ArrowForwardIosIcon fontSize="inherit" />
+              </button>
+            </div>
+            <div className="flex justify-end text-sky-600">
+              <SortButton
+                options={[
+                  'Preis absteigend',
+                  'Preis aufsteigend',
+                  'Neuste zuerst',
+                  'Personen aufsteigend',
+                  'Personen absteigend',
+                ]}
+                defaultSelected="Neuste zuerst"
+                onChange={setSortOption}
+              />
+            </div>
+            {!filteredReservations ? (
+              <Box className="flex justify-center items-center">
+                <CircularProgress />
+              </Box>
+            ) : filteredReservations?.length === 0 ? (
+              <Typography>Keine Anfragen.</Typography>
+            ) : (
+              <motion.div
+                key={`${selectedEventDate?.id}`}
+                variants={{
+                  hidden: {},
+                  show: {
+                    transition: {
+                      staggerChildren: 0.1,
+                    },
+                  },
+                }}
+                initial="hidden"
+                animate="show"
+                className="space-y-4"
+              >
+                {Object.entries(groupedByTimeslot).map(
+                  ([timeslot, reservations]) => (
+                    <div key={timeslot}>
+                      <Typography variant="h6" className="mt-6">
+                        {timeslot}
+                      </Typography>
+                      {sortReservations(reservations, sortOption).map(
+                        (reservation) => (
+                          <ReservationCard
+                            key={reservation.id}
+                            reservation={reservation}
+                            onSelect={() => {
+                              setSelectedReservation(reservation);
+                              setNewDialogOpen(true);
+                            }}
+                            onDelete={handleDelete}
+                            onUpdate={(updatedReservation) => {
+                              setReservations((res) =>
+                                res?.map((r) =>
+                                  r.id === updatedReservation.id
+                                    ? updatedReservation
+                                    : r,
+                                ),
+                              );
+                            }}
+                            session={session}
+                            variants={{
+                              hidden: { opacity: 0, x: -50 },
+                              show: {
+                                opacity: 1,
+                                x: 0,
+                                transition: { duration: 0.4, ease: 'easeOut' },
+                              },
+                            }}
+                          />
+                        ),
+                      )}
+                    </div>
+                  ),
+                )}
+              </motion.div>
+            )}
+          </div>
+        </Fade>
+
+        <NewReservationDialog
+          open={newDialogOpen}
+          onClose={() => {
+            setSelectedReservation(undefined);
+            setNewDialogOpen(false);
+          }}
+          onDelete={handleDelete}
+          reservation={selectedReservation}
+        />
+      </Box>
+    </BackendPermissionGuard>
   );
 }
 

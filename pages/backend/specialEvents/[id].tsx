@@ -45,6 +45,8 @@ import type { Session } from '@/hooks/useSession';
 import type { ApiGetSpecialEventResponse } from '@/pages/api/backend/specialEvents/[specialEventId]';
 import type { ApiSendSpecialEventReminderResponse } from '@/pages/api/backend/specialEvents/[specialEventId]/occurrences/[occurrenceId]/sendReminder';
 import { formatSpecialEventCategory } from '@/lib/specialEvents/format';
+import BackendPermissionGuard from '@/components/backend/BackendPermissionGuard';
+import { BACKEND_PERMISSIONS } from '@/lib/backend/permissions';
 
 function formatDate(value: string | Date | null | undefined) {
   if (!value) return '-';
@@ -166,221 +168,228 @@ export default function BackendSpecialEventPage({
   }
 
   return (
-    <Box className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-      <Link
-        href="/backend/specialEvents"
-        className="inline-flex items-center gap-1 text-sm font-semibold text-gray-600 transition hover:text-black"
-      >
-        <ArrowBackRounded fontSize="small" />
-        Zurück zu den WineEvents
-      </Link>
+    <BackendPermissionGuard
+      session={session}
+      permission={BACKEND_PERMISSIONS.SPECIAL_EVENTS}
+      deniedTitle="Kein Zugriff auf Special Events"
+      deniedDescription="Du hast keine Berechtigung, Special Events im Backend zu verwalten."
+    >
+      <Box className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
+        <Link
+          href="/backend/specialEvents"
+          className="inline-flex items-center gap-1 text-sm font-semibold text-gray-600 transition hover:text-black"
+        >
+          <ArrowBackRounded fontSize="small" />
+          Zurück zu den WineEvents
+        </Link>
 
-      <Box className="mt-6 overflow-hidden rounded-[2rem] border border-black/10 bg-white shadow-sm">
-        <Box className="grid md:grid-cols-[260px_1fr]">
-          <Box className="relative min-h-56 overflow-hidden bg-stone-100 md:min-h-full">
-            {specialEvent.titleImageUrl ? (
-              <img
-                src={specialEvent.titleImageUrl}
-                alt={specialEvent.name}
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            ) : (
-              <Box className="flex h-full min-h-56 items-center justify-center bg-gradient-to-br from-stone-100 via-orange-50 to-rose-100">
-                <WineBarRounded sx={{ fontSize: 72, opacity: 0.25 }} />
-              </Box>
-            )}
-          </Box>
-
-          <Box className="p-6 sm:p-8">
-            <Box className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <Box>
-                <Box className="flex flex-wrap gap-2">
-                  <Chip
-                    size="small"
-                    label={formatSpecialEventCategory(specialEvent.category)}
-                    sx={{
-                      bgcolor: 'black',
-                      color: 'white',
-                      fontWeight: 700,
-                    }}
-                  />
-
-                  <Chip
-                    size="small"
-                    variant="outlined"
-                    label={getBookingTypeLabel(specialEvent.bookingType)}
-                  />
-
-                  <Chip
-                    size="small"
-                    color={specialEvent.isPublished ? 'success' : 'default'}
-                    variant="outlined"
-                    label={
-                      specialEvent.isPublished ? 'Veröffentlicht' : 'Entwurf'
-                    }
-                  />
+        <Box className="mt-6 overflow-hidden rounded-[2rem] border border-black/10 bg-white shadow-sm">
+          <Box className="grid md:grid-cols-[260px_1fr]">
+            <Box className="relative min-h-56 overflow-hidden bg-stone-100 md:min-h-full">
+              {specialEvent.titleImageUrl ? (
+                <img
+                  src={specialEvent.titleImageUrl}
+                  alt={specialEvent.name}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              ) : (
+                <Box className="flex h-full min-h-56 items-center justify-center bg-gradient-to-br from-stone-100 via-orange-50 to-rose-100">
+                  <WineBarRounded sx={{ fontSize: 72, opacity: 0.25 }} />
                 </Box>
-
-                <Typography
-                  variant="h4"
-                  className="mt-4 font-bold leading-tight"
-                >
-                  {specialEvent.name}
-                </Typography>
-
-                <Stack
-                  direction={{ xs: 'column', sm: 'row' }}
-                  spacing={{ xs: 1, sm: 3 }}
-                  className="mt-4 text-gray-600"
-                >
-                  <span className="inline-flex items-center gap-1.5 text-sm">
-                    <CalendarMonthRounded fontSize="small" />
-                    {specialEvent.occurrences.length === 1
-                      ? `${specialEvent.occurrences[0].eventDate.dow}, ${specialEvent.occurrences[0].eventDate.date}`
-                      : `${specialEvent.occurrences.length} Termine`}
-                  </span>
-
-                  {specialEvent.occurrences.length === 1 && (
-                    <span className="inline-flex items-center gap-1.5 text-sm">
-                      <ScheduleRounded fontSize="small" />
-                      {specialEvent.occurrences[0].startTime}–
-                      {specialEvent.occurrences[0].endTime} Uhr
-                    </span>
-                  )}
-                </Stack>
-              </Box>
-
-              <Link
-                href={
-                  specialEvent.bookingType === 'EXTERNAL_LINK' &&
-                  specialEvent.externalUrl
-                    ? specialEvent.externalUrl
-                    : `/events/${specialEvent.id}`
-                }
-                target="_blank"
-                className="inline-flex shrink-0 items-center justify-center rounded-full border border-black/15 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
-              >
-                Öffentliche Seite öffnen
-              </Link>
+              )}
             </Box>
 
-            <Typography className="mt-5 max-w-3xl text-sm leading-relaxed text-gray-600">
-              {specialEvent.description}
-            </Typography>
+            <Box className="p-6 sm:p-8">
+              <Box className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <Box>
+                  <Box className="flex flex-wrap gap-2">
+                    <Chip
+                      size="small"
+                      label={formatSpecialEventCategory(specialEvent.category)}
+                      sx={{
+                        bgcolor: 'black',
+                        color: 'white',
+                        fontWeight: 700,
+                      }}
+                    />
 
-            {specialEvent.occurrences.length > 1 && (
-              <Box className="mt-5 flex flex-wrap gap-2">
-                {specialEvent.occurrences.map((occurrence) => (
-                  <Chip
-                    key={occurrence.id}
-                    variant="outlined"
-                    icon={<CalendarMonthRounded />}
-                    label={`${occurrence.eventDate.dow}, ${occurrence.eventDate.date} · ${occurrence.startTime}–${occurrence.endTime} Uhr`}
-                    sx={{
-                      borderRadius: 999,
-                      fontWeight: 700,
-                    }}
-                  />
-                ))}
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={getBookingTypeLabel(specialEvent.bookingType)}
+                    />
+
+                    <Chip
+                      size="small"
+                      color={specialEvent.isPublished ? 'success' : 'default'}
+                      variant="outlined"
+                      label={
+                        specialEvent.isPublished ? 'Veröffentlicht' : 'Entwurf'
+                      }
+                    />
+                  </Box>
+
+                  <Typography
+                    variant="h4"
+                    className="mt-4 font-bold leading-tight"
+                  >
+                    {specialEvent.name}
+                  </Typography>
+
+                  <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    spacing={{ xs: 1, sm: 3 }}
+                    className="mt-4 text-gray-600"
+                  >
+                    <span className="inline-flex items-center gap-1.5 text-sm">
+                      <CalendarMonthRounded fontSize="small" />
+                      {specialEvent.occurrences.length === 1
+                        ? `${specialEvent.occurrences[0].eventDate.dow}, ${specialEvent.occurrences[0].eventDate.date}`
+                        : `${specialEvent.occurrences.length} Termine`}
+                    </span>
+
+                    {specialEvent.occurrences.length === 1 && (
+                      <span className="inline-flex items-center gap-1.5 text-sm">
+                        <ScheduleRounded fontSize="small" />
+                        {specialEvent.occurrences[0].startTime}–
+                        {specialEvent.occurrences[0].endTime} Uhr
+                      </span>
+                    )}
+                  </Stack>
+                </Box>
+
+                <Link
+                  href={
+                    specialEvent.bookingType === 'EXTERNAL_LINK' &&
+                    specialEvent.externalUrl
+                      ? specialEvent.externalUrl
+                      : `/events/${specialEvent.id}`
+                  }
+                  target="_blank"
+                  className="inline-flex shrink-0 items-center justify-center rounded-full border border-black/15 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                >
+                  Öffentliche Seite öffnen
+                </Link>
               </Box>
-            )}
+
+              <Typography className="mt-5 max-w-3xl text-sm leading-relaxed text-gray-600">
+                {specialEvent.description}
+              </Typography>
+
+              {specialEvent.occurrences.length > 1 && (
+                <Box className="mt-5 flex flex-wrap gap-2">
+                  {specialEvent.occurrences.map((occurrence) => (
+                    <Chip
+                      key={occurrence.id}
+                      variant="outlined"
+                      icon={<CalendarMonthRounded />}
+                      label={`${occurrence.eventDate.dow}, ${occurrence.eventDate.date} · ${occurrence.startTime}–${occurrence.endTime} Uhr`}
+                      sx={{
+                        borderRadius: 999,
+                        fontWeight: 700,
+                      }}
+                    />
+                  ))}
+                </Box>
+              )}
+            </Box>
           </Box>
         </Box>
-      </Box>
 
-      <Box className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard
-          icon={<GroupsRounded />}
-          label="Anmeldungen"
-          value={specialEvent.stats.registrationCount}
-        />
+        <Box className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <StatCard
+            icon={<GroupsRounded />}
+            label="Anmeldungen"
+            value={specialEvent.stats.registrationCount}
+          />
 
-        <StatCard
-          icon={<LocalActivityRounded />}
-          label="Teilnehmer"
-          value={specialEvent.stats.registeredPersonCount}
-        />
+          <StatCard
+            icon={<LocalActivityRounded />}
+            label="Teilnehmer"
+            value={specialEvent.stats.registeredPersonCount}
+          />
 
-        <StatCard
-          icon={<WineBarRounded />}
-          label="Freie Plätze"
-          value={
-            specialEvent.stats.remainingCapacity === null
-              ? 'Unbegrenzt'
-              : specialEvent.stats.remainingCapacity
-          }
-        />
+          <StatCard
+            icon={<WineBarRounded />}
+            label="Freie Plätze"
+            value={
+              specialEvent.stats.remainingCapacity === null
+                ? 'Unbegrenzt'
+                : specialEvent.stats.remainingCapacity
+            }
+          />
 
-        <StatCard
-          icon={<MailOutlineRounded />}
-          label="Reminder offen"
-          value={specialEvent.stats.pendingReminderCount}
-          warning={specialEvent.stats.pendingReminderCount > 0}
-        />
-      </Box>
+          <StatCard
+            icon={<MailOutlineRounded />}
+            label="Reminder offen"
+            value={specialEvent.stats.pendingReminderCount}
+            warning={specialEvent.stats.pendingReminderCount > 0}
+          />
+        </Box>
 
-      <Box className="mt-8">
-        <Typography variant="h5" fontWeight={800}>
-          Termine und Teilnehmer
-        </Typography>
-
-        <Stack spacing={4} sx={{ mt: 4 }}>
-          {specialEvent.occurrences.map((occurrence) => (
-            <OccurrenceSection
-              key={occurrence.id}
-              specialEvent={specialEvent}
-              occurrence={occurrence}
-              onCancel={(registrationId) =>
-                setCancelRegistrationId(registrationId)
-              }
-              onFinished={fetchSpecialEvent}
-            />
-          ))}
-        </Stack>
-      </Box>
-
-      <Dialog
-        open={Boolean(cancelRegistrationId)}
-        onClose={() => setCancelRegistrationId(null)}
-        fullWidth
-        maxWidth="xs"
-        PaperProps={{
-          sx: {
-            borderRadius: 4,
-          },
-        }}
-      >
-        <DialogTitle>Anmeldung stornieren?</DialogTitle>
-
-        <DialogContent>
-          <Typography color="text.secondary">
-            Die Anmeldung wird nicht gelöscht, sondern als storniert markiert.
-            Dadurch bleibt sie später nachvollziehbar.
+        <Box className="mt-8">
+          <Typography variant="h5" fontWeight={800}>
+            Termine und Teilnehmer
           </Typography>
-        </DialogContent>
 
-        <DialogActions sx={{ p: 3 }}>
-          <Button onClick={() => setCancelRegistrationId(null)}>
-            Abbrechen
-          </Button>
+          <Stack spacing={4} sx={{ mt: 4 }}>
+            {specialEvent.occurrences.map((occurrence) => (
+              <OccurrenceSection
+                key={occurrence.id}
+                specialEvent={specialEvent}
+                occurrence={occurrence}
+                onCancel={(registrationId) =>
+                  setCancelRegistrationId(registrationId)
+                }
+                onFinished={fetchSpecialEvent}
+              />
+            ))}
+          </Stack>
+        </Box>
 
-          <Button
-            color="error"
-            variant="contained"
-            onClick={handleCancelRegistration}
-          >
-            Stornieren
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Dialog
+          open={Boolean(cancelRegistrationId)}
+          onClose={() => setCancelRegistrationId(null)}
+          fullWidth
+          maxWidth="xs"
+          PaperProps={{
+            sx: {
+              borderRadius: 4,
+            },
+          }}
+        >
+          <DialogTitle>Anmeldung stornieren?</DialogTitle>
 
-      <Snackbar
-        open={Boolean(feedbackMessage)}
-        message={feedbackMessage}
-        autoHideDuration={6000}
-        onClose={() => setFeedbackMessage('')}
-      />
-    </Box>
+          <DialogContent>
+            <Typography color="text.secondary">
+              Die Anmeldung wird nicht gelöscht, sondern als storniert markiert.
+              Dadurch bleibt sie später nachvollziehbar.
+            </Typography>
+          </DialogContent>
+
+          <DialogActions sx={{ p: 3 }}>
+            <Button onClick={() => setCancelRegistrationId(null)}>
+              Abbrechen
+            </Button>
+
+            <Button
+              color="error"
+              variant="contained"
+              onClick={handleCancelRegistration}
+            >
+              Stornieren
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Snackbar
+          open={Boolean(feedbackMessage)}
+          message={feedbackMessage}
+          autoHideDuration={6000}
+          onClose={() => setFeedbackMessage('')}
+        />
+      </Box>
+    </BackendPermissionGuard>
   );
 }
 

@@ -1,11 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prismadb';
 import { supabase } from '@/lib/supabase';
+import { getServerSession } from '@/lib/session';
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
+  const session = await getServerSession(req);
+  if (!session) return res.status(401).json('Not authenticated');
+
   if (req.method !== 'DELETE') {
     res.setHeader('Allow', ['DELETE']);
     return res.status(405).json({ error: 'Method not allowed' });

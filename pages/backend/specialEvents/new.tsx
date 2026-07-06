@@ -29,6 +29,9 @@ import type { PublicSpecialEvent } from '@/lib/specialEvents';
 import EventSelector from '@/components/eventSelector';
 import { ApiGetEventsResponse } from '@/pages/api/events';
 import BackendHeader from '@/components/backend/header';
+import BackendPermissionGuard from '@/components/backend/BackendPermissionGuard';
+import { BACKEND_PERMISSIONS } from '@/lib/backend/permissions';
+import { Session } from '@/hooks/useSession';
 
 type OccurrenceFormState = {
   id?: string;
@@ -81,7 +84,7 @@ function toCents(value: string) {
   return String(Math.round(parsed * 100));
 }
 
-export default function NewSpecialEventPage() {
+export default function NewSpecialEventPage({ session }: { session: Session }) {
   const router = useRouter();
 
   const [form, setForm] = useState<FormState>(initialForm);
@@ -273,330 +276,338 @@ export default function NewSpecialEventPage() {
   };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f8f6f2', minHeight: '100vh' }}>
-      <BackendHeader
-        title="Neues WineEvent anlegen"
-        subtitle="Lege WineWalks, Tastings und weitere Erlebnisse für die Website an."
-        backHref="/backend/specialEvents"
-        backLabel="Zurück zu den WineEvents"
-      />
+    <BackendPermissionGuard
+      session={session}
+      permission={BACKEND_PERMISSIONS.SPECIAL_EVENTS}
+      deniedTitle="Kein Zugriff auf Special Events"
+      deniedDescription="Du hast keine Berechtigung, Special Events im Backend zu erstellen."
+    >
+      <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f8f6f2', minHeight: '100vh' }}>
+        <BackendHeader
+          title="Neues WineEvent anlegen"
+          subtitle="Lege WineWalks, Tastings und weitere Erlebnisse für die Website an."
+          backHref="/backend/specialEvents"
+          backLabel="Zurück zu den WineEvents"
+        />
 
-      <Box sx={{ maxWidth: 1440, mx: 'auto' }}>
-        {error && (
-          <Alert severity="error" sx={{ mt: 3 }}>
-            {error}
-          </Alert>
-        )}
+        <Box sx={{ maxWidth: 1440, mx: 'auto' }}>
+          {error && (
+            <Alert severity="error" sx={{ mt: 3 }}>
+              {error}
+            </Alert>
+          )}
 
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{
-            mt: 4,
-            display: 'grid',
-            gap: 3,
-            alignItems: 'start',
-            gridTemplateColumns: {
-              xs: '1fr',
-              lg: 'minmax(0, 1fr) 420px',
-            },
-          }}
-        >
-          <Card variant="outlined" sx={{ borderRadius: 4 }}>
-            <CardContent>
-              <Stack spacing={3}>
-                <Typography variant="h6" fontWeight={700}>
-                  Inhalte
-                </Typography>
-
-                <TextField
-                  required
-                  label="Name"
-                  value={form.name}
-                  onChange={(event) => updateForm('name', event.target.value)}
-                />
-
-                <TextField
-                  required
-                  multiline
-                  minRows={4}
-                  label="Beschreibung"
-                  value={form.description}
-                  onChange={(event) =>
-                    updateForm('description', event.target.value)
-                  }
-                />
-
-                <Button
-                  component="label"
-                  variant="outlined"
-                  startIcon={<AddPhotoAlternateRounded />}
-                  sx={{ alignSelf: 'flex-start' }}
-                >
-                  Titelbild auswählen
-                  <input
-                    hidden
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={handleImageChange}
-                  />
-                </Button>
-
-                {titleImage && (
-                  <Typography variant="caption" color="text.secondary">
-                    {titleImage.name}
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{
+              mt: 4,
+              display: 'grid',
+              gap: 3,
+              alignItems: 'start',
+              gridTemplateColumns: {
+                xs: '1fr',
+                lg: 'minmax(0, 1fr) 420px',
+              },
+            }}
+          >
+            <Card variant="outlined" sx={{ borderRadius: 4 }}>
+              <CardContent>
+                <Stack spacing={3}>
+                  <Typography variant="h6" fontWeight={700}>
+                    Inhalte
                   </Typography>
-                )}
 
-                <Divider />
+                  <TextField
+                    required
+                    label="Name"
+                    value={form.name}
+                    onChange={(event) => updateForm('name', event.target.value)}
+                  />
 
-                <Typography variant="h6" fontWeight={700}>
-                  Zeitpunkt und Darstellung
-                </Typography>
+                  <TextField
+                    required
+                    multiline
+                    minRows={4}
+                    label="Beschreibung"
+                    value={form.description}
+                    onChange={(event) =>
+                      updateForm('description', event.target.value)
+                    }
+                  />
 
-                <EventSelector onChange={setSelectedEvent} />
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    startIcon={<AddPhotoAlternateRounded />}
+                    sx={{ alignSelf: 'flex-start' }}
+                  >
+                    Titelbild auswählen
+                    <input
+                      hidden
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleImageChange}
+                    />
+                  </Button>
 
-                <Typography variant="h6" fontWeight={800}>
-                  Termine
-                </Typography>
+                  {titleImage && (
+                    <Typography variant="caption" color="text.secondary">
+                      {titleImage.name}
+                    </Typography>
+                  )}
 
-                <Typography variant="body2" color="text.secondary">
-                  Wähle einen oder mehrere Tage aus. Uhrzeit und Kapazität
-                  können pro Tag unterschiedlich sein.
-                </Typography>
+                  <Divider />
 
-                <Stack spacing={1.5}>
-                  {eventDates.map((eventDate) => {
-                    const occurrence = form.occurrences.find(
-                      (item) => item.eventDateId === eventDate.id,
-                    );
+                  <Typography variant="h6" fontWeight={700}>
+                    Zeitpunkt und Darstellung
+                  </Typography>
 
-                    const checked = Boolean(occurrence);
+                  <EventSelector onChange={setSelectedEvent} />
 
-                    return (
-                      <Box
-                        key={eventDate.id}
-                        sx={{
-                          p: 2,
-                          borderRadius: 3,
-                          border: '1px solid',
-                          borderColor: checked ? 'black' : 'divider',
-                          bgcolor: checked
-                            ? 'rgba(0,0,0,0.03)'
-                            : 'background.paper',
-                        }}
-                      >
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={checked}
-                              onChange={(event) => {
-                                const nextChecked = event.target.checked;
+                  <Typography variant="h6" fontWeight={800}>
+                    Termine
+                  </Typography>
 
-                                setForm((current) => {
-                                  if (nextChecked) {
+                  <Typography variant="body2" color="text.secondary">
+                    Wähle einen oder mehrere Tage aus. Uhrzeit und Kapazität
+                    können pro Tag unterschiedlich sein.
+                  </Typography>
+
+                  <Stack spacing={1.5}>
+                    {eventDates.map((eventDate) => {
+                      const occurrence = form.occurrences.find(
+                        (item) => item.eventDateId === eventDate.id,
+                      );
+
+                      const checked = Boolean(occurrence);
+
+                      return (
+                        <Box
+                          key={eventDate.id}
+                          sx={{
+                            p: 2,
+                            borderRadius: 3,
+                            border: '1px solid',
+                            borderColor: checked ? 'black' : 'divider',
+                            bgcolor: checked
+                              ? 'rgba(0,0,0,0.03)'
+                              : 'background.paper',
+                          }}
+                        >
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={checked}
+                                onChange={(event) => {
+                                  const nextChecked = event.target.checked;
+
+                                  setForm((current) => {
+                                    if (nextChecked) {
+                                      return {
+                                        ...current,
+                                        occurrences: [
+                                          ...current.occurrences,
+                                          {
+                                            eventDateId: eventDate.id,
+                                            startTime: '11:00',
+                                            endTime: '14:00',
+                                            capacity: '',
+                                          },
+                                        ],
+                                      };
+                                    }
+
                                     return {
                                       ...current,
-                                      occurrences: [
-                                        ...current.occurrences,
-                                        {
-                                          eventDateId: eventDate.id,
-                                          startTime: '11:00',
-                                          endTime: '14:00',
-                                          capacity: '',
-                                        },
-                                      ],
+                                      occurrences: current.occurrences.filter(
+                                        (item) =>
+                                          item.eventDateId !== eventDate.id,
+                                      ),
                                     };
-                                  }
+                                  });
+                                }}
+                              />
+                            }
+                            label={`${eventDate.dow}, ${eventDate.date}`}
+                          />
 
-                                  return {
-                                    ...current,
-                                    occurrences: current.occurrences.filter(
-                                      (item) =>
-                                        item.eventDateId !== eventDate.id,
-                                    ),
-                                  };
-                                });
-                              }}
-                            />
-                          }
-                          label={`${eventDate.dow}, ${eventDate.date}`}
-                        />
-
-                        {occurrence && (
-                          <Stack
-                            direction={{ xs: 'column', sm: 'row' }}
-                            spacing={2}
-                            sx={{ mt: 1.5 }}
-                          >
-                            <TextField
-                              required
-                              fullWidth
-                              type="time"
-                              label="Start"
-                              InputLabelProps={{ shrink: true }}
-                              value={occurrence.startTime}
-                              onChange={(event) =>
-                                updateOccurrence(eventDate.id, {
-                                  startTime: event.target.value,
-                                })
-                              }
-                            />
-
-                            <TextField
-                              required
-                              fullWidth
-                              type="time"
-                              label="Ende"
-                              InputLabelProps={{ shrink: true }}
-                              value={occurrence.endTime}
-                              onChange={(event) =>
-                                updateOccurrence(eventDate.id, {
-                                  endTime: event.target.value,
-                                })
-                              }
-                            />
-
-                            {form.bookingType === 'INTERNAL_REGISTRATION' && (
+                          {occurrence && (
+                            <Stack
+                              direction={{ xs: 'column', sm: 'row' }}
+                              spacing={2}
+                              sx={{ mt: 1.5 }}
+                            >
                               <TextField
+                                required
                                 fullWidth
-                                type="number"
-                                label="Kapazität"
-                                placeholder="Optional"
-                                inputProps={{ min: 1 }}
-                                value={occurrence.capacity}
+                                type="time"
+                                label="Start"
+                                InputLabelProps={{ shrink: true }}
+                                value={occurrence.startTime}
                                 onChange={(event) =>
                                   updateOccurrence(eventDate.id, {
-                                    capacity: event.target.value,
+                                    startTime: event.target.value,
                                   })
                                 }
                               />
-                            )}
-                          </Stack>
-                        )}
-                      </Box>
-                    );
-                  })}
-                </Stack>
 
-                <FormControl fullWidth>
-                  <InputLabel>Kategorie</InputLabel>
-                  <Select
-                    label="Kategorie"
-                    value={form.category}
-                    onChange={(event) =>
-                      updateForm(
-                        'category',
-                        event.target.value as FormState['category'],
-                      )
-                    }
-                  >
-                    <MenuItem value="WINE_WALK">WineWalk</MenuItem>
-                    <MenuItem value="WINE_TASTING">WineTasting</MenuItem>
-                    <MenuItem value="OTHER">Sonstiges WineEvent</MenuItem>
-                  </Select>
-                </FormControl>
+                              <TextField
+                                required
+                                fullWidth
+                                type="time"
+                                label="Ende"
+                                InputLabelProps={{ shrink: true }}
+                                value={occurrence.endTime}
+                                onChange={(event) =>
+                                  updateOccurrence(eventDate.id, {
+                                    endTime: event.target.value,
+                                  })
+                                }
+                              />
 
-                <TextField
-                  label="Zusätzliches Badge"
-                  placeholder="z. B. Limitiert, Neu oder Special"
-                  value={form.badge}
-                  onChange={(event) => updateForm('badge', event.target.value)}
-                />
+                              {form.bookingType === 'INTERNAL_REGISTRATION' && (
+                                <TextField
+                                  fullWidth
+                                  type="number"
+                                  label="Kapazität"
+                                  placeholder="Optional"
+                                  inputProps={{ min: 1 }}
+                                  value={occurrence.capacity}
+                                  onChange={(event) =>
+                                    updateOccurrence(eventDate.id, {
+                                      capacity: event.target.value,
+                                    })
+                                  }
+                                />
+                              )}
+                            </Stack>
+                          )}
+                        </Box>
+                      );
+                    })}
+                  </Stack>
 
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <FormControl fullWidth>
+                    <InputLabel>Kategorie</InputLabel>
+                    <Select
+                      label="Kategorie"
+                      value={form.category}
+                      onChange={(event) =>
+                        updateForm(
+                          'category',
+                          event.target.value as FormState['category'],
+                        )
+                      }
+                    >
+                      <MenuItem value="WINE_WALK">WineWalk</MenuItem>
+                      <MenuItem value="WINE_TASTING">WineTasting</MenuItem>
+                      <MenuItem value="OTHER">Sonstiges WineEvent</MenuItem>
+                    </Select>
+                  </FormControl>
+
                   <TextField
-                    fullWidth
-                    label="Preis in Euro"
-                    placeholder="29,90"
-                    value={form.price}
+                    label="Zusätzliches Badge"
+                    placeholder="z. B. Limitiert, Neu oder Special"
+                    value={form.badge}
                     onChange={(event) =>
-                      updateForm('price', event.target.value)
+                      updateForm('badge', event.target.value)
                     }
                   />
 
-                  <TextField
-                    fullWidth
-                    label="Alternatives Preislabel"
-                    placeholder="Kostenlos oder inkl. 5 Weine"
-                    value={form.priceLabel}
-                    onChange={(event) =>
-                      updateForm('priceLabel', event.target.value)
-                    }
-                  />
-                </Stack>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                    <TextField
+                      fullWidth
+                      label="Preis in Euro"
+                      placeholder="29,90"
+                      value={form.price}
+                      onChange={(event) =>
+                        updateForm('price', event.target.value)
+                      }
+                    />
 
-                <Divider />
+                    <TextField
+                      fullWidth
+                      label="Alternatives Preislabel"
+                      placeholder="Kostenlos oder inkl. 5 Weine"
+                      value={form.priceLabel}
+                      onChange={(event) =>
+                        updateForm('priceLabel', event.target.value)
+                      }
+                    />
+                  </Stack>
 
-                <Typography variant="h6" fontWeight={700}>
-                  Buchung
-                </Typography>
+                  <Divider />
 
-                <FormControl fullWidth>
-                  <InputLabel>Buchungsart</InputLabel>
-                  <Select
-                    label="Buchungsart"
-                    value={form.bookingType}
-                    onChange={(event) =>
-                      updateForm(
-                        'bookingType',
-                        event.target.value as FormState['bookingType'],
-                      )
-                    }
-                  >
-                    <MenuItem value="INTERNAL_REGISTRATION">
-                      Registrierung über Weinzelt
-                    </MenuItem>
-                    <MenuItem value="EXTERNAL_LINK">
-                      Externe Reservierungsplattform
-                    </MenuItem>
-                    <MenuItem value="NONE">Keine Registrierung</MenuItem>
-                  </Select>
-                </FormControl>
+                  <Typography variant="h6" fontWeight={700}>
+                    Buchung
+                  </Typography>
 
-                {form.bookingType !== 'NONE' && (
-                  <TextField
-                    required
-                    label="CTA"
-                    placeholder="Jetzt anmelden"
-                    value={form.ctaLabel}
-                    onChange={(event) =>
-                      updateForm('ctaLabel', event.target.value)
-                    }
-                  />
-                )}
+                  <FormControl fullWidth>
+                    <InputLabel>Buchungsart</InputLabel>
+                    <Select
+                      label="Buchungsart"
+                      value={form.bookingType}
+                      onChange={(event) =>
+                        updateForm(
+                          'bookingType',
+                          event.target.value as FormState['bookingType'],
+                        )
+                      }
+                    >
+                      <MenuItem value="INTERNAL_REGISTRATION">
+                        Registrierung über Weinzelt
+                      </MenuItem>
+                      <MenuItem value="EXTERNAL_LINK">
+                        Externe Reservierungsplattform
+                      </MenuItem>
+                      <MenuItem value="NONE">Keine Registrierung</MenuItem>
+                    </Select>
+                  </FormControl>
 
-                {form.bookingType === 'EXTERNAL_LINK' && (
-                  <TextField
-                    required
-                    type="url"
-                    label="Externer Reservierungslink"
-                    placeholder="https://..."
-                    value={form.externalUrl}
-                    onChange={(event) =>
-                      updateForm('externalUrl', event.target.value)
-                    }
-                  />
-                )}
+                  {form.bookingType !== 'NONE' && (
+                    <TextField
+                      required
+                      label="CTA"
+                      placeholder="Jetzt anmelden"
+                      value={form.ctaLabel}
+                      onChange={(event) =>
+                        updateForm('ctaLabel', event.target.value)
+                      }
+                    />
+                  )}
 
-                {form.bookingType === 'INTERNAL_REGISTRATION' && (
-                  <TextField
-                    required
-                    fullWidth
-                    type="number"
-                    label="Max. Personen pro Anmeldung"
-                    inputProps={{ min: 1, max: 50 }}
-                    value={form.maxPersonsPerRegistration}
-                    onChange={(event) =>
-                      updateForm(
-                        'maxPersonsPerRegistration',
-                        event.target.value,
-                      )
-                    }
-                  />
-                )}
+                  {form.bookingType === 'EXTERNAL_LINK' && (
+                    <TextField
+                      required
+                      type="url"
+                      label="Externer Reservierungslink"
+                      placeholder="https://..."
+                      value={form.externalUrl}
+                      onChange={(event) =>
+                        updateForm('externalUrl', event.target.value)
+                      }
+                    />
+                  )}
 
-                {/* <TextField
+                  {form.bookingType === 'INTERNAL_REGISTRATION' && (
+                    <TextField
+                      required
+                      fullWidth
+                      type="number"
+                      label="Max. Personen pro Anmeldung"
+                      inputProps={{ min: 1, max: 50 }}
+                      value={form.maxPersonsPerRegistration}
+                      onChange={(event) =>
+                        updateForm(
+                          'maxPersonsPerRegistration',
+                          event.target.value,
+                        )
+                      }
+                    />
+                  )}
+
+                  {/* <TextField
                   type="number"
                   label="Sortierung"
                   helperText="Kleinere Zahlen erscheinen zuerst."
@@ -606,86 +617,87 @@ export default function NewSpecialEventPage() {
                   }
                 /> */}
 
-                <Divider />
+                  <Divider />
 
-                <Typography variant="h6" fontWeight={700}>
-                  Anhang
-                </Typography>
-
-                <TextField
-                  label="Anhang-Label"
-                  placeholder="z. B. Speisekarte ansehen oder PDF mit weiteren Infos"
-                  value={form.attachmentLabel}
-                  onChange={(event) =>
-                    updateForm('attachmentLabel', event.target.value)
-                  }
-                  helperText="Optional. Wird auf der Detailseite als Titel des Anhangs angezeigt."
-                />
-
-                <Button
-                  component="label"
-                  variant="outlined"
-                  startIcon={<AttachFileRounded />}
-                  sx={{ alignSelf: 'flex-start' }}
-                >
-                  Anhang auswählen
-                  <input
-                    hidden
-                    type="file"
-                    accept="application/pdf,image/jpeg,image/png,image/webp"
-                    onChange={handleAttachmentChange}
-                  />
-                </Button>
-
-                {attachment && (
-                  <Typography variant="caption" color="text.secondary">
-                    Anhang: {attachment.name}
+                  <Typography variant="h6" fontWeight={700}>
+                    Anhang
                   </Typography>
-                )}
 
-                <Divider />
+                  <TextField
+                    label="Anhang-Label"
+                    placeholder="z. B. Speisekarte ansehen oder PDF mit weiteren Infos"
+                    value={form.attachmentLabel}
+                    onChange={(event) =>
+                      updateForm('attachmentLabel', event.target.value)
+                    }
+                    helperText="Optional. Wird auf der Detailseite als Titel des Anhangs angezeigt."
+                  />
 
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={form.isPublished}
-                      onChange={(event) =>
-                        updateForm('isPublished', event.target.checked)
-                      }
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    startIcon={<AttachFileRounded />}
+                    sx={{ alignSelf: 'flex-start' }}
+                  >
+                    Anhang auswählen
+                    <input
+                      hidden
+                      type="file"
+                      accept="application/pdf,image/jpeg,image/png,image/webp"
+                      onChange={handleAttachmentChange}
                     />
-                  }
-                  label="Direkt auf der Website veröffentlichen"
-                />
+                  </Button>
 
-                <Button
-                  type="submit"
-                  variant="contained"
-                  size="large"
-                  disabled={saving}
-                  startIcon={
-                    saving ? <CircularProgress size={18} /> : <SaveRounded />
-                  }
-                  sx={{ alignSelf: 'flex-start' }}
-                >
-                  WineEvent speichern
-                </Button>
-              </Stack>
-            </CardContent>
-          </Card>
+                  {attachment && (
+                    <Typography variant="caption" color="text.secondary">
+                      Anhang: {attachment.name}
+                    </Typography>
+                  )}
 
-          <Box sx={{ position: { lg: 'sticky' }, top: { lg: 24 } }}>
-            <Typography
-              variant="overline"
-              color="text.secondary"
-              sx={{ display: 'block', mb: 1 }}
-            >
-              Live-Preview
-            </Typography>
+                  <Divider />
 
-            <SpecialEventCard event={previewEvent} preview />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={form.isPublished}
+                        onChange={(event) =>
+                          updateForm('isPublished', event.target.checked)
+                        }
+                      />
+                    }
+                    label="Direkt auf der Website veröffentlichen"
+                  />
+
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    size="large"
+                    disabled={saving}
+                    startIcon={
+                      saving ? <CircularProgress size={18} /> : <SaveRounded />
+                    }
+                    sx={{ alignSelf: 'flex-start' }}
+                  >
+                    WineEvent speichern
+                  </Button>
+                </Stack>
+              </CardContent>
+            </Card>
+
+            <Box sx={{ position: { lg: 'sticky' }, top: { lg: 24 } }}>
+              <Typography
+                variant="overline"
+                color="text.secondary"
+                sx={{ display: 'block', mb: 1 }}
+              >
+                Live-Preview
+              </Typography>
+
+              <SpecialEventCard event={previewEvent} preview />
+            </Box>
           </Box>
         </Box>
       </Box>
-    </Box>
+    </BackendPermissionGuard>
   );
 }

@@ -46,6 +46,8 @@ import {
   formatSpecialEventCategory,
   formatSpecialEventPrice,
 } from '@/lib/specialEvents/format';
+import BackendPermissionGuard from '@/components/backend/BackendPermissionGuard';
+import { BACKEND_PERMISSIONS } from '@/lib/backend/permissions';
 
 type BackendSpecialEventOccurrence = {
   id: string;
@@ -403,95 +405,102 @@ export default function BackendSpecialEventsPage({
   }, [session.status, router.isReady, router]);
 
   return (
-    <Box className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-      <BackendHeader
-        title="WineEvents verwalten"
-        subtitle="Verwalte WineWalks, Tastings, Brunches und weitere Veranstaltungen inklusive Terminen, Buchungslogik, Bildern und Teilnehmerzahlen."
-        action={
-          <Link
-            href="/backend/specialEvents/new"
-            className="inline-flex items-center justify-center gap-1 rounded-full bg-black px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800"
-          >
-            <AddRounded fontSize="small" />
-            Neues WineEvent
-          </Link>
-        }
-      />
+    <BackendPermissionGuard
+      session={session}
+      permission={BACKEND_PERMISSIONS.SPECIAL_EVENTS}
+      deniedTitle="Kein Zugriff auf Special Events"
+      deniedDescription="Du hast keine Berechtigung, Special Events im Backend zu verwalten."
+    >
+      <Box className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
+        <BackendHeader
+          title="WineEvents verwalten"
+          subtitle="Verwalte WineWalks, Tastings, Brunches und weitere Veranstaltungen inklusive Terminen, Buchungslogik, Bildern und Teilnehmerzahlen."
+          action={
+            <Link
+              href="/backend/specialEvents/new"
+              className="inline-flex items-center justify-center gap-1 rounded-full bg-black px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800"
+            >
+              <AddRounded fontSize="small" />
+              Neues WineEvent
+            </Link>
+          }
+        />
 
-      <Box className="my-7 max-w-md">
-        <EventSelector onChange={setSelectedEvent} />
-      </Box>
-
-      {!selectedEvent && (
-        <Alert severity="info" sx={{ mb: 3 }}>
-          Wähle zuerst das Weinzelt-Event aus, für das du die WineEvents
-          verwalten möchtest.
-        </Alert>
-      )}
-
-      {loadError && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {loadError}
-        </Alert>
-      )}
-
-      {loading ? (
-        <Grid container spacing={3}>
-          {[0, 1, 2, 3].map((item) => (
-            <Grid key={item} size={{ xs: 12, md: 6 }}>
-              <Skeleton
-                variant="rounded"
-                height={310}
-                sx={{ borderRadius: 4 }}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      ) : selectedEvent && specialEvents.length === 0 ? (
-        <Box className="rounded-[2rem] border border-dashed border-black/20 bg-stone-50 px-6 py-16 text-center">
-          <WineBarRounded sx={{ fontSize: 56, opacity: 0.35 }} />
-
-          <Typography variant="h6" className="mt-3 font-bold">
-            Noch keine WineEvents angelegt
-          </Typography>
-
-          <Typography className="mx-auto mt-2 max-w-lg text-sm text-gray-500">
-            Für dieses Weinzelt-Event existieren noch keine WineWalks, Tastings,
-            Brunches oder weiteren Veranstaltungen.
-          </Typography>
-
-          <Link
-            href="/backend/specialEvents/new"
-            className="mt-6 inline-flex items-center justify-center gap-1 rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
-          >
-            <AddRounded fontSize="small" />
-            Erstes WineEvent erstellen
-          </Link>
+        <Box className="my-7 max-w-md">
+          <EventSelector onChange={setSelectedEvent} />
         </Box>
-      ) : (
-        <Grid container spacing={3}>
-          {specialEvents.map((event) => (
-            <Grid key={event.id} size={{ xs: 12, lg: 6 }}>
-              <AdminSpecialEventCard
-                event={event}
-                onEdit={() => setSelectedSpecialEvent(event)}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      )}
 
-      <EditSpecialEventDialog
-        open={Boolean(selectedSpecialEvent)}
-        specialEvent={selectedSpecialEvent}
-        eventDates={selectedEvent?.eventDates ?? []}
-        onClose={() => setSelectedSpecialEvent(undefined)}
-        onSuccess={() => {
-          setSelectedSpecialEvent(undefined);
-          void fetchSpecialEvents();
-        }}
-      />
-    </Box>
+        {!selectedEvent && (
+          <Alert severity="info" sx={{ mb: 3 }}>
+            Wähle zuerst das Weinzelt-Event aus, für das du die WineEvents
+            verwalten möchtest.
+          </Alert>
+        )}
+
+        {loadError && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {loadError}
+          </Alert>
+        )}
+
+        {loading ? (
+          <Grid container spacing={3}>
+            {[0, 1, 2, 3].map((item) => (
+              <Grid key={item} size={{ xs: 12, md: 6 }}>
+                <Skeleton
+                  variant="rounded"
+                  height={310}
+                  sx={{ borderRadius: 4 }}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        ) : selectedEvent && specialEvents.length === 0 ? (
+          <Box className="rounded-[2rem] border border-dashed border-black/20 bg-stone-50 px-6 py-16 text-center">
+            <WineBarRounded sx={{ fontSize: 56, opacity: 0.35 }} />
+
+            <Typography variant="h6" className="mt-3 font-bold">
+              Noch keine WineEvents angelegt
+            </Typography>
+
+            <Typography className="mx-auto mt-2 max-w-lg text-sm text-gray-500">
+              Für dieses Weinzelt-Event existieren noch keine WineWalks,
+              Tastings, Brunches oder weiteren Veranstaltungen.
+            </Typography>
+
+            <Link
+              href="/backend/specialEvents/new"
+              className="mt-6 inline-flex items-center justify-center gap-1 rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
+            >
+              <AddRounded fontSize="small" />
+              Erstes WineEvent erstellen
+            </Link>
+          </Box>
+        ) : (
+          <Grid container spacing={3}>
+            {specialEvents.map((event) => (
+              <Grid key={event.id} size={{ xs: 12, lg: 6 }}>
+                <AdminSpecialEventCard
+                  event={event}
+                  onEdit={() => setSelectedSpecialEvent(event)}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        )}
+
+        <EditSpecialEventDialog
+          open={Boolean(selectedSpecialEvent)}
+          specialEvent={selectedSpecialEvent}
+          eventDates={selectedEvent?.eventDates ?? []}
+          onClose={() => setSelectedSpecialEvent(undefined)}
+          onSuccess={() => {
+            setSelectedSpecialEvent(undefined);
+            void fetchSpecialEvents();
+          }}
+        />
+      </Box>
+    </BackendPermissionGuard>
   );
 }
 

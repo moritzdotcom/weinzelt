@@ -11,13 +11,13 @@ import {
   TextField,
   Chip,
   Skeleton,
-  Stack,
 } from '@mui/material';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { Session } from '@/hooks/useSession';
-import { ArrowBackRounded } from '@mui/icons-material';
 import BackendHeader from '@/components/backend/header';
+import BackendPermissionGuard from '@/components/backend/BackendPermissionGuard';
+import { BACKEND_PERMISSIONS } from '@/lib/backend/permissions';
 
 interface EventDate {
   date: string;
@@ -75,79 +75,94 @@ export default function BackendEventsPage({ session }: { session: Session }) {
   }, [session.status, router.isReady]);
 
   return (
-    <Box className="max-w-5xl mx-auto px-4 py-16">
-      <BackendHeader
-        title="Veranstaltungen verwalten"
-        action={
-          <button
-            className="rounded-full bg-black px-6 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-gray-800"
-            onClick={() => setCreateDialogOpen(true)}
-          >
-            Neue Veranstaltung erstellen
-          </button>
-        }
-      />
-      {loading && (
+    <BackendPermissionGuard
+      session={session}
+      permission={BACKEND_PERMISSIONS.EVENTS}
+      deniedTitle="Kein Zugriff auf Veranstaltungen"
+      deniedDescription="Du hast keine Berechtigung, Veranstaltungen im Backend zu verwalten."
+    >
+      <Box className="max-w-5xl mx-auto px-4 py-16">
+        <BackendHeader
+          title="Veranstaltungen verwalten"
+          action={
+            <button
+              className="rounded-full bg-black px-6 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-gray-800"
+              onClick={() => setCreateDialogOpen(true)}
+            >
+              Neue Veranstaltung erstellen
+            </button>
+          }
+        />
+        {loading && (
+          <Grid container spacing={4}>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Skeleton
+                variant="rounded"
+                height={164}
+                sx={{ borderRadius: 4 }}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Skeleton
+                variant="rounded"
+                height={164}
+                sx={{ borderRadius: 4 }}
+              />
+            </Grid>
+          </Grid>
+        )}
         <Grid container spacing={4}>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Skeleton variant="rounded" height={164} sx={{ borderRadius: 4 }} />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Skeleton variant="rounded" height={164} sx={{ borderRadius: 4 }} />
-          </Grid>
+          {events.map((event) => (
+            <EventCard
+              key={event.id}
+              event={event}
+              onActivate={() => {
+                setSelectedEvent(event);
+                setConfirmDialogOpen(true);
+              }}
+              onDeactivate={() => handleDeactivate(event.id)}
+            />
+          ))}
         </Grid>
-      )}
-      <Grid container spacing={4}>
-        {events.map((event) => (
-          <EventCard
-            key={event.id}
-            event={event}
-            onActivate={() => {
-              setSelectedEvent(event);
-              setConfirmDialogOpen(true);
-            }}
-            onDeactivate={() => handleDeactivate(event.id)}
-          />
-        ))}
-      </Grid>
 
-      <NewEventDialog
-        open={createDialogOpen}
-        onClose={() => setCreateDialogOpen(false)}
-        onSuccess={fetchEvents}
-      />
+        <NewEventDialog
+          open={createDialogOpen}
+          onClose={() => setCreateDialogOpen(false)}
+          onSuccess={fetchEvents}
+        />
 
-      {/* Dialog: Live schalten */}
-      <Dialog
-        open={confirmDialogOpen}
-        onClose={() => setConfirmDialogOpen(false)}
-      >
-        <DialogTitle>Veranstaltung live schalten</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Möchtest du <strong>{selectedEvent?.name}</strong> für die
-            Tischreservierung freischalten?
-          </Typography>
-          <Typography className="mt-2 text-sm text-gray-500">
-            Das aktuell aktive Event wird dabei deaktiviert.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <button
-            className="px-4 py-2 rounded-full text-gray-600 hover:bg-gray-100"
-            onClick={() => setConfirmDialogOpen(false)}
-          >
-            Abbrechen
-          </button>
-          <button
-            className="px-4 py-2 rounded-full bg-black text-white hover:bg-gray-900"
-            onClick={handleActivate}
-          >
-            Bestätigen
-          </button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+        {/* Dialog: Live schalten */}
+        <Dialog
+          open={confirmDialogOpen}
+          onClose={() => setConfirmDialogOpen(false)}
+        >
+          <DialogTitle>Veranstaltung live schalten</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Möchtest du <strong>{selectedEvent?.name}</strong> für die
+              Tischreservierung freischalten?
+            </Typography>
+            <Typography className="mt-2 text-sm text-gray-500">
+              Das aktuell aktive Event wird dabei deaktiviert.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <button
+              className="px-4 py-2 rounded-full text-gray-600 hover:bg-gray-100"
+              onClick={() => setConfirmDialogOpen(false)}
+            >
+              Abbrechen
+            </button>
+            <button
+              className="px-4 py-2 rounded-full bg-black text-white hover:bg-gray-900"
+              onClick={handleActivate}
+            >
+              Bestätigen
+            </button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    </BackendPermissionGuard>
   );
 }
 

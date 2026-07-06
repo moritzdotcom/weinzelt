@@ -38,6 +38,9 @@ import { centsToEUR, formatDate } from '@/lib/helpers';
 import { ReservationDetailsDialog } from '@/components/backend/reservationDetailDialog';
 import { translateState } from '@/lib/reservation';
 import BackendHeader from '@/components/backend/header';
+import BackendPermissionGuard from '@/components/backend/BackendPermissionGuard';
+import { BACKEND_PERMISSIONS } from '@/lib/backend/permissions';
+import { Session } from '@/hooks/useSession';
 
 function paymentStatusColor(status: string) {
   switch (status) {
@@ -51,7 +54,7 @@ function paymentStatusColor(status: string) {
   }
 }
 
-export default function InvoicesPage() {
+export default function InvoicesPage({ session }: { session: Session }) {
   const [invoices, setInvoices] = useState<BackendInvoiceListItem[]>([]);
   const [total, setTotal] = useState(0);
 
@@ -133,292 +136,304 @@ export default function InvoicesPage() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8">
-      <Stack spacing={4}>
-        <BackendHeader
-          title="Rechnungen"
-          subtitle="Rechnungen erstellen, versenden, suchen und als ZIP exportieren."
-          action={
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-              <Button
-                variant="outlined"
-                startIcon={<DownloadRoundedIcon />}
-                href={exportUrl}
+    <BackendPermissionGuard
+      session={session}
+      permission={BACKEND_PERMISSIONS.INVOICES}
+      deniedTitle="Kein Zugriff auf Rechnungen"
+      deniedDescription="Du hast keine Berechtigung, Rechnungen im Backend zu verwalten."
+    >
+      <div className="w-full max-w-7xl mx-auto px-4 py-8">
+        <Stack spacing={4}>
+          <BackendHeader
+            title="Rechnungen"
+            subtitle="Rechnungen erstellen, versenden, suchen und als ZIP exportieren."
+            action={
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                <Button
+                  variant="outlined"
+                  startIcon={<DownloadRoundedIcon />}
+                  href={exportUrl}
+                >
+                  Zeitraum als ZIP
+                </Button>
+
+                <Button
+                  variant="contained"
+                  startIcon={<AddRoundedIcon />}
+                  onClick={() => setCreateDialogOpen(true)}
+                >
+                  Rechnung erstellen
+                </Button>
+              </Stack>
+            }
+          />
+
+          {error && <Alert severity="error">{error}</Alert>}
+
+          <Paper
+            elevation={0}
+            sx={{
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 3,
+              overflow: 'hidden',
+            }}
+          >
+            <Box sx={{ p: 2.5 }}>
+              <Stack
+                direction={{ xs: 'column', md: 'row' }}
+                spacing={2}
+                alignItems={{ xs: 'stretch', md: 'center' }}
               >
-                Zeitraum als ZIP
-              </Button>
+                <TextField
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Rechnung, Name, E-Mail oder Tischnummer suchen"
+                  size="small"
+                  fullWidth
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
 
-              <Button
-                variant="contained"
-                startIcon={<AddRoundedIcon />}
-                onClick={() => setCreateDialogOpen(true)}
-              >
-                Rechnung erstellen
-              </Button>
-            </Stack>
-          }
-        />
+                <TextField
+                  select
+                  label="Status"
+                  size="small"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  sx={{ minWidth: 180 }}
+                >
+                  <MenuItem value="all">Alle</MenuItem>
+                  <MenuItem value="unsent">Nicht versendet</MenuItem>
+                  <MenuItem value="sent">Versendet</MenuItem>
+                  <MenuItem value="unpaid">Zahlung offen</MenuItem>
+                  <MenuItem value="paid">Bezahlt</MenuItem>
+                </TextField>
 
-        {error && <Alert severity="error">{error}</Alert>}
+                <TextField
+                  label="Von"
+                  type="date"
+                  size="small"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                  sx={{ minWidth: 180 }}
+                  InputLabelProps={{ shrink: true }}
+                />
 
-        <Paper
-          elevation={0}
-          sx={{
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            overflow: 'hidden',
-          }}
-        >
-          <Box sx={{ p: 2.5 }}>
-            <Stack
-              direction={{ xs: 'column', md: 'row' }}
-              spacing={2}
-              alignItems={{ xs: 'stretch', md: 'center' }}
-            >
-              <TextField
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Rechnung, Name, E-Mail oder Tischnummer suchen"
-                size="small"
-                fullWidth
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+                <TextField
+                  label="Bis"
+                  type="date"
+                  size="small"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                  sx={{ minWidth: 180 }}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Stack>
+            </Box>
 
-              <TextField
-                select
-                label="Status"
-                size="small"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                sx={{ minWidth: 180 }}
-              >
-                <MenuItem value="all">Alle</MenuItem>
-                <MenuItem value="unsent">Nicht versendet</MenuItem>
-                <MenuItem value="sent">Versendet</MenuItem>
-                <MenuItem value="unpaid">Zahlung offen</MenuItem>
-                <MenuItem value="paid">Bezahlt</MenuItem>
-              </TextField>
+            <Divider />
 
-              <TextField
-                label="Von"
-                type="date"
-                size="small"
-                value={from}
-                onChange={(e) => setFrom(e.target.value)}
-                sx={{ minWidth: 180 }}
-                InputLabelProps={{ shrink: true }}
-              />
+            <Box sx={{ px: 2.5, py: 1.5 }}>
+              <Typography variant="body2" color="text.secondary">
+                {loading
+                  ? 'Rechnungen werden geladen...'
+                  : `${total} Rechnung${total === 1 ? '' : 'en'} gefunden`}
+              </Typography>
+            </Box>
 
-              <TextField
-                label="Bis"
-                type="date"
-                size="small"
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-                sx={{ minWidth: 180 }}
-                InputLabelProps={{ shrink: true }}
-              />
-            </Stack>
-          </Box>
-
-          <Divider />
-
-          <Box sx={{ px: 2.5, py: 1.5 }}>
-            <Typography variant="body2" color="text.secondary">
-              {loading
-                ? 'Rechnungen werden geladen...'
-                : `${total} Rechnung${total === 1 ? '' : 'en'} gefunden`}
-            </Typography>
-          </Box>
-
-          <Box sx={{ overflowX: 'auto' }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Rechnung</TableCell>
-                  <TableCell>Kunde</TableCell>
-                  <TableCell>Reservierung</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell align="right">Summe</TableCell>
-                  <TableCell align="right">Aktionen</TableCell>
-                </TableRow>
-              </TableHead>
-
-              <TableBody>
-                {loading ? (
-                  Array.from({ length: 6 }).map((_, index) => (
-                    <TableRow key={index}>
-                      <TableCell colSpan={6}>
-                        <div className="h-9 w-full animate-pulse rounded-lg bg-gray-100" />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : invoices.length === 0 ? (
+            <Box sx={{ overflowX: 'auto' }}>
+              <Table>
+                <TableHead>
                   <TableRow>
-                    <TableCell colSpan={6}>
-                      <Box sx={{ py: 6, textAlign: 'center' }}>
-                        <Typography fontWeight={600}>
-                          Keine Rechnungen gefunden
-                        </Typography>
-                        <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-                          Passe die Suche oder den Zeitraum an.
-                        </Typography>
-                      </Box>
-                    </TableCell>
+                    <TableCell>Rechnung</TableCell>
+                    <TableCell>Kunde</TableCell>
+                    <TableCell>Reservierung</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell align="right">Summe</TableCell>
+                    <TableCell align="right">Aktionen</TableCell>
                   </TableRow>
-                ) : (
-                  invoices.map((invoice) => {
-                    const isPaid = invoice.reservation.paymentStatus === 'PAID';
+                </TableHead>
 
-                    return (
-                      <TableRow key={invoice.id} hover>
-                        <TableCell>
-                          <Typography fontWeight={700}>
-                            {invoice.invoiceNumber}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Erstellt am {formatDate(invoice.issuedAt)}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {invoice.sentAt
-                              ? `Versendet am ${formatDate(invoice.sentAt)}`
-                              : 'Noch nicht versendet'}
-                          </Typography>
-                        </TableCell>
-
-                        <TableCell>
-                          <Typography fontWeight={600}>
-                            {invoice.customerName}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {invoice.customerEmail}
-                          </Typography>
-                        </TableCell>
-
-                        <TableCell>
-                          <Typography fontWeight={600}>
-                            {invoice.reservation.people} Personen
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {invoice.reservation.type}
-                            {invoice.reservation.tableNumber
-                              ? ` · Tisch ${invoice.reservation.tableNumber}`
-                              : ''}
-                          </Typography>
-                        </TableCell>
-
-                        <TableCell>
-                          <Stack spacing={1} alignItems="flex-start">
-                            <Chip
-                              size="small"
-                              label={translateState(
-                                invoice.reservation.paymentStatus,
-                              )}
-                              color={paymentStatusColor(
-                                invoice.reservation.paymentStatus,
-                              )}
-                              variant="outlined"
-                            />
-
-                            <Chip
-                              size="small"
-                              label={
-                                invoice.sentAt
-                                  ? 'Rechnung versendet'
-                                  : 'Nicht versendet'
-                              }
-                              variant="outlined"
-                            />
-                          </Stack>
-                        </TableCell>
-
-                        <TableCell align="right">
-                          <Typography fontWeight={700}>
-                            {centsToEUR(invoice.totalCents)}
-                          </Typography>
-                        </TableCell>
-
-                        <TableCell align="right">
-                          <Stack
-                            direction="row"
-                            spacing={0.5}
-                            justifyContent="flex-end"
-                          >
-                            <Tooltip title="PDF anzeigen">
-                              <IconButton
-                                component="a"
-                                href={`/api/reservations/${invoice.reservation.id}/invoice`}
-                                target="_blank"
-                              >
-                                <PictureAsPdfRoundedIcon />
-                              </IconButton>
-                            </Tooltip>
-
-                            <Tooltip title="Reservierung anzeigen">
-                              <IconButton
-                                onClick={() =>
-                                  setReservationDialogId(invoice.reservation.id)
-                                }
-                              >
-                                <VisibilityRoundedIcon />
-                              </IconButton>
-                            </Tooltip>
-
-                            {!isPaid && (
-                              <Tooltip title="Als bezahlt markieren">
-                                <span>
-                                  <IconButton
-                                    disabled={actionLoadingId === invoice.id}
-                                    onClick={() => markReservationPaid(invoice)}
-                                  >
-                                    <PaidRoundedIcon />
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
-                            )}
-
-                            <Tooltip title="Rechnung erneut versenden">
-                              <IconButton
-                                onClick={() => {
-                                  // Optional: endpoint ergänzen
-                                  // POST /api/reservations/:id/invoice/send
-                                }}
-                              >
-                                <SendRoundedIcon />
-                              </IconButton>
-                            </Tooltip>
-                          </Stack>
+                <TableBody>
+                  {loading ? (
+                    Array.from({ length: 6 }).map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell colSpan={6}>
+                          <div className="h-9 w-full animate-pulse rounded-lg bg-gray-100" />
                         </TableCell>
                       </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </Box>
-        </Paper>
-      </Stack>
+                    ))
+                  ) : invoices.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6}>
+                        <Box sx={{ py: 6, textAlign: 'center' }}>
+                          <Typography fontWeight={600}>
+                            Keine Rechnungen gefunden
+                          </Typography>
+                          <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+                            Passe die Suche oder den Zeitraum an.
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    invoices.map((invoice) => {
+                      const isPaid =
+                        invoice.reservation.paymentStatus === 'PAID';
 
-      <CreateInvoiceDialog
-        open={createDialogOpen}
-        onClose={() => setCreateDialogOpen(false)}
-        onCreated={async () => {
-          setCreateDialogOpen(false);
-          await loadInvoices();
-        }}
-      />
-      <ReservationDetailsDialog
-        reservationId={reservationDialogId}
-        open={Boolean(reservationDialogId)}
-        onClose={() => setReservationDialogId(null)}
-      />
-    </div>
+                      return (
+                        <TableRow key={invoice.id} hover>
+                          <TableCell>
+                            <Typography fontWeight={700}>
+                              {invoice.invoiceNumber}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              Erstellt am {formatDate(invoice.issuedAt)}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {invoice.sentAt
+                                ? `Versendet am ${formatDate(invoice.sentAt)}`
+                                : 'Noch nicht versendet'}
+                            </Typography>
+                          </TableCell>
+
+                          <TableCell>
+                            <Typography fontWeight={600}>
+                              {invoice.customerName}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {invoice.customerEmail}
+                            </Typography>
+                          </TableCell>
+
+                          <TableCell>
+                            <Typography fontWeight={600}>
+                              {invoice.reservation.people} Personen
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {invoice.reservation.type}
+                              {invoice.reservation.tableNumber
+                                ? ` · Tisch ${invoice.reservation.tableNumber}`
+                                : ''}
+                            </Typography>
+                          </TableCell>
+
+                          <TableCell>
+                            <Stack spacing={1} alignItems="flex-start">
+                              <Chip
+                                size="small"
+                                label={translateState(
+                                  invoice.reservation.paymentStatus,
+                                )}
+                                color={paymentStatusColor(
+                                  invoice.reservation.paymentStatus,
+                                )}
+                                variant="outlined"
+                              />
+
+                              <Chip
+                                size="small"
+                                label={
+                                  invoice.sentAt
+                                    ? 'Rechnung versendet'
+                                    : 'Nicht versendet'
+                                }
+                                variant="outlined"
+                              />
+                            </Stack>
+                          </TableCell>
+
+                          <TableCell align="right">
+                            <Typography fontWeight={700}>
+                              {centsToEUR(invoice.totalCents)}
+                            </Typography>
+                          </TableCell>
+
+                          <TableCell align="right">
+                            <Stack
+                              direction="row"
+                              spacing={0.5}
+                              justifyContent="flex-end"
+                            >
+                              <Tooltip title="PDF anzeigen">
+                                <IconButton
+                                  component="a"
+                                  href={`/api/reservations/${invoice.reservation.id}/invoice`}
+                                  target="_blank"
+                                >
+                                  <PictureAsPdfRoundedIcon />
+                                </IconButton>
+                              </Tooltip>
+
+                              <Tooltip title="Reservierung anzeigen">
+                                <IconButton
+                                  onClick={() =>
+                                    setReservationDialogId(
+                                      invoice.reservation.id,
+                                    )
+                                  }
+                                >
+                                  <VisibilityRoundedIcon />
+                                </IconButton>
+                              </Tooltip>
+
+                              {!isPaid && (
+                                <Tooltip title="Als bezahlt markieren">
+                                  <span>
+                                    <IconButton
+                                      disabled={actionLoadingId === invoice.id}
+                                      onClick={() =>
+                                        markReservationPaid(invoice)
+                                      }
+                                    >
+                                      <PaidRoundedIcon />
+                                    </IconButton>
+                                  </span>
+                                </Tooltip>
+                              )}
+
+                              <Tooltip title="Rechnung erneut versenden">
+                                <IconButton
+                                  onClick={() => {
+                                    // Optional: endpoint ergänzen
+                                    // POST /api/reservations/:id/invoice/send
+                                  }}
+                                >
+                                  <SendRoundedIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </Stack>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </Box>
+          </Paper>
+        </Stack>
+
+        <CreateInvoiceDialog
+          open={createDialogOpen}
+          onClose={() => setCreateDialogOpen(false)}
+          onCreated={async () => {
+            setCreateDialogOpen(false);
+            await loadInvoices();
+          }}
+        />
+        <ReservationDetailsDialog
+          reservationId={reservationDialogId}
+          open={Boolean(reservationDialogId)}
+          onClose={() => setReservationDialogId(null)}
+        />
+      </div>
+    </BackendPermissionGuard>
   );
 }

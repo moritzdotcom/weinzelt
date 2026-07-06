@@ -19,6 +19,8 @@ import useElementHeight from '@/hooks/useElementHeight';
 import EventSelector from '@/components/eventSelector';
 import { ReservationPaymentStatus } from '@prisma/client';
 import BackendHeader from '@/components/backend/header';
+import BackendPermissionGuard from '@/components/backend/BackendPermissionGuard';
+import { BACKEND_PERMISSIONS } from '@/lib/backend/permissions';
 
 export default function BackendReservationsPage({
   session,
@@ -116,63 +118,70 @@ export default function BackendReservationsPage({
   }, [selectedEvent]);
 
   return (
-    <Box className="overflow-x-hidden overflow-y-auto h-screen">
-      <Box className="max-w-5xl mx-auto px-4 mt-12">
-        <BackendHeader title="Reservierungen" />
+    <BackendPermissionGuard
+      session={session}
+      permission={BACKEND_PERMISSIONS.RESERVATIONS}
+      deniedTitle="Kein Zugriff auf Reservierungen"
+      deniedDescription="Du hast keine Berechtigung, Reservierungen im Backend zu verwalten."
+    >
+      <Box className="overflow-x-hidden overflow-y-auto h-screen">
+        <Box className="max-w-5xl mx-auto px-4 mt-12">
+          <BackendHeader title="Reservierungen" />
 
-        {/* Filters */}
-        <div className="my-7 grid grid-cols-1 md:grid-cols-2 gap-3 items-stretch md:items-center">
-          <EventSelector onChange={setSelectedEvent} />
+          {/* Filters */}
+          <div className="my-7 grid grid-cols-1 md:grid-cols-2 gap-3 items-stretch md:items-center">
+            <EventSelector onChange={setSelectedEvent} />
 
-          <TextField
-            select
-            label="Payment Status"
-            value={paymentStatus}
-            onChange={(e) =>
-              setPaymentStatus(e.target.value as ReservationPaymentStatus)
-            }
-          >
-            <MenuItem value="PAID">Bezahlt</MenuItem>
-            <MenuItem value="PENDING_PAYMENT">Offen</MenuItem>
-            <MenuItem value="CANCELED">Storniert</MenuItem>
-          </TextField>
-        </div>
-
-        <Fade in={Boolean(selectedEvent)} timeout={300}>
-          <div>
-            {!paymentFilteredReservations ? (
-              <Box className="flex justify-center items-center">
-                <CircularProgress />
-              </Box>
-            ) : paymentFilteredReservations.length === 0 ? (
-              <Typography>Keine Reservierungen für diesen Status.</Typography>
-            ) : (
-              <motion.div
-                variants={{
-                  hidden: {},
-                  show: { transition: { staggerChildren: 0.05 } },
-                }}
-                initial="hidden"
-                animate="show"
-                className="space-y-10"
-              >
-                {sections
-                  .filter((s) => s.total > 0)
-                  .map((s) => {
-                    return (
-                      <EventDateSection
-                        key={s.eventDate.id}
-                        section={s}
-                        updateReservation={updateReservation}
-                      />
-                    );
-                  })}
-              </motion.div>
-            )}
+            <TextField
+              select
+              label="Payment Status"
+              value={paymentStatus}
+              onChange={(e) =>
+                setPaymentStatus(e.target.value as ReservationPaymentStatus)
+              }
+            >
+              <MenuItem value="PAID">Bezahlt</MenuItem>
+              <MenuItem value="PENDING_PAYMENT">Offen</MenuItem>
+              <MenuItem value="CANCELED">Storniert</MenuItem>
+            </TextField>
           </div>
-        </Fade>
+
+          <Fade in={Boolean(selectedEvent)} timeout={300}>
+            <div>
+              {!paymentFilteredReservations ? (
+                <Box className="flex justify-center items-center">
+                  <CircularProgress />
+                </Box>
+              ) : paymentFilteredReservations.length === 0 ? (
+                <Typography>Keine Reservierungen für diesen Status.</Typography>
+              ) : (
+                <motion.div
+                  variants={{
+                    hidden: {},
+                    show: { transition: { staggerChildren: 0.05 } },
+                  }}
+                  initial="hidden"
+                  animate="show"
+                  className="space-y-10"
+                >
+                  {sections
+                    .filter((s) => s.total > 0)
+                    .map((s) => {
+                      return (
+                        <EventDateSection
+                          key={s.eventDate.id}
+                          section={s}
+                          updateReservation={updateReservation}
+                        />
+                      );
+                    })}
+                </motion.div>
+              )}
+            </div>
+          </Fade>
+        </Box>
       </Box>
-    </Box>
+    </BackendPermissionGuard>
   );
 }
 

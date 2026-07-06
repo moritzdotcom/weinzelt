@@ -38,6 +38,8 @@ import { ReservationCancelDialog } from '@/components/reservation/cancelDialog';
 import { ChangeReservationDateDialog } from '@/components/reservation/changeEventDateDialog';
 import BackendHeader from '@/components/backend/header';
 import { ApiPutReservationResponse } from '../../api/reservations/[reservationId]';
+import BackendPermissionGuard from '@/components/backend/BackendPermissionGuard';
+import { BACKEND_PERMISSIONS } from '@/lib/backend/permissions';
 
 export default function BackendSearchReservationPage({
   session,
@@ -208,271 +210,287 @@ export default function BackendSearchReservationPage({
   }, [session.status, router.isReady]);
 
   return (
-    <Box className="mx-auto px-4 py-16">
-      <BackendHeader
-        title="Reservierung suchen"
-        action={
-          <Box sx={{ flex: 1 }}>
-            <EventSelector onChange={setSelectedEvent} sx={{ minWidth: 300 }} />
-          </Box>
-        }
-      />
-
-      {loading ? (
-        <Typography variant="body1" className="text-center">
-          Lade Reservierungen...
-        </Typography>
-      ) : (
-        <>
-          {reservations.length > 0 ? (
-            <>
-              <Divider className="block sm:hidden!">Suchen & Filtern</Divider>
-              <div className="flex flex-col sm:flex-row gap-4 my-8">
-                <TextField
-                  variant="outlined"
-                  label="Suche"
-                  type="search"
-                  className="w-full sm:w-2/4"
-                  placeholder="Name, E-Mail, Package..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
-                />
-                <TextField
-                  select
-                  variant="outlined"
-                  label="Typ filtern"
-                  className="w-full sm:w-1/4"
-                  value={filters.type || ''}
-                  onChange={(e) =>
-                    setFilter((prev) => ({
-                      ...prev,
-                      type: e.target.value || undefined,
-                    }))
-                  }
-                >
-                  <MenuItem value="">Alle</MenuItem>
-                  <MenuItem value="VIP">VIP</MenuItem>
-                  <MenuItem value="STANDING">Stehtisch</MenuItem>
-                </TextField>
-                <TextField
-                  select
-                  variant="outlined"
-                  label="Status filtern"
-                  className="w-full sm:w-1/4"
-                  value={filters.state || ''}
-                  onChange={(e) =>
-                    setFilter((prev) => ({
-                      ...prev,
-                      state: e.target.value || undefined,
-                    }))
-                  }
-                >
-                  <MenuItem value="">Alle</MenuItem>
-                  <MenuItem value="DRAFT">Offen</MenuItem>
-                  <MenuItem value="PENDING_PAYMENT">Ausstehend</MenuItem>
-                  <MenuItem value="PAID">Bezahlt</MenuItem>
-                  <MenuItem value="CANCELED">Storniert</MenuItem>
-                </TextField>
-              </div>
-              <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 650 }}>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Name</TableCell>
-                      <TableCell>Email</TableCell>
-                      <TableCell>Timeslot</TableCell>
-                      <TableCell>Typ</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell align="right">Gäste</TableCell>
-                      <TableCell>Rechnung</TableCell>
-                      <TableCell></TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filteredReservations.map((reservation) => (
-                      <TableRow
-                        key={reservation.id}
-                        sx={{
-                          '&:last-child td, &:last-child th': { border: 0 },
-                        }}
-                      >
-                        <TableCell component="th" scope="row">
-                          {reservation.name}
-                        </TableCell>
-                        <TableCell>{reservation.email}</TableCell>
-                        <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                          {reservation.seating.eventDate.dow},{' '}
-                          {reservation.seating.eventDate.date} /{' '}
-                          {reservation.seating.timeslot}
-                        </TableCell>
-                        <TableCell>{translateType(reservation.type)}</TableCell>
-                        <TableCell>
-                          {translateState(reservation.paymentStatus)}
-                        </TableCell>
-                        <TableCell align="right">
-                          {reservation.people}
-                        </TableCell>
-                        <TableCell>
-                          {reservation.invoice?.sentAt
-                            ? new Date(
-                                reservation.invoice?.sentAt,
-                              ).toLocaleDateString('de')
-                            : '-'}
-                        </TableCell>
-                        <TableCell align="right">
-                          <IconButton
-                            size="small"
-                            onClick={(e) =>
-                              openMenu(
-                                e,
-                                reservation.id,
-                                reservation.paymentStatus,
-                              )
-                            }
-                            aria-label="Optionen"
-                          >
-                            <MoreVert fontSize="small" />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </>
-          ) : (
-            <Typography variant="body1" className="text-center">
-              Keine Reservierungen gefunden.
-            </Typography>
-          )}
-        </>
-      )}
-      <Menu
-        anchorEl={menuAnchorEl}
-        open={menuOpen}
-        onClose={closeMenu}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      >
-        <MenuItem
-          onClick={() => {
-            if (menuReservationId) showInvoice(menuReservationId);
-            closeMenu();
-          }}
-          disabled={menuReservationPaymentStatus !== 'PAID'}
-        >
-          <ListItemIcon>
-            <ReceiptLong fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Rechnung anzeigen</ListItemText>
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            const r = filteredReservations.find(
-              (x) => x.id === menuReservationId,
-            );
-            if (r) setSelectedReservation(r);
-            setEditDialogOpen(true);
-            closeMenu();
-          }}
-        >
-          <ListItemIcon>
-            <Edit fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Bearbeiten</ListItemText>
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            const r = filteredReservations.find(
-              (x) => x.id === menuReservationId,
-            );
-            if (r) setSelectedReservation(r);
-            setChangeDateDialogOpen(true);
-            closeMenu();
-          }}
-        >
-          <ListItemIcon>
-            <CalendarMonth fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Reservierung umbuchen</ListItemText>
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            const r = filteredReservations.find(
-              (x) => x.id === menuReservationId,
-            );
-            if (r) handleMarkAsPaid(r);
-          }}
-          disabled={
-            menuReservationPaymentStatus !== 'PENDING_PAYMENT' ||
-            markingAsPaidId == menuReservationId
+    <BackendPermissionGuard
+      session={session}
+      permission={BACKEND_PERMISSIONS.RESERVATION_SEARCH}
+      deniedTitle="Kein Zugriff auf Reservierungen"
+      deniedDescription="Du hast keine Berechtigung, Reservierungen im Backend zu suchen."
+    >
+      <Box className="mx-auto px-4 py-16">
+        <BackendHeader
+          title="Reservierung suchen"
+          action={
+            <Box sx={{ flex: 1 }}>
+              <EventSelector
+                onChange={setSelectedEvent}
+                sx={{ minWidth: 300 }}
+              />
+            </Box>
           }
+        />
+
+        {loading ? (
+          <Typography variant="body1" className="text-center">
+            Lade Reservierungen...
+          </Typography>
+        ) : (
+          <>
+            {reservations.length > 0 ? (
+              <>
+                <Divider className="block sm:hidden!">Suchen & Filtern</Divider>
+                <div className="flex flex-col sm:flex-row gap-4 my-8">
+                  <TextField
+                    variant="outlined"
+                    label="Suche"
+                    type="search"
+                    className="w-full sm:w-2/4"
+                    placeholder="Name, E-Mail, Package..."
+                    value={searchQuery}
+                    onChange={(e) =>
+                      setSearchQuery(e.target.value.toLowerCase())
+                    }
+                  />
+                  <TextField
+                    select
+                    variant="outlined"
+                    label="Typ filtern"
+                    className="w-full sm:w-1/4"
+                    value={filters.type || ''}
+                    onChange={(e) =>
+                      setFilter((prev) => ({
+                        ...prev,
+                        type: e.target.value || undefined,
+                      }))
+                    }
+                  >
+                    <MenuItem value="">Alle</MenuItem>
+                    <MenuItem value="VIP">VIP</MenuItem>
+                    <MenuItem value="STANDING">Stehtisch</MenuItem>
+                  </TextField>
+                  <TextField
+                    select
+                    variant="outlined"
+                    label="Status filtern"
+                    className="w-full sm:w-1/4"
+                    value={filters.state || ''}
+                    onChange={(e) =>
+                      setFilter((prev) => ({
+                        ...prev,
+                        state: e.target.value || undefined,
+                      }))
+                    }
+                  >
+                    <MenuItem value="">Alle</MenuItem>
+                    <MenuItem value="DRAFT">Offen</MenuItem>
+                    <MenuItem value="PENDING_PAYMENT">Ausstehend</MenuItem>
+                    <MenuItem value="PAID">Bezahlt</MenuItem>
+                    <MenuItem value="CANCELED">Storniert</MenuItem>
+                  </TextField>
+                </div>
+                <TableContainer component={Paper}>
+                  <Table sx={{ minWidth: 650 }}>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Email</TableCell>
+                        <TableCell>Timeslot</TableCell>
+                        <TableCell>Typ</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell align="right">Gäste</TableCell>
+                        <TableCell>Rechnung</TableCell>
+                        <TableCell></TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {filteredReservations.map((reservation) => (
+                        <TableRow
+                          key={reservation.id}
+                          sx={{
+                            '&:last-child td, &:last-child th': { border: 0 },
+                          }}
+                        >
+                          <TableCell component="th" scope="row">
+                            {reservation.name}
+                          </TableCell>
+                          <TableCell>{reservation.email}</TableCell>
+                          <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                            {reservation.seating.eventDate.dow},{' '}
+                            {reservation.seating.eventDate.date} /{' '}
+                            {reservation.seating.timeslot}
+                          </TableCell>
+                          <TableCell>
+                            {translateType(reservation.type)}
+                          </TableCell>
+                          <TableCell>
+                            {translateState(reservation.paymentStatus)}
+                          </TableCell>
+                          <TableCell align="right">
+                            {reservation.people}
+                          </TableCell>
+                          <TableCell>
+                            {reservation.invoice?.sentAt
+                              ? new Date(
+                                  reservation.invoice?.sentAt,
+                                ).toLocaleDateString('de')
+                              : '-'}
+                          </TableCell>
+                          <TableCell align="right">
+                            <IconButton
+                              size="small"
+                              onClick={(e) =>
+                                openMenu(
+                                  e,
+                                  reservation.id,
+                                  reservation.paymentStatus,
+                                )
+                              }
+                              aria-label="Optionen"
+                            >
+                              <MoreVert fontSize="small" />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </>
+            ) : (
+              <Typography variant="body1" className="text-center">
+                Keine Reservierungen gefunden.
+              </Typography>
+            )}
+          </>
+        )}
+        <Menu
+          anchorEl={menuAnchorEl}
+          open={menuOpen}
+          onClose={closeMenu}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
-          <ListItemIcon>
-            <PaidRounded fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Als bezahlt markieren</ListItemText>
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            const r = filteredReservations.find(
-              (x) => x.id === menuReservationId,
-            );
-            if (r) setSelectedReservation(r);
-            setCancelDialogOpen(true);
-            closeMenu();
+          <MenuItem
+            onClick={() => {
+              if (menuReservationId) showInvoice(menuReservationId);
+              closeMenu();
+            }}
+            disabled={menuReservationPaymentStatus !== 'PAID'}
+          >
+            <ListItemIcon>
+              <ReceiptLong fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Rechnung anzeigen</ListItemText>
+          </MenuItem>
+
+          <MenuItem
+            onClick={() => {
+              const r = filteredReservations.find(
+                (x) => x.id === menuReservationId,
+              );
+              if (r) setSelectedReservation(r);
+              setEditDialogOpen(true);
+              closeMenu();
+            }}
+          >
+            <ListItemIcon>
+              <Edit fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Bearbeiten</ListItemText>
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              const r = filteredReservations.find(
+                (x) => x.id === menuReservationId,
+              );
+              if (r) setSelectedReservation(r);
+              setChangeDateDialogOpen(true);
+              closeMenu();
+            }}
+          >
+            <ListItemIcon>
+              <CalendarMonth fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Reservierung umbuchen</ListItemText>
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              const r = filteredReservations.find(
+                (x) => x.id === menuReservationId,
+              );
+              if (r) handleMarkAsPaid(r);
+            }}
+            disabled={
+              menuReservationPaymentStatus !== 'PENDING_PAYMENT' ||
+              markingAsPaidId == menuReservationId
+            }
+          >
+            <ListItemIcon>
+              <PaidRounded fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Als bezahlt markieren</ListItemText>
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              const r = filteredReservations.find(
+                (x) => x.id === menuReservationId,
+              );
+              if (r) setSelectedReservation(r);
+              setCancelDialogOpen(true);
+              closeMenu();
+            }}
+            disabled={menuReservationPaymentStatus === 'CANCELED'}
+          >
+            <ListItemIcon>
+              <Cancel fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Stornieren</ListItemText>
+          </MenuItem>
+        </Menu>
+        <EditReservationDialog
+          open={editDialogOpen}
+          reservation={selectedReservation}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedReservation(null);
           }}
-          disabled={menuReservationPaymentStatus === 'CANCELED'}
-        >
-          <ListItemIcon>
-            <Cancel fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Stornieren</ListItemText>
-        </MenuItem>
-      </Menu>
-      <EditReservationDialog
-        open={editDialogOpen}
-        reservation={selectedReservation}
-        onClose={() => {
-          setEditDialogOpen(false);
-          setSelectedReservation(null);
-        }}
-        onSave={handleSave}
-      />
-      <ReservationCancelDialog
-        open={cancelDialogOpen}
-        onClose={() => {
-          setCancelDialogOpen(false);
-          setSelectedReservation(null);
-        }}
-        reservation={selectedReservation!}
-        onUpdate={(res) => {
-          updateReservations(res);
-          setSelectedReservation(null);
-        }}
-      />
-      <ChangeReservationDateDialog
-        open={changeDateDialogOpen}
-        onClose={() => {
-          setChangeDateDialogOpen(false);
-          setSelectedReservation(null);
-        }}
-        eventId={selectedReservation?.seating.eventDate.eventId ?? ''}
-        reservationId={selectedReservation?.id ?? ''}
-        seatingId={selectedReservation?.seatingId ?? ''}
-        reservationType={selectedReservation?.type ?? 'VIP'}
-        reservationMinimumSpend={selectedReservation?.minimumSpend ?? 0}
-        reservationPaymentStatus={selectedReservation?.paymentStatus ?? 'DRAFT'}
-        tableCount={selectedReservation?.tableCount ?? 0}
-        onChanged={(updated) => {
-          setChangeDateDialogOpen(false);
-          setSelectedReservation(null);
-          setReservations((prev) =>
-            prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r)),
-          );
-        }}
-      />
-    </Box>
+          onSave={handleSave}
+        />
+        <ReservationCancelDialog
+          open={cancelDialogOpen}
+          onClose={() => {
+            setCancelDialogOpen(false);
+            setSelectedReservation(null);
+          }}
+          reservation={selectedReservation!}
+          onUpdate={(res) => {
+            updateReservations(res);
+            setSelectedReservation(null);
+          }}
+        />
+        <ChangeReservationDateDialog
+          open={changeDateDialogOpen}
+          onClose={() => {
+            setChangeDateDialogOpen(false);
+            setSelectedReservation(null);
+          }}
+          eventId={selectedReservation?.seating.eventDate.eventId ?? ''}
+          reservationId={selectedReservation?.id ?? ''}
+          seatingId={selectedReservation?.seatingId ?? ''}
+          reservationType={selectedReservation?.type ?? 'VIP'}
+          reservationMinimumSpend={selectedReservation?.minimumSpend ?? 0}
+          reservationPaymentStatus={
+            selectedReservation?.paymentStatus ?? 'DRAFT'
+          }
+          tableCount={selectedReservation?.tableCount ?? 0}
+          onChanged={(updated) => {
+            setChangeDateDialogOpen(false);
+            setSelectedReservation(null);
+            setReservations((prev) =>
+              prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r)),
+            );
+          }}
+        />
+      </Box>
+    </BackendPermissionGuard>
   );
 }

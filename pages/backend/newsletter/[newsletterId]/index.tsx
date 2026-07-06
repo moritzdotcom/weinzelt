@@ -22,6 +22,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { MarkEmailReadOutlined } from '@mui/icons-material';
 import BackendHeader from '@/components/backend/header';
 import { ApiGetNewsletterBackendResponse } from '@/pages/api/backend/newsletters/[newsletterId]';
+import BackendPermissionGuard from '@/components/backend/BackendPermissionGuard';
+import { BACKEND_PERMISSIONS } from '@/lib/backend/permissions';
+import { Session } from '@/hooks/useSession';
 
 function formatDate(value?: string | null) {
   if (!value) return '-';
@@ -52,7 +55,11 @@ function RecipientStatusChip({
   return <Chip size="small" variant="outlined" label="Ausstehend" />;
 }
 
-export default function NewsletterDetailPage() {
+export default function NewsletterDetailPage({
+  session,
+}: {
+  session: Session;
+}) {
   const router = useRouter();
   const newsletterId =
     typeof router.query.newsletterId === 'string'
@@ -161,283 +168,292 @@ export default function NewsletterDetailPage() {
     stats.total > 0 ? Math.round((stats.sent / stats.total) * 100) : 0;
 
   return (
-    <Stack spacing={3} className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-      <BackendHeader
-        title={newsletter.subject}
-        subtitle={`Erstellt am ${formatDate(newsletter.createdAt)}`}
-        backHref="/backend/newsletter"
-        backLabel="Zurück"
-        action={
-          newsletter.status !== 'SENT' ? (
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-              {newsletter.status === 'DRAFT' && (
-                <Button
-                  variant="outlined"
-                  startIcon={<EditOutlinedIcon />}
-                  disabled={sending}
-                  onClick={() =>
-                    router.push(`/backend/newsletter/${newsletter.id}/edit`)
-                  }
-                >
-                  Bearbeiten
-                </Button>
-              )}
-
-              <Button
-                variant="contained"
-                startIcon={
-                  sending ? (
-                    <CircularProgress size={18} color="inherit" />
-                  ) : (
-                    <SendOutlinedIcon />
-                  )
-                }
-                disabled={sending}
-                onClick={sendAllBatches}
-              >
-                {newsletter.status === 'DRAFT'
-                  ? 'Versand starten'
-                  : 'Versand fortsetzen'}
-              </Button>
-            </Stack>
-          ) : null
-        }
-      />
-
-      {error && <Alert severity="error">{error}</Alert>}
-
-      {newsletter.status === 'SENDING' && (
-        <Card variant="outlined" sx={{ borderRadius: 3 }}>
-          <CardContent>
-            <Stack spacing={1}>
-              <Stack direction="row" justifyContent="space-between">
-                <Typography fontWeight={700}>Versandfortschritt</Typography>
-                <Typography>{progress} %</Typography>
-              </Stack>
-
-              <LinearProgress variant="determinate" value={progress} />
-
-              <Typography color="text.secondary" variant="body2">
-                {stats.sent} von {stats.total} Empfängern erfolgreich
-                verarbeitet.
-              </Typography>
-            </Stack>
-          </CardContent>
-        </Card>
-      )}
-
-      {newsletter.status === 'DRAFT' && (
-        <Card variant="outlined" sx={{ borderRadius: 3 }}>
-          <CardContent>
-            <Stack spacing={2}>
-              <Box>
-                <Typography variant="h6" fontWeight={500}>
-                  Testversand
-                </Typography>
-
-                <Typography color="text.secondary" variant="body2">
-                  Prüfe Darstellung, Betreff, Titelbild und CTA vor dem Versand
-                  an deine Newsletter-Empfänger.
-                </Typography>
-              </Box>
-
-              {testSuccess && <Alert severity="success">{testSuccess}</Alert>}
-
-              {testError && <Alert severity="error">{testError}</Alert>}
-
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-                <TextField
-                  label="Test-E-Mail-Adresse"
-                  type="email"
-                  value={testEmail}
-                  onChange={(event) => {
-                    setTestEmail(event.target.value);
-                    setTestSuccess('');
-                    setTestError('');
-                  }}
-                  fullWidth
-                />
+    <BackendPermissionGuard
+      session={session}
+      permission={BACKEND_PERMISSIONS.NEWSLETTER}
+      deniedTitle="Kein Zugriff auf Newsletter"
+      deniedDescription="Du hast keine Berechtigung, Newsletter im Backend zu verwalten."
+    >
+      <Stack spacing={3} className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
+        <BackendHeader
+          title={newsletter.subject}
+          subtitle={`Erstellt am ${formatDate(newsletter.createdAt)}`}
+          backHref="/backend/newsletter"
+          backLabel="Zurück"
+          action={
+            newsletter.status !== 'SENT' ? (
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                {newsletter.status === 'DRAFT' && (
+                  <Button
+                    variant="outlined"
+                    startIcon={<EditOutlinedIcon />}
+                    disabled={sending}
+                    onClick={() =>
+                      router.push(`/backend/newsletter/${newsletter.id}/edit`)
+                    }
+                  >
+                    Bearbeiten
+                  </Button>
+                )}
 
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   startIcon={
-                    sendingTest ? (
+                    sending ? (
                       <CircularProgress size={18} color="inherit" />
                     ) : (
-                      <MarkEmailReadOutlined />
+                      <SendOutlinedIcon />
                     )
                   }
-                  disabled={sendingTest || !testEmail.trim()}
-                  onClick={handleSendTest}
-                  sx={{
-                    flexShrink: 0,
-                  }}
+                  disabled={sending}
+                  onClick={sendAllBatches}
                 >
-                  Testmail senden
+                  {newsletter.status === 'DRAFT'
+                    ? 'Versand starten'
+                    : 'Versand fortsetzen'}
                 </Button>
               </Stack>
-            </Stack>
-          </CardContent>
-        </Card>
-      )}
+            ) : null
+          }
+        />
 
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-        <Card variant="outlined" sx={{ flex: 1, borderRadius: 3 }}>
-          <CardContent>
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <EmailOutlinedIcon />
-              <Box>
-                <Typography variant="h5" fontWeight={700}>
-                  {stats.sent}
+        {error && <Alert severity="error">{error}</Alert>}
+
+        {newsletter.status === 'SENDING' && (
+          <Card variant="outlined" sx={{ borderRadius: 3 }}>
+            <CardContent>
+              <Stack spacing={1}>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography fontWeight={700}>Versandfortschritt</Typography>
+                  <Typography>{progress} %</Typography>
+                </Stack>
+
+                <LinearProgress variant="determinate" value={progress} />
+
+                <Typography color="text.secondary" variant="body2">
+                  {stats.sent} von {stats.total} Empfängern erfolgreich
+                  verarbeitet.
                 </Typography>
-                <Typography color="text.secondary">
-                  erfolgreich versendet
-                </Typography>
-              </Box>
-            </Stack>
-          </CardContent>
-        </Card>
-
-        <Card variant="outlined" sx={{ flex: 1, borderRadius: 3 }}>
-          <CardContent>
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <AdsClickOutlinedIcon />
-              <Box>
-                <Typography variant="h5" fontWeight={700}>
-                  {stats.uniqueClickRecipients}
-                </Typography>
-                <Typography color="text.secondary">
-                  eindeutige CTA-Klicks
-                </Typography>
-              </Box>
-            </Stack>
-          </CardContent>
-        </Card>
-
-        <Card variant="outlined" sx={{ flex: 1, borderRadius: 3 }}>
-          <CardContent>
-            <Typography variant="h5" fontWeight={700}>
-              {stats.totalClicks}
-            </Typography>
-            <Typography color="text.secondary">CTA-Klicks insgesamt</Typography>
-          </CardContent>
-        </Card>
-
-        <Card variant="outlined" sx={{ flex: 1, borderRadius: 3 }}>
-          <CardContent>
-            <Typography variant="h5" fontWeight={700}>
-              {stats.failed}
-            </Typography>
-            <Typography color="text.secondary">
-              fehlgeschlagene Zustellungen
-            </Typography>
-          </CardContent>
-        </Card>
-      </Stack>
-
-      <Card variant="outlined" sx={{ borderRadius: 3 }}>
-        {newsletter.imageUrl && (
-          <Box
-            component="img"
-            src={newsletter.imageUrl}
-            alt=""
-            sx={{
-              width: '100%',
-              maxHeight: 320,
-              objectFit: 'cover',
-            }}
-          />
+              </Stack>
+            </CardContent>
+          </Card>
         )}
 
-        <CardContent>
-          <Stack spacing={2}>
-            <Typography variant="h5" fontWeight={700}>
-              {newsletter.headline}
-            </Typography>
-
-            <Typography whiteSpace="pre-wrap">{newsletter.body}</Typography>
-
-            {newsletter.ctaLabel && (
-              <Box>
-                <Button variant="contained">{newsletter.ctaLabel}</Button>
-              </Box>
-            )}
-          </Stack>
-        </CardContent>
-      </Card>
-
-      <Card variant="outlined" sx={{ borderRadius: 3 }}>
-        <CardContent>
-          <Typography variant="h6" fontWeight={700} mb={1}>
-            Empfänger
-          </Typography>
-
-          <Stack divider={<Divider />}>
-            {newsletter.recipients.map((recipient) => (
-              <Stack
-                key={recipient.id}
-                direction={{ xs: 'column', sm: 'row' }}
-                spacing={1}
-                justifyContent="space-between"
-                py={2}
-              >
+        {newsletter.status === 'DRAFT' && (
+          <Card variant="outlined" sx={{ borderRadius: 3 }}>
+            <CardContent>
+              <Stack spacing={2}>
                 <Box>
-                  <Typography fontWeight={700}>
-                    {recipient.name || 'Ohne Namen'}
+                  <Typography variant="h6" fontWeight={500}>
+                    Testversand
                   </Typography>
 
                   <Typography color="text.secondary" variant="body2">
-                    {recipient.email}
+                    Prüfe Darstellung, Betreff, Titelbild und CTA vor dem
+                    Versand an deine Newsletter-Empfänger.
                   </Typography>
-
-                  {recipient.failureReason && (
-                    <Typography color="error" variant="caption">
-                      {recipient.failureReason}
-                    </Typography>
-                  )}
                 </Box>
 
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  alignItems="center"
-                  flexWrap="wrap"
-                  useFlexGap
-                >
-                  {recipient.ctaClickCount > 0 && (
-                    <Chip
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                      label={`${recipient.ctaClickCount} CTA-Klick${
-                        recipient.ctaClickCount === 1 ? '' : 's'
-                      }`}
-                    />
-                  )}
+                {testSuccess && <Alert severity="success">{testSuccess}</Alert>}
 
-                  {recipient.attemptCount > 0 && (
-                    <Chip
-                      size="small"
-                      variant="outlined"
-                      label={`${recipient.attemptCount} Versuch${
-                        recipient.attemptCount === 1 ? '' : 'e'
-                      }`}
-                    />
-                  )}
+                {testError && <Alert severity="error">{testError}</Alert>}
 
-                  <RecipientStatusChip recipient={recipient} />
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                  <TextField
+                    label="Test-E-Mail-Adresse"
+                    type="email"
+                    value={testEmail}
+                    onChange={(event) => {
+                      setTestEmail(event.target.value);
+                      setTestSuccess('');
+                      setTestError('');
+                    }}
+                    fullWidth
+                  />
+
+                  <Button
+                    variant="outlined"
+                    startIcon={
+                      sendingTest ? (
+                        <CircularProgress size={18} color="inherit" />
+                      ) : (
+                        <MarkEmailReadOutlined />
+                      )
+                    }
+                    disabled={sendingTest || !testEmail.trim()}
+                    onClick={handleSendTest}
+                    sx={{
+                      flexShrink: 0,
+                    }}
+                  >
+                    Testmail senden
+                  </Button>
                 </Stack>
               </Stack>
-            ))}
+            </CardContent>
+          </Card>
+        )}
 
-            {newsletter.recipients.length === 0 && (
-              <Typography color="text.secondary" py={2}>
-                Der Versand wurde noch nicht gestartet.
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+          <Card variant="outlined" sx={{ flex: 1, borderRadius: 3 }}>
+            <CardContent>
+              <Stack direction="row" spacing={1.5} alignItems="center">
+                <EmailOutlinedIcon />
+                <Box>
+                  <Typography variant="h5" fontWeight={700}>
+                    {stats.sent}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    erfolgreich versendet
+                  </Typography>
+                </Box>
+              </Stack>
+            </CardContent>
+          </Card>
+
+          <Card variant="outlined" sx={{ flex: 1, borderRadius: 3 }}>
+            <CardContent>
+              <Stack direction="row" spacing={1.5} alignItems="center">
+                <AdsClickOutlinedIcon />
+                <Box>
+                  <Typography variant="h5" fontWeight={700}>
+                    {stats.uniqueClickRecipients}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    eindeutige CTA-Klicks
+                  </Typography>
+                </Box>
+              </Stack>
+            </CardContent>
+          </Card>
+
+          <Card variant="outlined" sx={{ flex: 1, borderRadius: 3 }}>
+            <CardContent>
+              <Typography variant="h5" fontWeight={700}>
+                {stats.totalClicks}
               </Typography>
-            )}
-          </Stack>
-        </CardContent>
-      </Card>
-    </Stack>
+              <Typography color="text.secondary">
+                CTA-Klicks insgesamt
+              </Typography>
+            </CardContent>
+          </Card>
+
+          <Card variant="outlined" sx={{ flex: 1, borderRadius: 3 }}>
+            <CardContent>
+              <Typography variant="h5" fontWeight={700}>
+                {stats.failed}
+              </Typography>
+              <Typography color="text.secondary">
+                fehlgeschlagene Zustellungen
+              </Typography>
+            </CardContent>
+          </Card>
+        </Stack>
+
+        <Card variant="outlined" sx={{ borderRadius: 3 }}>
+          {newsletter.imageUrl && (
+            <Box
+              component="img"
+              src={newsletter.imageUrl}
+              alt=""
+              sx={{
+                width: '100%',
+                maxHeight: 320,
+                objectFit: 'cover',
+              }}
+            />
+          )}
+
+          <CardContent>
+            <Stack spacing={2}>
+              <Typography variant="h5" fontWeight={700}>
+                {newsletter.headline}
+              </Typography>
+
+              <Typography whiteSpace="pre-wrap">{newsletter.body}</Typography>
+
+              {newsletter.ctaLabel && (
+                <Box>
+                  <Button variant="contained">{newsletter.ctaLabel}</Button>
+                </Box>
+              )}
+            </Stack>
+          </CardContent>
+        </Card>
+
+        <Card variant="outlined" sx={{ borderRadius: 3 }}>
+          <CardContent>
+            <Typography variant="h6" fontWeight={700} mb={1}>
+              Empfänger
+            </Typography>
+
+            <Stack divider={<Divider />}>
+              {newsletter.recipients.map((recipient) => (
+                <Stack
+                  key={recipient.id}
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={1}
+                  justifyContent="space-between"
+                  py={2}
+                >
+                  <Box>
+                    <Typography fontWeight={700}>
+                      {recipient.name || 'Ohne Namen'}
+                    </Typography>
+
+                    <Typography color="text.secondary" variant="body2">
+                      {recipient.email}
+                    </Typography>
+
+                    {recipient.failureReason && (
+                      <Typography color="error" variant="caption">
+                        {recipient.failureReason}
+                      </Typography>
+                    )}
+                  </Box>
+
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    flexWrap="wrap"
+                    useFlexGap
+                  >
+                    {recipient.ctaClickCount > 0 && (
+                      <Chip
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        label={`${recipient.ctaClickCount} CTA-Klick${
+                          recipient.ctaClickCount === 1 ? '' : 's'
+                        }`}
+                      />
+                    )}
+
+                    {recipient.attemptCount > 0 && (
+                      <Chip
+                        size="small"
+                        variant="outlined"
+                        label={`${recipient.attemptCount} Versuch${
+                          recipient.attemptCount === 1 ? '' : 'e'
+                        }`}
+                      />
+                    )}
+
+                    <RecipientStatusChip recipient={recipient} />
+                  </Stack>
+                </Stack>
+              ))}
+
+              {newsletter.recipients.length === 0 && (
+                <Typography color="text.secondary" py={2}>
+                  Der Versand wurde noch nicht gestartet.
+                </Typography>
+              )}
+            </Stack>
+          </CardContent>
+        </Card>
+      </Stack>
+    </BackendPermissionGuard>
   );
 }

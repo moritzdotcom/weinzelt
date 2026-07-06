@@ -36,6 +36,8 @@ import EventSelector from '@/components/eventSelector';
 import { ConfirmationNumberOutlined } from '@mui/icons-material';
 import { ApiPutExternalTicketConfigResponse } from '../api/seatings/[seatingId]/externalTicketConfig';
 import BackendHeader from '@/components/backend/header';
+import BackendPermissionGuard from '@/components/backend/BackendPermissionGuard';
+import { BACKEND_PERMISSIONS } from '@/lib/backend/permissions';
 
 type EventDate = ApiGetEventDatesResponse[number];
 type Seating = EventDate['seatings'][number];
@@ -183,240 +185,247 @@ export default function BackendSeatingsPage({ session }: { session: Session }) {
   };
 
   return (
-    <Box className="max-w-5xl mx-auto px-4 py-16">
-      <BackendHeader title="Seatings & Timeslots verwalten" />
+    <BackendPermissionGuard
+      session={session}
+      permission={BACKEND_PERMISSIONS.SEATINGS}
+      deniedTitle="Kein Zugriff auf Seatings & Timeslots"
+      deniedDescription="Du hast keine Berechtigung, Seatings & Timeslots im Backend zu verwalten."
+    >
+      <Box className="max-w-5xl mx-auto px-4 py-16">
+        <BackendHeader title="Seatings & Timeslots verwalten" />
 
-      <div className="my-7 grid grid-cols-1 sm:grid-cols-3 gap-2">
-        <EventSelector onChange={setSelectedEvent} />
-        <div />
-        <button
-          className="rounded-full bg-black text-white px-5 py-2 text-sm"
-          onClick={() => setCreateDateDialogOpen(true)}
-        >
-          Event-Tag hinzufügen
-        </button>
-      </div>
+        <div className="my-7 grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <EventSelector onChange={setSelectedEvent} />
+          <div />
+          <button
+            className="rounded-full bg-black text-white px-5 py-2 text-sm"
+            onClick={() => setCreateDateDialogOpen(true)}
+          >
+            Event-Tag hinzufügen
+          </button>
+        </div>
 
-      {eventDates &&
-        eventDates
-          .sort((a, b) => a.date.localeCompare(b.date))
-          .map((date) => (
-            <Box
-              key={date.id}
-              className="mb-6 p-4 border border-gray-200 rounded-xl"
-            >
-              <div className="flex flex-col sm:flex-row justify-between">
-                <Typography variant="h6" gutterBottom>
-                  {date.dow}, {date.date}
-                </Typography>
-                <div className="flex gap-3 items-center justify-between">
-                  <button
-                    className="mb-4 rounded-full border px-3 py-1 text-sm flex items-center gap-1"
-                    onClick={() => {
-                      setSelectedEventDateId(date.id);
-                      setDuplicateDateDialogOpen(true);
-                    }}
-                  >
-                    <ContentCopyIcon fontSize="inherit" />
-                    <p>Tag duplizieren</p>
-                  </button>
-                  <button
-                    className="mb-4 rounded-full border border-red-600 text-red-600 px-3 py-1 text-sm flex items-center gap-1"
-                    onClick={() => {
-                      setSelectedEventDateId(date.id);
-                      setDeleteDateDialogOpen(true);
-                    }}
-                  >
-                    <DeleteOutlineIcon fontSize="inherit" />
-                    <p>Löschen</p>
-                  </button>
-                </div>
-              </div>
-              {date.seatings
-                .sort((a, b) => a.timeslot.localeCompare(b.timeslot))
-                .map((seat) => (
-                  <SeatingCard
-                    key={seat.id}
-                    seating={seat}
-                    onDelete={() => handleDeleteSeating(date.id, seat.id)}
-                    onUpdate={handleUpdateSeating}
-                  />
-                ))}
-              <button
-                className="mx-auto rounded-full border px-4 py-1 text-sm flex items-center gap-1"
-                onClick={() => {
-                  setSelectedEventDateId(date.id);
-                  setCreateSeatingDialogOpen(true);
-                }}
+        {eventDates &&
+          eventDates
+            .sort((a, b) => a.date.localeCompare(b.date))
+            .map((date) => (
+              <Box
+                key={date.id}
+                className="mb-6 p-4 border border-gray-200 rounded-xl"
               >
-                <AddIcon fontSize="inherit" />
-                Seating hinzufügen
-              </button>
-            </Box>
-          ))}
+                <div className="flex flex-col sm:flex-row justify-between">
+                  <Typography variant="h6" gutterBottom>
+                    {date.dow}, {date.date}
+                  </Typography>
+                  <div className="flex gap-3 items-center justify-between">
+                    <button
+                      className="mb-4 rounded-full border px-3 py-1 text-sm flex items-center gap-1"
+                      onClick={() => {
+                        setSelectedEventDateId(date.id);
+                        setDuplicateDateDialogOpen(true);
+                      }}
+                    >
+                      <ContentCopyIcon fontSize="inherit" />
+                      <p>Tag duplizieren</p>
+                    </button>
+                    <button
+                      className="mb-4 rounded-full border border-red-600 text-red-600 px-3 py-1 text-sm flex items-center gap-1"
+                      onClick={() => {
+                        setSelectedEventDateId(date.id);
+                        setDeleteDateDialogOpen(true);
+                      }}
+                    >
+                      <DeleteOutlineIcon fontSize="inherit" />
+                      <p>Löschen</p>
+                    </button>
+                  </div>
+                </div>
+                {date.seatings
+                  .sort((a, b) => a.timeslot.localeCompare(b.timeslot))
+                  .map((seat) => (
+                    <SeatingCard
+                      key={seat.id}
+                      seating={seat}
+                      onDelete={() => handleDeleteSeating(date.id, seat.id)}
+                      onUpdate={handleUpdateSeating}
+                    />
+                  ))}
+                <button
+                  className="mx-auto rounded-full border px-4 py-1 text-sm flex items-center gap-1"
+                  onClick={() => {
+                    setSelectedEventDateId(date.id);
+                    setCreateSeatingDialogOpen(true);
+                  }}
+                >
+                  <AddIcon fontSize="inherit" />
+                  Seating hinzufügen
+                </button>
+              </Box>
+            ))}
 
-      <Dialog
-        open={createDateDialogOpen}
-        onClose={() => setCreateDateDialogOpen(false)}
-      >
-        <DialogTitle>Neuen Event-Tag hinzufügen</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Datum (DD.MM.YY)"
-            fullWidth
-            value={newDate}
-            onChange={(e) => setNewDate(e.target.value)}
-            margin="normal"
-          />
-          <TextField
-            label="Wochentag (z.B. MO)"
-            fullWidth
-            value={newDow}
-            onChange={(e) => setNewDow(e.target.value)}
-            margin="normal"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCreateDateDialogOpen(false)}>
-            Abbrechen
-          </Button>
-          <Button onClick={handleCreateDate} variant="contained">
-            Hinzufügen
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Dialog
+          open={createDateDialogOpen}
+          onClose={() => setCreateDateDialogOpen(false)}
+        >
+          <DialogTitle>Neuen Event-Tag hinzufügen</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Datum (DD.MM.YY)"
+              fullWidth
+              value={newDate}
+              onChange={(e) => setNewDate(e.target.value)}
+              margin="normal"
+            />
+            <TextField
+              label="Wochentag (z.B. MO)"
+              fullWidth
+              value={newDow}
+              onChange={(e) => setNewDow(e.target.value)}
+              margin="normal"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setCreateDateDialogOpen(false)}>
+              Abbrechen
+            </Button>
+            <Button onClick={handleCreateDate} variant="contained">
+              Hinzufügen
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-      <Dialog
-        open={duplicateDateDialogOpen}
-        onClose={() => setDuplicateDateDialogOpen(false)}
-      >
-        <DialogTitle>Event-Tag duplizieren</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Datum (DD.MM.YY)"
-            fullWidth
-            value={newDate}
-            onChange={(e) => setNewDate(e.target.value)}
-            margin="normal"
-          />
-          <TextField
-            label="Wochentag (z.B. MO)"
-            fullWidth
-            value={newDow}
-            onChange={(e) => setNewDow(e.target.value)}
-            margin="normal"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDuplicateDateDialogOpen(false)}>
-            Abbrechen
-          </Button>
-          <Button onClick={handleDuplicateDate} variant="contained">
-            Hinzufügen
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Dialog
+          open={duplicateDateDialogOpen}
+          onClose={() => setDuplicateDateDialogOpen(false)}
+        >
+          <DialogTitle>Event-Tag duplizieren</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Datum (DD.MM.YY)"
+              fullWidth
+              value={newDate}
+              onChange={(e) => setNewDate(e.target.value)}
+              margin="normal"
+            />
+            <TextField
+              label="Wochentag (z.B. MO)"
+              fullWidth
+              value={newDow}
+              onChange={(e) => setNewDow(e.target.value)}
+              margin="normal"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDuplicateDateDialogOpen(false)}>
+              Abbrechen
+            </Button>
+            <Button onClick={handleDuplicateDate} variant="contained">
+              Hinzufügen
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-      <Dialog
-        open={createSeatingDialogOpen}
-        onClose={() => setCreateSeatingDialogOpen(false)}
-      >
-        <DialogTitle>Neues Seating hinzufügen</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Timeslot (z. B. 11:00 - 15:00)"
-            fullWidth
-            value={seatingData.timeslot}
-            onChange={(e) =>
-              setSeatingData({ ...seatingData, timeslot: e.target.value })
-            }
-            margin="normal"
-          />
-          <TextField
-            label="Verfügbare Tische"
-            type="number"
-            fullWidth
-            value={seatingData.availableVip}
-            onChange={(e) =>
-              setSeatingData({
-                ...seatingData,
-                availableVip: e.target.value,
-              })
-            }
-            margin="normal"
-          />
-          <TextField
-            label="Verfügbare Stehtische"
-            type="number"
-            fullWidth
-            value={seatingData.availableStanding}
-            onChange={(e) =>
-              setSeatingData({
-                ...seatingData,
-                availableStanding: e.target.value,
-              })
-            }
-            margin="normal"
-          />
-          <TextField
-            label="Mindestverzehr VIP"
-            type="number"
-            fullWidth
-            value={seatingData.minimumSpendVip}
-            onChange={(e) =>
-              setSeatingData({
-                ...seatingData,
-                minimumSpendVip: e.target.value,
-              })
-            }
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="end">pro Tisch</InputAdornment>
-                ),
-              },
-            }}
-            margin="normal"
-          />
-          <TextField
-            label="Mindestverzehr Stehtisch"
-            type="number"
-            fullWidth
-            value={seatingData.minimumSpendStanding}
-            onChange={(e) =>
-              setSeatingData({
-                ...seatingData,
-                minimumSpendStanding: e.target.value,
-              })
-            }
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="end">pro Tisch</InputAdornment>
-                ),
-              },
-            }}
-            margin="normal"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCreateSeatingDialogOpen(false)}>
-            Abbrechen
-          </Button>
-          <Button onClick={handleCreateSeating} variant="contained">
-            Hinzufügen
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Dialog
+          open={createSeatingDialogOpen}
+          onClose={() => setCreateSeatingDialogOpen(false)}
+        >
+          <DialogTitle>Neues Seating hinzufügen</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Timeslot (z. B. 11:00 - 15:00)"
+              fullWidth
+              value={seatingData.timeslot}
+              onChange={(e) =>
+                setSeatingData({ ...seatingData, timeslot: e.target.value })
+              }
+              margin="normal"
+            />
+            <TextField
+              label="Verfügbare Tische"
+              type="number"
+              fullWidth
+              value={seatingData.availableVip}
+              onChange={(e) =>
+                setSeatingData({
+                  ...seatingData,
+                  availableVip: e.target.value,
+                })
+              }
+              margin="normal"
+            />
+            <TextField
+              label="Verfügbare Stehtische"
+              type="number"
+              fullWidth
+              value={seatingData.availableStanding}
+              onChange={(e) =>
+                setSeatingData({
+                  ...seatingData,
+                  availableStanding: e.target.value,
+                })
+              }
+              margin="normal"
+            />
+            <TextField
+              label="Mindestverzehr VIP"
+              type="number"
+              fullWidth
+              value={seatingData.minimumSpendVip}
+              onChange={(e) =>
+                setSeatingData({
+                  ...seatingData,
+                  minimumSpendVip: e.target.value,
+                })
+              }
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">pro Tisch</InputAdornment>
+                  ),
+                },
+              }}
+              margin="normal"
+            />
+            <TextField
+              label="Mindestverzehr Stehtisch"
+              type="number"
+              fullWidth
+              value={seatingData.minimumSpendStanding}
+              onChange={(e) =>
+                setSeatingData({
+                  ...seatingData,
+                  minimumSpendStanding: e.target.value,
+                })
+              }
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">pro Tisch</InputAdornment>
+                  ),
+                },
+              }}
+              margin="normal"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setCreateSeatingDialogOpen(false)}>
+              Abbrechen
+            </Button>
+            <Button onClick={handleCreateSeating} variant="contained">
+              Hinzufügen
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-      <ConfirmDialog
-        open={deleteDateDialogOpen}
-        title="Diesen Event Tag wirklich löschen?"
-        description="Alle Seatings und Reservierungen für diesen Tag werden ebenfalls gelöscht."
-        onCancel={() => setDeleteDateDialogOpen(false)}
-        onConfirm={() => handleDeleteDate()}
-      />
-    </Box>
+        <ConfirmDialog
+          open={deleteDateDialogOpen}
+          title="Diesen Event Tag wirklich löschen?"
+          description="Alle Seatings und Reservierungen für diesen Tag werden ebenfalls gelöscht."
+          onCancel={() => setDeleteDateDialogOpen(false)}
+          onConfirm={() => handleDeleteDate()}
+        />
+      </Box>
+    </BackendPermissionGuard>
   );
 }
 

@@ -20,6 +20,27 @@ model User {
   password            String
   sessions            Session[]
   companyReservations CompanyReservation[]
+
+  role        UserRole         @default(USER)
+  permissions UserPermission[]
+}
+
+model UserPermission {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  permission String
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, permission])
+}
+
+enum UserRole {
+  ADMIN
+  USER
 }
 
 model Session {
