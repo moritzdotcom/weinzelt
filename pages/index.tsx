@@ -386,30 +386,6 @@ export default function Home({ session }: { session: Session }) {
             />
           </a>
           <a
-            href="https://foodexplorer.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:scale-105 transition-transform duration-300"
-          >
-            <img
-              src="/partners/foodexplorer-logo.webp"
-              alt="Food Explorer"
-              className="w-full max-h-20 object-contain mx-auto"
-            />
-          </a>
-          <a
-            href="https://groupefrio.com/de/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:scale-105 transition-transform duration-300"
-          >
-            <img
-              src="/partners/frio-logo.png"
-              alt="FRIO"
-              className="w-full max-h-20 object-contain mx-auto"
-            />
-          </a>
-          <a
             href="https://www.goldberg-sons.com/"
             target="_blank"
             rel="noopener noreferrer"
@@ -446,14 +422,14 @@ export default function Home({ session }: { session: Session }) {
             />
           </a>
           <a
-            href="https://ta0.de/"
+            href="https://estrellagalicia.com/de/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:scale-105 transition-transform duration-300"
           >
             <img
-              src="/partners/ta0-logo.png"
-              alt="Terminal A0"
+              src="/partners/estrella-logo.png"
+              alt="Estrella Galicia"
               className="w-full max-h-20 object-contain mx-auto"
             />
           </a>
