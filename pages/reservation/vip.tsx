@@ -29,6 +29,7 @@ import AddressInput, {
 import NewsletterConfirmation from '@/components/reservation/newsletterConfirmation';
 import { ConfirmationNumber } from '@mui/icons-material';
 import HtmlHead from '@/components/htmlHead';
+import { isEventDateTodayOrPast, parseEventDate } from '@/lib/eventDates';
 
 type SeatingType =
   ApiGetReservationDataResponse['eventDates'][number]['seatings'][number];
@@ -230,33 +231,46 @@ export default function VipReservationPage() {
             mb={4}
           >
             {data.eventDates
-              .sort((a, b) => a.date.localeCompare(b.date))
-              .map(({ date, dow, seatings }) => (
-                <Grid key={date}>
-                  <button
-                    className={`rounded-full px-4 py-2 text-sm font-medium shadow-sm border disabled:opacity-50 transition-all duration-300 ${
-                      selectedDate === date
-                        ? 'bg-black text-white'
-                        : 'bg-white border-gray-300 text-gray-800'
-                    }`}
-                    disabled={
-                      seatings.reduce(
-                        (a, b) =>
-                          a +
-                          (b.availableVip -
-                            b.reservations
-                              .filter(({ type }) => type == 'VIP')
-                              .reduce((a, b) => a + b.tableCount, 0)),
-                        0,
-                      ) <= 0
-                    }
-                    onClick={() => selectDate(date)}
-                  >
-                    <span className="text-xs text-gray-500 mr-2">{dow}</span>
-                    <span>{date}</span>
-                  </button>
-                </Grid>
-              ))}
+              .sort(
+                (a, b) =>
+                  parseEventDate(a.date).getTime() -
+                  parseEventDate(b.date).getTime(),
+              )
+              .map(({ date, dow, seatings }) => {
+                const availableStanding = seatings.reduce(
+                  (total, seating) =>
+                    total +
+                    (seating.availableStanding -
+                      seating.reservations
+                        .filter(({ type }) => type === 'STANDING')
+                        .reduce(
+                          (reservationTotal, reservation) =>
+                            reservationTotal + reservation.tableCount,
+                          0,
+                        )),
+                  0,
+                );
+
+                const isDisabled =
+                  isEventDateTodayOrPast(date) || availableStanding <= 0;
+
+                return (
+                  <Grid key={date}>
+                    <button
+                      className={`rounded-full border px-4 py-2 text-sm font-medium shadow-sm transition-all duration-300 disabled:opacity-50 ${
+                        selectedDate === date
+                          ? 'bg-black text-white'
+                          : 'border-gray-300 bg-white text-gray-800'
+                      }`}
+                      disabled={isDisabled}
+                      onClick={() => selectDate(date)}
+                    >
+                      <span className="mr-2 text-xs text-gray-500">{dow}</span>
+                      <span>{date}</span>
+                    </button>
+                  </Grid>
+                );
+              })}
           </Grid>
 
           {selectedDate && selectedDateData && (
@@ -381,7 +395,7 @@ export default function VipReservationPage() {
                 onShippingSameAsBillingChange={setShippingSameAsBilling}
                 shippingAddress={shippingAddress}
                 onShippingAddressChange={setShippingAddress}
-                subtitle="Deine Eintrittsbändchen und Verzehrgutscheine werden an diese Adresse geschickt"
+                subtitle="Deine Eintrittsbändchen und Verzehrgutscheine kannst du vor deiner Reservierung im Weinzelt abholen"
               />
 
               {selectedSlot && (

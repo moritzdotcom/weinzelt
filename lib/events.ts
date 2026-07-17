@@ -91,6 +91,12 @@ const LAURA = {
   instagramUrl: 'https://www.instagram.com/laurazimmermann_violin/',
 };
 
+const LYAM = {
+  name: 'LYAM',
+  genre: 'Hybrid DJ',
+  instagramUrl: 'https://www.instagram.com/lyamcruzmusic/',
+};
+
 const MBP = {
   name: 'MBP',
   genre: 'House',
@@ -151,6 +157,42 @@ const KIMBERLY = {
   instagramUrl: 'https://www.instagram.com/itskimberlydj/',
 };
 
+const LUCA_SARDINI = {
+  name: 'Luca Sardini',
+  genre: 'Afro House',
+  instagramUrl: 'https://www.instagram.com/luca_sardini/',
+};
+
+const TWO_B = {
+  name: 'Two B',
+  genre: 'House',
+  instagramUrl: 'https://www.instagram.com/two_b_music/',
+};
+
+const INAN = {
+  name: 'Inan Batman',
+  genre: 'House',
+  instagramUrl: 'https://www.instagram.com/inanbatman/',
+};
+
+const GDIAMOND = {
+  name: 'G-Diamond',
+  genre: 'Afro House',
+  instagramUrl: 'https://www.instagram.com/dj_g_diamond/',
+};
+
+const VICTORFELISA = {
+  name: 'Victor Felisa',
+  genre: 'House',
+  instagramUrl: 'https://www.instagram.com/victorfelisa/',
+};
+
+const TEDDYO = {
+  name: 'TEDDY-O',
+  genre: 'House',
+  instagramUrl: 'https://www.instagram.com/djteddyomusic/',
+};
+
 export const eventDays: EventDay[] = [
   {
     id: '2026-07-17',
@@ -165,7 +207,7 @@ export const eventDays: EventDay[] = [
     image: '/events/audiokitchen.jpg',
     accentClassName: 'from-blue-50 via-white to-purple-50 border-blue-800/70',
     djs: {
-      support: [JHEEZ, HOODDIVER, BASST, ARDEE],
+      support: [JHEEZ, HOODDIVER, LUCA_SARDINI, BASST, ARDEE],
       headliner: [AUDIOKITCHEN],
     },
     specials: [],
@@ -184,16 +226,10 @@ export const eventDays: EventDay[] = [
     accentClassName:
       'from-stone-100 via-stone-300 to-stone-50 border-stone-800/70',
     djs: {
-      support: [JHEEZ, HOODDIVER, BASST, ARDEE, KENNETHB],
+      support: [JHEEZ, HOODDIVER, JASONWATS, KENNETHB, TWO_B],
+      headliner: [BASST, ARDEE],
     },
-    specials: [
-      {
-        title: 'Spiel um dritten Platz',
-        time: '23:00 Uhr',
-        description:
-          'Der Abend wird durch das Spiel um dritten Platz der Fußball WM zusätzlich aufgeladen und sorgt für besondere Stimmung im Zelt.',
-      },
-    ],
+    specials: [],
   },
   {
     id: '2026-07-19',
@@ -207,6 +243,7 @@ export const eventDays: EventDay[] = [
     reservationLink: '/reservation?date=19.07.26',
     image: '/events/keezy.webp',
     djs: {
+      support: [INAN],
       headliner: [PANPOT],
     },
     accentClassName: 'from-red-100 via-white to-orange-50 border-red-800/70',
@@ -216,12 +253,6 @@ export const eventDays: EventDay[] = [
         time: 'ab 11:00 Uhr',
         description:
           'Kiesgrube bringt ihren unverwechselbaren Sunday-Spirit ins Weinzelt: starke Musik, besondere Atmosphäre und ein Tag mit echtem Kultcharakter.',
-      },
-      {
-        title: 'WM Finale',
-        time: '21:00 Uhr',
-        description:
-          'Gemeinsam schauen, anstoßen und den Abend mit besonderer Stimmung im Weinzelt erleben.',
       },
     ],
   },
@@ -244,8 +275,8 @@ export const eventDays: EventDay[] = [
     accentClassName: 'from-rose-100 via-white to-orange-50 border-rose-300/70',
     image: '/events/laurazimmermann.jpg',
     djs: {
-      support: [MBP],
-      headliner: [ANGELA, LAURA],
+      support: [ANGELA, RIZZY, BASST],
+      headliner: [MBP, LAURA, LYAM],
     },
     specials: [],
   },
@@ -262,8 +293,8 @@ export const eventDays: EventDay[] = [
     reservationLink: '/reservation?date=21.07.26',
     image: '/events/mrdus.jpg',
     djs: {
-      support: [JHEEZ, HOODDIVER, RIZZY, BASST],
-      headliner: [SALVA],
+      support: [JHEEZ, HOODDIVER, RIZZY, GDIAMOND],
+      headliner: [SALVA, BASST],
     },
     specials: [],
   },
@@ -279,8 +310,8 @@ export const eventDays: EventDay[] = [
     reservationLink: '/reservation?date=22.07.26',
     image: '/events/weindampfer.jpg',
     djs: {
-      support: [],
-      headliner: [{ name: 'Weindampfer', genre: 'TBA' }],
+      support: [LUCA_SARDINI],
+      headliner: [VICTORFELISA, TEDDYO],
     },
     specials: [],
   },
