@@ -1320,13 +1320,24 @@ function compareDoubleSlotGroups(
   return a.id.localeCompare(b.id);
 }
 
+const MAX_TIMESLOT_GAP_MINUTES = 30;
+
 function areConsecutiveTimeslots(first: string, second: string) {
   const firstRange = parseTimeslot(first);
   const secondRange = parseTimeslot(second);
 
   if (!firstRange || !secondRange) return false;
 
-  return firstRange.end % (24 * 60) === secondRange.start % (24 * 60);
+  let secondStart = secondRange.start;
+
+  // Folgeslot nach Mitternacht auf den nächsten Tag verschieben.
+  while (secondStart < firstRange.end) {
+    secondStart += 24 * 60;
+  }
+
+  const gapMinutes = secondStart - firstRange.end;
+
+  return gapMinutes >= 0 && gapMinutes <= MAX_TIMESLOT_GAP_MINUTES;
 }
 
 function getTimeslotSortValue(timeslot: string) {
