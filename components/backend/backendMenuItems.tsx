@@ -1,5 +1,4 @@
 // /components/backend/backendMenuItems.tsx
-
 import CelebrationRoundedIcon from '@mui/icons-material/CelebrationRounded';
 import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -9,6 +8,7 @@ import LineAxisIcon from '@mui/icons-material/LineAxis';
 import PasswordIcon from '@mui/icons-material/Password';
 import LocalActivityIcon from '@mui/icons-material/LocalActivity';
 import SearchIcon from '@mui/icons-material/Search';
+import TableBarIcon from '@mui/icons-material/TableBar';
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 import MarkAsUnreadIcon from '@mui/icons-material/MarkAsUnread';
 import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
@@ -73,6 +73,14 @@ export const backendMenuItems: BackendMenuItem[] = [
     Icon: SearchIcon,
     group: 'Reservierungen',
     permission: BACKEND_PERMISSIONS.RESERVATION_SEARCH,
+  },
+  {
+    href: '/backend/reservations/tableNumbers',
+    title: 'Tischzuordnung',
+    description: 'Weise Reservierungen den Tischen zu.',
+    Icon: TableBarIcon,
+    group: 'Reservierungen',
+    permission: BACKEND_PERMISSIONS.RESERVATION_TABLE_NUMBERS,
   },
   {
     href: '/backend/reservations/company',

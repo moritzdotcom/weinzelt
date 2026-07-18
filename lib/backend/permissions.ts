@@ -8,6 +8,7 @@ export const BACKEND_PERMISSIONS = {
 
   RESERVATIONS: 'backend.reservations',
   RESERVATION_SEARCH: 'backend.reservations.search',
+  RESERVATION_TABLE_NUMBERS: 'backend.reservations.tableNumbers',
   COMPANY_RESERVATIONS: 'backend.reservations.company',
   FRIENDS_FAMILY: 'backend.reservations.friendsFamily',
   RESERVATION_EXPORT: 'backend.reservations.export',
