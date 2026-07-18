@@ -2,6 +2,7 @@
 import { sendMail } from '@/lib/mailer';
 import { Address } from '../reservation';
 import { addressToHtml, addressToText } from './helpers/address';
+import { renderShippingBlock } from './helpers/shippingBlock';
 
 export default function sendCompanyReservationMail(
   email: string,
@@ -119,24 +120,7 @@ export default function sendCompanyReservationMail(
             </td>
           </tr>
 
-          <tr>
-            <td style="padding:0 24px 20px;">
-              <div style="background:#fff8e8; border:1px solid #f0dfb2; border-radius:10px; padding:18px 20px;">
-                <p style="margin:0 0 10px; font-size:15px; font-weight:bold; color:#222222;">
-                  Versand von Eintrittsbändchen &amp; Verzehrkarten
-                </p>
-                <p style="margin:0 0 12px; font-size:14px; line-height:1.6; color:#444444;">
-                  Wir senden Ihnen die Unterlagen ca. 6 Wochen vor Beginn des Weinzelt an folgende Lieferadresse:
-                </p>
-                <div style="background:#ffffff; border:1px solid #ece7da; border-radius:8px; padding:12px 14px; font-size:14px; line-height:1.6; color:#333333;">
-                  ${shippingHtml}
-                </div>
-                <p style="margin:12px 0 0; font-size:14px; line-height:1.6; color:#444444;">
-                  Bitte prüfen Sie die Lieferadresse. Falls etwas nicht korrekt ist, antworten Sie einfach auf diese E-Mail.
-                </p>
-              </div>
-            </td>
-          </tr>
+          ${renderShippingBlock(shippingHtml, 'PICKUPWZ')}
 
           <tr>
             <td style="padding:0 24px 20px; font-size:14px; line-height:1.6; color:#444444;">
