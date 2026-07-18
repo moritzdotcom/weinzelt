@@ -1322,15 +1322,26 @@ function compareDoubleSlotGroups(
 
 const MAX_TIMESLOT_GAP_MINUTES = 30;
 
+type ParsedTimeslot = {
+  start: number;
+  end: number | null;
+  isOpenEnded: boolean;
+};
+
 function areConsecutiveTimeslots(first: string, second: string) {
   const firstRange = parseTimeslot(first);
   const secondRange = parseTimeslot(second);
 
   if (!firstRange || !secondRange) return false;
 
+  // Ein offener Slot ist immer der letzte Slot und kann deshalb
+  // keinen direkt nachfolgenden Timeslot haben.
+  if (firstRange.end === null) return false;
+
   let secondStart = secondRange.start;
 
-  // Folgeslot nach Mitternacht auf den nächsten Tag verschieben.
+  // Liegt der Folgeslot nach Mitternacht, wird er dem nächsten
+  // Kalendertag zugerechnet.
   while (secondStart < firstRange.end) {
     secondStart += 24 * 60;
   }
@@ -1342,25 +1353,47 @@ function areConsecutiveTimeslots(first: string, second: string) {
 
 function getTimeslotSortValue(timeslot: string) {
   const parsed = parseTimeslot(timeslot);
-  if (!parsed) return Number.MAX_SAFE_INTEGER;
 
-  // Slots nach Mitternacht gehören üblicherweise noch zum vorherigen Eventtag.
+  if (!parsed) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  // Frühe Uhrzeiten gehören bei Abendveranstaltungen üblicherweise
+  // noch zum vorherigen Veranstaltungstag.
   return parsed.start < 6 * 60 ? parsed.start + 24 * 60 : parsed.start;
 }
 
-function parseTimeslot(timeslot: string) {
+function parseTimeslot(timeslot: string): ParsedTimeslot | null {
   const matches = [...timeslot.matchAll(/([01]?\d|2[0-3]):([0-5]\d)/g)];
 
-  if (matches.length < 2) return null;
+  // Keine gültige Startzeit gefunden.
+  if (matches.length === 0) {
+    return null;
+  }
 
   const start = Number(matches[0][1]) * 60 + Number(matches[0][2]);
+
+  // Nur eine Uhrzeit vorhanden, zum Beispiel "02:00 - Ende".
+  if (matches.length === 1) {
+    return {
+      start,
+      end: null,
+      isOpenEnded: true,
+    };
+  }
+
   let end = Number(matches[1][1]) * 60 + Number(matches[1][2]);
 
+  // Ende liegt nach Mitternacht.
   if (end <= start) {
     end += 24 * 60;
   }
 
-  return { start, end };
+  return {
+    start,
+    end,
+    isOpenEnded: false,
+  };
 }
 
 function parseGermanDate(value: string) {
