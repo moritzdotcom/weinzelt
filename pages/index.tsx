@@ -1,448 +1,282 @@
-import Link from 'next/link';
-import Countdown from '@/components/countdown';
-import { Session } from '@/hooks/useSession';
 import { KeyboardArrowRight } from '@mui/icons-material';
-import Navbar from '@/components/navbar';
-import Footer from '@/components/footer';
-import FoodGrid from '@/components/foodGrid';
-import HeroFade from '@/components/heroFade';
+import Link from 'next/link';
+import EventStatusSection from '@/components/home/eventStatusSection';
 import EventDaysSection from '@/components/home/eventDaysSection';
-import HtmlHead from '@/components/htmlHead';
-import SpecialEventsSection from '@/components/home/specialEventSection';
 import NewsletterSection from '@/components/home/newsletterSection';
+import ReservationOptionsSection from '@/components/home/reservationOptionsSection';
+import SpecialEventsSection from '@/components/home/specialEventSection';
+import TodaySection from '@/components/home/todaySection';
+import FoodGrid from '@/components/foodGrid';
+import Footer from '@/components/footer';
+import HeroFade from '@/components/heroFade';
+import HtmlHead from '@/components/htmlHead';
+import Navbar from '@/components/navbar';
+import { Session } from '@/hooks/useSession';
+
+const partnerLogos = [
+  {
+    href: 'https://conceptriesling.com/',
+    src: '/partners/cr-logo.webp',
+    alt: 'Concept Riesling',
+  },
+  {
+    href: 'https://km-entertainment.de/',
+    src: '/partners/km-logo.png',
+    alt: 'KM Entertainment',
+  },
+  {
+    href: 'https://www.mrduesseldorf.de/',
+    src: '/partners/mrdus-logo.png',
+    alt: 'Mr Düsseldorf',
+  },
+  {
+    href: 'https://derweindampfer.de/',
+    src: '/partners/weindampfer-logo.png',
+    alt: 'Weindampfer',
+  },
+  {
+    href: 'https://mlsp.de/',
+    src: '/partners/mls-logo.jpg',
+    alt: 'MLS',
+  },
+  {
+    href: 'https://www.redbull.com/de-de',
+    src: '/partners/redBull-logo.png',
+    alt: 'Red Bull',
+  },
+  {
+    href: 'https://www.gerolsteiner.de/',
+    src: '/partners/gerolsteiner-logo.png',
+    alt: 'Gerolsteiner',
+  },
+  {
+    href: 'https://www.goldberg-sons.com/',
+    src: '/partners/goldberg-logo.webp',
+    alt: 'Goldberg',
+  },
+  {
+    href: 'https://de.lasommeliere.com/de-de/',
+    src: '/partners/laSommeliere-logo.webp',
+    alt: 'La Sommelière',
+  },
+  {
+    href: 'https://www.moet-hennessy.de/de-de',
+    src: '/partners/moetHennessy-logo.png',
+    alt: 'Moët Hennessy',
+  },
+  {
+    href: 'https://estrellagalicia.com/de/',
+    src: '/partners/estrella-logo.png',
+    alt: 'Estrella Galicia',
+  },
+];
+
+function GoodToKnowSection() {
+  const items = [
+    ['Wann', '17.-26. Juli 2026'],
+    ['Wo', 'Rheinkirmes Düsseldorf'],
+    ['Eintritt', 'Kostenlos'],
+    ['Reservierung', 'Optional, für Gruppen empfohlen'],
+  ];
+
+  return (
+    <section className="px-4 pb-12 pt-16">
+      <div className="mx-auto max-w-6xl">
+        <p className="mb-5 text-center text-xs font-semibold uppercase tracking-[0.28em] text-gray-500">
+          Gut zu wissen
+        </p>
+        <div className="grid overflow-hidden rounded-[2rem] border border-black/10 bg-white shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+          {items.map(([label, value], index) => (
+            <div
+              key={label}
+              className={`p-6 text-center ${
+                index > 0
+                  ? 'border-t border-black/10 sm:border-l sm:border-t-0'
+                  : ''
+              } ${index === 2 ? 'lg:border-l' : ''}`}
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                {label}
+              </p>
+              <p className="mt-2 font-semibold text-black">{value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function Home({ session }: { session: Session }) {
   return (
-    <div className="font-sans relative">
+    <div className="relative bg-[#f8f6f2] font-sans text-black">
       <HtmlHead />
-      <div className="fixed bottom-0 left-0 w-full sm:hidden z-10 bg-gray-100 px-3 py-2 flex items-center justify-center">
+
+      <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 border-t border-black/10 bg-white/95 p-2 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] backdrop-blur-lg md:hidden">
+        <Link
+          href="/#programm"
+          className="flex items-center justify-center rounded-full px-3 py-3 text-sm font-semibold"
+        >
+          Programm
+        </Link>
         <Link
           href="/reservation"
-          className="flex items-center justify-center text-2xl"
+          className="flex items-center justify-center rounded-full bg-black px-3 py-3 text-sm font-semibold text-white"
         >
-          <p className="font-semibold text-lg">Jetzt reservieren</p>
-          <KeyboardArrowRight fontSize="inherit" />
+          Reservieren
+          <KeyboardArrowRight fontSize="small" />
         </Link>
       </div>
+
       <Navbar session={session} />
-
       <HeroFade />
+      <TodaySection />
+      <GoodToKnowSection />
 
-      {/* Konzept */}
-      <section id="konzept" className="max-w-6xl mx-auto px-4 py-20">
-        <h2 className="text-4xl mb-6 text-center font-cocogoose">
-          Weinzelt - Wine meets Rheinkirmes
-        </h2>
-        <h3 className="text-2xl italic font-medium text-center text-gray-700 mb-10">
-          „Von Düsseldorfern für alle, die Lust auf Wein haben!“
-        </h3>
-        <div className="grid md:grid-cols-[7fr_4fr] gap-10 items-center">
-          <div className="space-y-4">
-            <p className="text-lg leading-relaxed text-gray-800">
-              Willkommen im Weinzelt - dein Platz für Genuss, Musik und echtes
-              Düsseldorfer Lebensgefühl auf der Rheinkirmes!
+      <section id="konzept" className="scroll-mt-24 px-4 py-20">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-[1.15fr_0.85fr]">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-gray-500">
+              Das Weinzelt
             </p>
-            <p className="text-lg leading-relaxed text-gray-800 font-bold text-center">
-              Wein. Beats. Düsseldorf.
+            <h2 className="mt-3 text-4xl font-cocogoose leading-tight sm:text-5xl">
+              Wine meets Rheinkirmes.
+            </h2>
+            <p className="mt-6 text-xl font-medium text-gray-800">
+              Von Düsseldorfern für alle, die Lust auf Wein haben.
             </p>
-            <p className="text-lg leading-relaxed text-gray-800">
-              Im <b>Weinzelt</b> wird nicht einfach nur getrunken - hier wird
-              gefeiert, geschlemmt und stilvoll zelebriert. Zwischen feinem
-              Riesling, regionalen Leckerbissen und einer Atmosphäre, die
-              zwischen Afterwork-Vibes und Spontan-Urlaub liegt, erlebst du die
-              <b> Rheinkirmes von ihrer geschmackvollsten Seite.</b>
+            <p className="mt-5 text-lg leading-relaxed text-gray-700">
+              Tagsüber treffen ausgewählte Weine, regionale Küche und entspannte
+              Gespräche aufeinander. Abends wird das Weinzelt mit DJs, Licht und
+              elektronischen Sounds zur Tanzfläche.
             </p>
-            <p className="text-lg leading-relaxed text-gray-800">
-              Tagsüber ist das Zelt dein Place-to-be für entspanntes Daydrinking
-              und gute Gespräche. Und abends? Da drehen wir auf. Mit
-              elektronischen Sounds, kühlen Gläsern und besten Leuten wird aus
-              dem Weinzelt eine pulsierende Party-Location.
+            <p className="mt-4 text-lg leading-relaxed text-gray-700">
+              Gemeinsam mit Concept Riesling bringen wir Charakter ins Glas -
+              von unkomplizierten Favoriten bis zu besonderen Raritäten in der
+              WineCorner.
             </p>
-            <p className="text-lg leading-relaxed text-gray-800">
-              Mit dabei: <b>„Concept Riesling“ vom Carlsplatz</b> - Düsseldorfs
-              Antwort auf langweilige Weinkarten. Hier trifft Charakter auf
-              Qualität und Spaß am Glas!
-            </p>
-            <p className="text-lg leading-relaxed text-gray-800">
-              Komm vorbei. Probier dich durch. Und genieß Düsseldorf von seiner
-              leckersten Seite.
-            </p>
+
+            <div className="mt-7 flex flex-wrap gap-2">
+              {['Ausgewählte Weine', 'Regionale Küche', 'Live-DJs'].map(
+                (item) => (
+                  <span
+                    key={item}
+                    className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium shadow-sm"
+                  >
+                    {item}
+                  </span>
+                ),
+              )}
+            </div>
+
             <Link
               href="/impressions"
-              className="inline-block mx-auto text-center bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-300 hover:text-black transition"
+              className="mt-8 inline-flex rounded-full bg-black px-6 py-3 font-semibold text-white transition hover:bg-gray-800"
             >
-              Zur Fotogalerie
+              Stimmung ansehen
             </Link>
           </div>
-          <div>
+
+          <div className="overflow-hidden rounded-[2rem] shadow-xl">
             <img
               src="/home/partyByDay.jpg"
-              alt="Party bei Tag"
-              className="w-full h-full object-cover rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105"
+              alt="Gäste genießen das Weinzelt am Nachmittag"
+              className="aspect-[4/5] w-full object-cover transition duration-500 hover:scale-[1.02]"
             />
           </div>
         </div>
       </section>
 
+      <ReservationOptionsSection />
+      <EventDaysSection />
       <SpecialEventsSection />
 
-      {/* VIP Bereich */}
-      <section id="vip" className="bg-white py-20 px-4">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row-reverse gap-12 items-center">
-          {/* Textbereich */}
-          <div className="w-full sm:w-2/3">
-            <h2 className="text-4xl font-cocogoose mb-6">VIP, Baby!</h2>
-            <p className="text-lg text-gray-800 mb-4">
-              Hier wird Wein zu deinem Erlebnis: an deinem exklusiven Tisch
-              triffst du auf feine Tropfen mit Charakter - von{' '}
-              <b>easy-drinking Rieslingen bis zu echten Raritäten</b>, die du
-              garantiert nicht an jeder Ecke bekommst. Concept Riesling hat für
-              dich kuratiert, was das Herz anspruchsvoller Genießer höher
-              schlagen lässt.
-            </p>
-            <p className="text-lg text-gray-800 mb-4">
-              Jeden Abend gibt's was Besonderes auf die Zunge:{' '}
-              <b>Weincorner mit Sommelier-Begleitung</b>, charmant,
-              kenntnisreich und garantiert nicht trocken. Wenn du auf den
-              Geschmack gekommen bist, bietet dir die Weincorner über 100
-              Positionen feinster Raritäten.
-            </p>
-            <p className="text-lg text-gray-800 mb-4">
-              Dazu? Beats, Bass & gute Laune. Ein Live-DJ legt auf, die Stimmung
-              steigt, das Licht tanzt - und du mittendrin mit einem Glas in der
-              einen Hand und deinen Freunden in der anderen Hand!
-            </p>
-            <p className="text-lg text-gray-800 mb-4">
-              Zugang zu Raritätencorner inklusive. Champagner, Sekt &
-              Signature-Weine. Live-DJ & Beats on Point. Concept Riesling
-              curated.
-            </p>
-            <p className="text-lg text-gray-800 mb-4 font-bold">
-              Limitiert. Besonders. Und absolut nicht langweilig.
-            </p>
-            <Link
-              href="/reservation/vip"
-              className="inline-block bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-300 hover:text-black transition"
-            >
-              Jetzt Tisch reservieren
-            </Link>
-          </div>
-
-          {/* Bildbereich */}
-          <div className="w-full sm:w-1/3">
-            <img
-              src="/home/vipArea.jpg"
-              alt="VIP Bereich im Weinzelt"
-              className="w-full h-full object-cover rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Stehtische */}
-      <section id="standing-tables" className="bg-stone-800 py-20 px-4">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-[2fr_1fr] gap-12 items-center">
-          {/* Textbereich */}
+      <section id="gastro" className="scroll-mt-24 bg-white px-4 py-20">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-[1.2fr_0.8fr]">
           <div>
-            <h2 className="text-4xl font-cocogoose text-white mb-6">
-              Stehtische für die Crew
-            </h2>
-            <p className="text-lg text-gray-300 mb-4">
-              Du und deine Freunde, bereit für eine Nacht, die sich gewaschen
-              hat? Unsere Stehtische bieten Platz für bis zu 16 Personen -
-              perfekt für eine coole Crew, die den Vibe spüren will. Ohne
-              Schnickschnack, dafür mit allem, was den Abend unvergesslich
-              macht.
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-gray-500">
+              Speisen & Getränke
             </p>
-            <p className="text-lg text-gray-300 mb-4 font-bold">
-              Mach dich bereit für gute Musik, coole Leute und natürlich: den
-              besten Platz auf der Tanzfläche!
-            </p>
-            <Link
-              href="/reservation/standing"
-              className="inline-block bg-white text-black px-6 py-3 rounded-full shadow-md hover:bg-stone-300 transition"
-            >
-              Jetzt Stehtisch reservieren
-            </Link>
-          </div>
-
-          {/* Bildbereich */}
-          <div>
-            <img
-              src="/home/standing-tables.jpg"
-              alt="Stehtische im Weinzelt"
-              className="w-full h-full object-cover rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Musik */}
-      <section id="musik" className="py-20 bg-black text-white">
-        <div className="px-4 max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          {/* Textbereich */}
-          <div>
-            <h2 className="text-4xl font-cocogoose mb-6">
-              Sound on, Alltag off.
-            </h2>
-            <p className="text-lg mb-4 text-gray-300">
-              Sobald die Sonne untergeht, übernimmt der Beat:{' '}
-              <b>Das Weinzelt wird zur Tanzfläche</b> - und zwar nicht
-              irgendeine. Ausgewählte House- und Electro-DJs sorgen für den
-              Soundtrack deiner Nacht, live begleitet von einer{' '}
-              <b>LED-Lichtshow</b>, die mehr Festival als Volksfest schreit.
-              Hier trifft <b>urbaner Club-Vibe auf Kirmesflair</b> - stilvoll,
-              elektrisierend und garantiert tanzbar.
-            </p>
-          </div>
-
-          {/* Bildbereich */}
-          <div>
-            <img
-              src="/home/dj.jpg"
-              alt="DJ auf der Bühne"
-              className="w-full h-full object-cover rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105"
-            />
-          </div>
-        </div>
-      </section>
-
-      <EventDaysSection />
-
-      {/* Speisen & Getränke */}
-      <section id="gastro" className="py-20 px-4 bg-white">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-[2fr_1fr] gap-12 items-center">
-          {/* Textbereich */}
-          <div>
-            <h2 className="text-4xl font-cocogoose mb-6">
+            <h2 className="mt-3 text-4xl font-cocogoose leading-tight sm:text-5xl">
               Für Foodies & Feintrinker.
             </h2>
-            <p className="text-lg text-gray-800 mb-4">
-              Hungrig bleibst du hier ganz sicher nicht - unsere{' '}
-              <b>ausgesuchte Auswahl regionaler Leckerbissen</b> passt wie ein
-              gut temperierter Riesling zu deinem Glas. Von herzhaften
-              Klassikern bis zu feinen Snacks für zwischendurch: Unsere Küche
-              trifft den Geschmack - ehrlich, hochwertig und einfach richtig
-              gut.
+            <p className="mt-6 max-w-3xl text-lg leading-relaxed text-gray-700">
+              Regionale Leckerbissen, feine Snacks, Weine mit Charakter,
+              Champagner und ausgewählte Drinks - gemacht für einen langen Tag
+              und eine noch längere Nacht im Weinzelt.
             </p>
-            <p className="text-lg text-gray-800 mb-6">
-              <b>Weine mit Charakter</b>, spritziger Sekt, ausgewählte Drinks
-              und clevere alkoholfreie Alternativen. Alles, was du brauchst für
-              einen Abend, der stilvoll knallt!
-            </p>
-            <div className="flex flex-col items-center sm:items-start gap-3">
-              <Link
-                href="/weinzelt-food.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block border border-black text-black px-6 py-3 rounded-full shadow-md hover:bg-gray-200 hover:text-black text-center transition"
-              >
-                Entdecke unser Weingarten Menu
-              </Link>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/weinzelt-drinks.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-300 hover:text-black transition"
+                className="rounded-full bg-black px-6 py-3 text-center font-semibold text-white transition hover:bg-gray-800"
               >
-                Jetzt Karte checken{' '}
-                <span className="hidden sm:inline">
-                  & Lieblingstropfen finden!
-                </span>
+                Getränkekarte öffnen
+              </Link>
+              <Link
+                href="/weinzelt-food.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border border-black/15 px-6 py-3 text-center font-semibold text-black transition hover:bg-stone-100"
+              >
+                Speisekarte öffnen
               </Link>
             </div>
           </div>
 
-          {/* Bildbereich */}
-          <div>
+          <div className="overflow-hidden rounded-[2rem] shadow-xl">
             <img
               src="/home/champagne.jpg"
-              alt="Speisen und Weine"
-              className="w-full h-full object-cover rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105"
+              alt="Champagner und Speisen im Weinzelt"
+              className="aspect-square w-full object-cover"
             />
           </div>
         </div>
+
         <FoodGrid />
       </section>
 
       <NewsletterSection />
+      <EventStatusSection />
 
-      <section
-        id="countdown"
-        className="py-20 bg-gradient-to-tr from-gray-100 to-blue-100 text-black text-center px-4"
-      >
-        <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
-          <img src="/logo.png" alt="Logo" className="w-80 h-auto mb-4" />
-          <p className="text-xl md:text-2xl">
-            Ab dem <b>17.07.2026</b> wird wieder eingeschenkt! Wein, Beats &
-            beste Stimmung -{' '}
-            <b>wir sehen uns im Weinzelt auf der Rheinkirmes!</b>
+      <section id="partner" className="bg-white px-4 py-16 text-center">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="text-3xl font-cocogoose">Unsere Partner</h2>
+          <p className="mt-4 text-gray-600">
+            Danke an unsere Partner für die wertvolle Unterstützung.
           </p>
-          <p className="uppercase tracking-widest text-sm text-gray-700 mt-10">
-            Noch
-          </p>
-          <Countdown targetDate="2026-07-17T14:00:00" />
-          <p className="uppercase tracking-widest text-sm text-gray-700">
-            bis zum Opening
+
+          <div className="mt-10 grid grid-cols-2 items-center gap-x-8 gap-y-14 sm:grid-cols-3 lg:grid-cols-4">
+            {partnerLogos.map((partner) => (
+              <a
+                key={partner.href}
+                href={partner.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-transform duration-300 hover:scale-105"
+              >
+                <img
+                  src={partner.src}
+                  alt={partner.alt}
+                  className="mx-auto max-h-16 w-full object-contain"
+                />
+              </a>
+            ))}
+          </div>
+
+          <p className="mt-12 text-lg text-gray-600">
+            Du möchtest Teil vom Weinzelt werden? Schreib uns an{' '}
+            <a
+              className="font-medium text-black underline underline-offset-4"
+              href="mailto:partner@dasweinzelt.de"
+            >
+              partner@dasweinzelt.de
+            </a>
+            .
           </p>
         </div>
-      </section>
-
-      {/* Partner */}
-      <section
-        id="partner"
-        className="max-w-5xl mx-auto px-4 py-16 text-center"
-      >
-        <h2 className="text-3xl font-cocogoose mb-4">Unsere Partner</h2>
-        <p className="text-gray-600 mb-10">
-          Wir bedanken uns herzlich bei unseren Partnern für die wertvolle
-          Unterstützung!
-        </p>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 gap-y-16 items-center justify-center">
-          <a
-            href="https://conceptriesling.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:scale-105 transition-transform duration-300"
-          >
-            <img
-              src="/partners/cr-logo.webp"
-              alt="Concept Riesling"
-              className="w-full max-h-20 object-contain mx-auto"
-            />
-          </a>
-          <a
-            href="https://km-entertainment.de/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:scale-105 transition-transform duration-300"
-          >
-            <img
-              src="/partners/km-logo.png"
-              alt="KM Entertainment"
-              className="w-full max-h-20 object-contain mx-auto"
-            />
-          </a>
-          <a
-            href="https://www.mrduesseldorf.de/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:scale-105 transition-transform duration-300"
-          >
-            <img
-              src="/partners/mrdus-logo.png"
-              alt="Mr Düsseldorf"
-              className="w-full max-h-20 object-contain mx-auto"
-            />
-          </a>
-          <a
-            href="https://derweindampfer.de/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:scale-105 transition-transform duration-300"
-          >
-            <img
-              src="/partners/weindampfer-logo.png"
-              alt="Weindampfer"
-              className="w-full max-h-20 object-contain mx-auto"
-            />
-          </a>
-          <a
-            href="https://mlsp.de/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:scale-105 transition-transform duration-300"
-          >
-            <img
-              src="/partners/mls-logo.jpg"
-              alt="MLS"
-              className="w-full max-h-20 object-contain mx-auto"
-            />
-          </a>
-          <a
-            href="https://www.redbull.com/de-de"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:scale-105 transition-transform duration-300"
-          >
-            <img
-              src="/partners/redBull-logo.png"
-              alt="Red Bull"
-              className="w-full max-h-20 object-contain mx-auto"
-            />
-          </a>
-          <a
-            href="https://www.gerolsteiner.de/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:scale-105 transition-transform duration-300"
-          >
-            <img
-              src="/partners/gerolsteiner-logo.png"
-              alt="Gerolsteiner"
-              className="w-full max-h-20 object-contain mx-auto"
-            />
-          </a>
-          <a
-            href="https://www.goldberg-sons.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:scale-105 transition-transform duration-300"
-          >
-            <img
-              src="/partners/goldberg-logo.webp"
-              alt="Goldberg"
-              className="w-full max-h-20 object-contain mx-auto"
-            />
-          </a>
-          <a
-            href="https://de.lasommeliere.com/de-de/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:scale-105 transition-transform duration-300"
-          >
-            <img
-              src="/partners/laSommeliere-logo.webp"
-              alt="La Sommelière"
-              className="w-full max-h-20 object-contain mx-auto"
-            />
-          </a>
-          <a
-            href="https://www.moet-hennessy.de/de-de"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:scale-105 transition-transform duration-300"
-          >
-            <img
-              src="/partners/moetHennessy-logo.png"
-              alt="Moët Hennessy"
-              className="w-full max-h-20 object-contain mx-auto"
-            />
-          </a>
-          <a
-            href="https://estrellagalicia.com/de/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:scale-105 transition-transform duration-300"
-          >
-            <img
-              src="/partners/estrella-logo.png"
-              alt="Estrella Galicia"
-              className="w-full max-h-20 object-contain mx-auto"
-            />
-          </a>
-        </div>
-        <h6 className="text-xl text-gray-600 mt-10">
-          Du möchtest Teil vom Weinzelt werden? Dann kontaktiere uns unter{' '}
-          <a
-            className="underline text-black"
-            href="mailto:partner@dasweinzelt.de"
-          >
-            partner@dasweinzelt.de
-          </a>
-          .
-        </h6>
       </section>
 
       <Footer />

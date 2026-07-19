@@ -1,20 +1,13 @@
+import { ExpandMore, KeyboardArrowRight } from '@mui/icons-material';
 import Link from 'next/link';
-import { Divider } from '@mui/material';
-import { KeyboardArrowRight } from '@mui/icons-material';
+import { useEffect, useMemo, useState } from 'react';
 import { EventDay, eventDays } from '@/lib/events';
-
-function DayBadge({ weekday, date }: { weekday: string; date: string }) {
-  return (
-    <div className="w-full md:w-46 md:min-w-46">
-      <div className="sticky top-24 rounded-3xl border border-black/10 bg-black text-white px-5 py-5 shadow-lg flex md:flex-col gap-2 justify-between">
-        <p className="text-xs uppercase tracking-[0.25em] text-white/70">
-          {weekday}
-        </p>
-        <p className="text-xl md:text-3xl leading-none">{date}</p>
-      </div>
-    </div>
-  );
-}
+import {
+  getOperationalDate,
+  getRelevantEventDayIndex,
+  isSameCalendarDay,
+  parseEventDayDate,
+} from '@/lib/weinzeltDates';
 
 function InstagramGradientIcon({ className = '' }: { className?: string }) {
   return (
@@ -44,21 +37,15 @@ function InstagramGradientIcon({ className = '' }: { className?: string }) {
   );
 }
 
-function DjChips({
-  djs,
-}: {
-  djs: Array<{
-    name: string;
-    genre?: string;
-    instagramUrl?: string;
-  }>;
-}) {
+function DjChips({ djs }: { djs: EventDay['djs']['headliner'] }) {
+  if (!djs?.length) return null;
+
   return (
     <div className="flex flex-wrap gap-3">
       {djs.map((dj) => (
         <div
           key={dj.name}
-          className="flex items-center gap-3 rounded-full border border-black/10 bg-white/80 px-4 py-2 shadow-sm backdrop-blur transition hover:bg-white"
+          className="flex items-center gap-3 rounded-full border border-black/10 bg-white px-4 py-2 shadow-sm"
         >
           <div className="leading-tight">
             <p className="text-sm font-semibold text-black">{dj.name}</p>
@@ -73,7 +60,7 @@ function DjChips({
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`Instagram von ${dj.name}`}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-black transition hover:bg-black hover:text-white"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-100"
             >
               <InstagramGradientIcon className="h-5 w-5" />
             </Link>
@@ -89,200 +76,263 @@ function SpecialsGrid({ specials }: { specials: EventDay['specials'] }) {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      {specials.map((special, index) => (
-        <div
-          key={`${special.title}-${special.time ?? 'no-time'}-${index}`}
-          className="flex h-full flex-col rounded-3xl border border-black/10 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              {special.time && (
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+      {specials.map((special, index) => {
+        const isExternal = Boolean(
+          special.link && /^https?:\/\//i.test(special.link),
+        );
+
+        return (
+          <div
+            key={`${special.title}-${special.time ?? 'no-time'}-${index}`}
+            className="flex h-full flex-col rounded-3xl border border-black/10 bg-white p-5 shadow-sm"
+          >
+            <div className="flex items-start justify-between gap-4">
+              {special.time ? (
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
                   {special.time}
+                </p>
+              ) : (
+                <span />
+              )}
+
+              {special.badge && (
+                <span className="shrink-0 rounded-full bg-stone-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-700">
+                  {special.badge}
+                </span>
+              )}
+            </div>
+
+            <h4 className="mt-2 text-lg font-semibold leading-tight text-black">
+              {special.title}
+            </h4>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600">
+              {special.description}
+            </p>
+
+            {special.link && special.ctaLabel && (
+              <div className="mt-auto pt-4">
+                <Link
+                  href={special.link}
+                  target={isExternal ? '_blank' : undefined}
+                  rel={isExternal ? 'noopener noreferrer' : undefined}
+                  className="inline-flex items-center text-sm font-medium text-black underline underline-offset-4"
+                >
+                  {special.ctaLabel}
+                  <KeyboardArrowRight fontSize="inherit" />
+                </Link>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function EventDayCard({
+  day,
+  isCurrent,
+}: {
+  day: EventDay;
+  isCurrent: boolean;
+}) {
+  const headliners = day.djs.headliner ?? [];
+  const support = day.djs.support ?? [];
+  const hasDetails =
+    Boolean(day.vibeText) ||
+    headliners.length > 0 ||
+    support.length > 0 ||
+    (day.specials?.length ?? 0) > 0;
+
+  return (
+    <article
+      className={`overflow-hidden rounded-[2rem] border bg-gradient-to-br ${day.accentClassName} shadow-lg`}
+    >
+      <details className="group" open={isCurrent || undefined}>
+        <summary className="cursor-pointer list-none p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40 sm:p-6">
+          <div className="grid items-center gap-5 md:grid-cols-[150px_1fr_230px_auto]">
+            <div className="rounded-2xl bg-black px-4 py-4 text-white">
+              <p className="text-xs uppercase tracking-[0.22em] text-white/60">
+                {day.weekday}
+              </p>
+              <p className="mt-2 text-2xl leading-none">{day.date}</p>
+              {isCurrent && (
+                <p className="mt-3 inline-flex rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-black">
+                  Heute
                 </p>
               )}
             </div>
 
-            {special.badge && (
-              <span className="shrink-0 rounded-full border border-black/10 bg-stone-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-700">
-                {special.badge}
-              </span>
-            )}
-          </div>
-          <h4 className="text-lg font-semibold leading-tight text-black">
-            {special.title}
-          </h4>
-
-          <Divider sx={{ my: 1.5, mr: 2 }} />
-
-          <p className="text-sm leading-relaxed text-gray-600">
-            {special.description}
-          </p>
-
-          {special.link && special.ctaLabel && (
-            <div className="mt-auto pt-4">
-              <Link
-                href={special.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-sm font-medium text-black underline underline-offset-4"
-              >
-                {special.ctaLabel}
-                <KeyboardArrowRight fontSize="inherit" />
-              </Link>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function Highlights({ items }: { items: string[] }) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((item) => (
-        <span
-          key={item}
-          className="rounded-full bg-black px-3 py-1 text-xs font-medium uppercase tracking-wide text-white"
-        >
-          {item}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function EventDayCard({ day }: { day: EventDay }) {
-  const hasDjs =
-    (day.djs.support?.length ?? 0) > 0 || (day.djs.headliner?.length ?? 0) > 0;
-
-  const hasSpecials = (day.specials?.length ?? 0) > 0;
-
-  return (
-    <article
-      className={`rounded-[2rem] border bg-gradient-to-br ${day.accentClassName} p-4 sm:p-6 md:p-8 shadow-xl`}
-    >
-      <div className="flex flex-col gap-6 md:flex-row md:gap-8">
-        <DayBadge weekday={day.weekday} date={day.date} />
-
-        <div className="min-w-0 flex-1">
-          <div className="grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
             <div className="min-w-0">
-              <h3 className="text-3xl sm:text-4xl font-cocogoose leading-tight text-black">
+              <h3 className="text-2xl font-cocogoose leading-tight text-black sm:text-3xl">
                 {day.motto}
               </h3>
-              <p className="mt-3 text-lg font-medium text-gray-700">
-                {day.subtitle}
-              </p>
-              <p className="mt-5 max-w-2xl text-base leading-relaxed text-gray-700">
-                {day.vibeText}
-              </p>
+              <p className="mt-2 text-gray-700">{day.subtitle}</p>
 
-              <div className="mt-6">
-                <Highlights items={day.highlights} />
+              <div className="mt-4 flex flex-wrap gap-2">
+                {day.highlights.slice(0, 4).map((highlight) => (
+                  <span
+                    key={highlight}
+                    className="rounded-full bg-black px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-white"
+                  >
+                    {highlight}
+                  </span>
+                ))}
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-[1.5rem] border border-black/10 shadow-md h-64 hidden md:block">
-              <img
-                src={day.image}
-                alt={day.motto}
-                className="h-64 w-full object-cover"
-              />
-            </div>
-          </div>
-
-          {(hasDjs || hasSpecials) && (
-            <div
-              className={`mt-8 grid gap-8 ${
-                hasDjs && hasSpecials
-                  ? 'lg:grid-cols-[1fr_1.2fr]'
-                  : 'grid-cols-1'
-              }`}
-            >
-              {hasDjs && (
-                <div>
-                  {day.djs.headliner?.length ? (
-                    <div className="mb-4">
-                      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.25em] text-gray-500">
-                        Headliner
-                      </p>
-                      <DjChips djs={day.djs.headliner} />
-                    </div>
-                  ) : null}
-
-                  {day.djs.support?.length ? (
-                    <div>
-                      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.25em] text-gray-500">
-                        Support
-                      </p>
-                      <DjChips djs={day.djs.support} />
-                    </div>
-                  ) : null}
-                </div>
+            <div className="hidden min-w-0 md:block">
+              {headliners.length > 0 && (
+                <>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                    Headliner
+                  </p>
+                  <p className="mt-2 truncate text-lg font-semibold text-black">
+                    {headliners.map((dj) => dj.name).join(' · ')}
+                  </p>
+                </>
               )}
+            </div>
 
-              {hasSpecials && (
+            {hasDetails && (
+              <div className="flex items-center justify-between gap-2 text-sm font-semibold md:justify-end">
+                <span className="md:hidden">Details anzeigen</span>
+                <ExpandMore className="transition-transform duration-300 group-open:rotate-180" />
+              </div>
+            )}
+          </div>
+        </summary>
+
+        {hasDetails && (
+          <div className="border-t border-black/10 px-4 pb-6 pt-6 sm:px-6 sm:pb-8">
+            <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]">
+              <div>
+                <p className="max-w-3xl leading-relaxed text-gray-700">
+                  {day.vibeText}
+                </p>
+
+                {headliners.length > 0 && (
+                  <div className="mt-6">
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                      Headliner
+                    </p>
+                    <DjChips djs={headliners} />
+                  </div>
+                )}
+
+                {support.length > 0 && (
+                  <div className="mt-5">
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
+                      Support
+                    </p>
+                    <DjChips djs={support} />
+                  </div>
+                )}
+              </div>
+
+              {(day.specials?.length ?? 0) > 0 && (
                 <div>
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.25em] text-gray-500">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">
                     Specials & Highlights
                   </p>
                   <SpecialsGrid specials={day.specials} />
                 </div>
               )}
             </div>
-          )}
-
-          <div className="mt-8 flex flex-col gap-3 border-t border-black/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-lg font-semibold text-black">
-                Bereit für {day.motto}?
-              </p>
-              <p className="text-sm text-gray-600">
-                Sichere dir deinen Platz im Weinzelt.
-              </p>
-            </div>
-
-            {day.reservationLink && (
-              <Link
-                href={day.reservationLink}
-                className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-white shadow-md transition hover:bg-gray-800"
-              >
-                Jetzt reservieren
-                <KeyboardArrowRight fontSize="inherit" />
-              </Link>
-            )}
           </div>
-        </div>
+        )}
+      </details>
+
+      <div className="flex flex-col gap-4 border-t border-black/10 bg-white/45 px-4 py-5 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <p className="text-sm text-gray-700">
+          Eintritt frei. Mit Reservierung sicherst du deiner Gruppe einen festen
+          Platz.
+        </p>
+
+        {day.reservationLink && (
+          <Link
+            href={day.reservationLink}
+            className="inline-flex shrink-0 items-center justify-center rounded-full bg-black px-5 py-2.5 font-semibold text-white transition hover:bg-gray-800"
+          >
+            Reservieren
+            <KeyboardArrowRight fontSize="small" />
+          </Link>
+        )}
       </div>
     </article>
   );
 }
 
 export default function EventDaysSection() {
+  const [showAll, setShowAll] = useState(false);
+  const [now, setNow] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setNow(new Date());
+  }, []);
+
+  const relevantIndex = useMemo(
+    () => (now ? getRelevantEventDayIndex(eventDays, now) : 0),
+    [now],
+  );
+
+  const visibleDays = useMemo(() => {
+    if (showAll) return eventDays;
+
+    const startIndex = Math.max(0, relevantIndex);
+    const upcomingDays = eventDays.slice(startIndex, startIndex + 4);
+
+    if (upcomingDays.length === 4) return upcomingDays;
+
+    return eventDays.slice(Math.max(0, eventDays.length - 4));
+  }, [relevantIndex, showAll]);
+
+  const operationalDate = now ? getOperationalDate(now) : null;
+
   return (
-    <section id="programm" className="bg-[#f8f6f2] py-20 px-4">
+    <section id="programm" className="scroll-mt-24 bg-[#f8f6f2] px-4 py-20">
       <div className="mx-auto max-w-7xl">
-        <div className="mx-auto max-w-5xl text-center">
+        <div className="mx-auto max-w-4xl text-center">
           <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-500">
             Programm 2026
           </p>
-          <h2 className="text-4xl sm:text-5xl font-cocogoose text-black">
+          <h2 className="text-4xl font-cocogoose text-black sm:text-5xl">
             Jeder Tag ein eigener Vibe.
           </h2>
-          <p className="mt-6 text-lg leading-relaxed text-gray-700">
-            Von entspanntem Daydrinking bis zu Nächten mit Beats, Licht und
-            richtig guter Stimmung: Hier siehst du, was dich an den einzelnen
-            Tagen im Weinzelt erwartet.
+          <p className="mt-5 text-lg leading-relaxed text-gray-700">
+            Zuerst siehst du den aktuellen und die nächsten Veranstaltungstage.
+            Öffne eine Karte für Line-up, Specials und weitere Details.
           </p>
         </div>
 
-        <div className="mt-14 space-y-8">
-          {eventDays.map((day) => (
-            <EventDayCard key={day.id} day={day} />
-          ))}
+        <div className="mt-12 space-y-5">
+          {visibleDays.map((day) => {
+            const parsedDate = parseEventDayDate(day.date);
+            const isCurrent = Boolean(
+              parsedDate &&
+              operationalDate &&
+              isSameCalendarDay(parsedDate, operationalDate),
+            );
+
+            return (
+              <EventDayCard key={day.id} day={day} isCurrent={isCurrent} />
+            );
+          })}
         </div>
+
+        {eventDays.length > 4 && (
+          <div className="mt-10 text-center">
+            <button
+              type="button"
+              onClick={() => setShowAll((current) => !current)}
+              className="rounded-full border border-black/15 bg-white px-7 py-3 font-semibold text-black shadow-sm transition hover:bg-stone-100"
+            >
+              {showAll
+                ? 'Nur aktuelle & kommende Tage anzeigen'
+                : `Alle ${eventDays.length} Veranstaltungstage anzeigen`}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

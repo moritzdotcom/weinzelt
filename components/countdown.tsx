@@ -1,76 +1,85 @@
 import { useEffect, useState } from 'react';
 
-export default function Countdown({ targetDate }: { targetDate: string }) {
-  const calculateTimeLeft = () => {
-    const now = new Date();
-    const difference = new Date(targetDate).getTime() - now.getTime();
+type TimeLeft = {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+};
 
-    let timeLeft = {
+function calculateTimeLeft(targetDate: string): TimeLeft {
+  const difference = new Date(targetDate).getTime() - Date.now();
+
+  if (difference <= 0) {
+    return {
       days: 0,
       hours: 0,
       minutes: 0,
       seconds: 0,
     };
+  }
 
-    if (difference > 0) {
-      timeLeft = {
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((difference / (1000 * 60)) % 60),
-        seconds: Math.floor((difference / 1000) % 60),
-      };
-    }
-
-    return timeLeft;
+  return {
+    days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+    minutes: Math.floor((difference / (1000 * 60)) % 60),
+    seconds: Math.floor((difference / 1000) % 60),
   };
+}
 
-  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
-
-  const formatUnit = (value: number, singular: string, plural: string) =>
-    value === 1 ? singular : plural;
+export default function Countdown({ targetDate }: { targetDate: string }) {
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>(() =>
+    calculateTimeLeft(targetDate),
+  );
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
+    setTimeLeft(calculateTimeLeft(targetDate));
+
+    const timer = window.setInterval(() => {
+      setTimeLeft(calculateTimeLeft(targetDate));
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, []);
+    return () => window.clearInterval(timer);
+  }, [targetDate]);
+
+  const units = [
+    {
+      value: timeLeft.days,
+      singular: 'Tag',
+      plural: 'Tage',
+    },
+    {
+      value: timeLeft.hours,
+      singular: 'Stunde',
+      plural: 'Stunden',
+    },
+    {
+      value: timeLeft.minutes,
+      singular: 'Minute',
+      plural: 'Minuten',
+    },
+    {
+      value: timeLeft.seconds,
+      singular: 'Sekunde',
+      plural: 'Sekunden',
+    },
+  ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      <div className="bg-gray-50 text-black rounded-xl px-6 py-4 shadow-lg">
-        <div className="text-4xl font-bold">
-          {timeLeft.days.toString().padStart(2, '0')}
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      {units.map(({ value, singular, plural }) => (
+        <div
+          key={singular}
+          className="min-w-28 rounded-2xl border border-black/5 bg-white px-5 py-4 text-black shadow-lg"
+        >
+          <div className="text-3xl font-bold tabular-nums sm:text-4xl">
+            {value.toString().padStart(2, '0')}
+          </div>
+          <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            {value === 1 ? singular : plural}
+          </div>
         </div>
-        <div className="text-sm font-semibold mt-1">
-          {formatUnit(timeLeft.days, 'Tag', 'Tage')}
-        </div>
-      </div>
-      <div className="bg-gray-50 text-black rounded-xl px-6 py-4 shadow-lg">
-        <div className="text-4xl font-bold">
-          {timeLeft.hours.toString().padStart(2, '0')}
-        </div>
-        <div className="text-sm font-semibold mt-1">
-          {formatUnit(timeLeft.hours, 'Stunde', 'Stunden')}
-        </div>
-      </div>
-      <div className="bg-gray-50 text-black rounded-xl px-6 py-4 shadow-lg">
-        <div className="text-4xl font-bold">
-          {timeLeft.minutes.toString().padStart(2, '0')}
-        </div>
-        <div className="text-sm font-semibold mt-1">
-          {formatUnit(timeLeft.minutes, 'Minute', 'Minuten')}
-        </div>
-      </div>
-      <div className="bg-gray-50 text-black rounded-xl px-6 py-4 shadow-lg">
-        <div className="text-4xl font-bold">
-          {timeLeft.seconds.toString().padStart(2, '0')}
-        </div>
-        <div className="text-sm font-semibold mt-1">
-          {formatUnit(timeLeft.seconds, 'Sekunde', 'Sekunden')}
-        </div>
-      </div>
+      ))}
     </div>
   );
 }

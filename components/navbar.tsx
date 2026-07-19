@@ -1,161 +1,153 @@
 import { Session } from '@/hooks/useSession';
-import { Drawer, Divider, Collapse, IconButton } from '@mui/material';
-import Link from 'next/link';
-import MenuIcon from '@mui/icons-material/Menu';
+import { Divider, Drawer, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import InstagramIcon from '@mui/icons-material/Instagram';
+import MenuIcon from '@mui/icons-material/Menu';
+import Link from 'next/link';
 import { useLayoutEffect, useRef, useState } from 'react';
+
+const navigation = [
+  { href: '/#programm', label: 'Programm' },
+  { href: '/#wine-events', label: 'WineEvents' },
+  { href: '/#gastro', label: 'Speisen & Getränke' },
+  { href: '/#konzept', label: 'Das Weinzelt' },
+  { href: '/impressions', label: 'Fotos' },
+  { href: '/jobs', label: 'Jobs' },
+];
 
 export default function Navbar({ session }: { session: Session }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [startOpen, setStartOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const [headerHeight, setHeaderHeight] = useState(0);
 
-  // 1) einmal initial und bei jeder Änderung von session.status nachmessen
   useLayoutEffect(() => {
-    const measure = () => {
-      if (headerRef.current) {
-        setHeaderHeight(headerRef.current.clientHeight);
-      }
-    };
+    const header = headerRef.current;
+    if (!header) return;
 
-    // direkt nach Mount
+    const measure = () => setHeaderHeight(header.clientHeight);
     measure();
 
-    // bei Resize nachmessen
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+    const observer = new ResizeObserver(measure);
+    observer.observe(header);
+
+    return () => observer.disconnect();
   }, [session.status]);
+
+  const closeMenu = () => setMenuOpen(false);
 
   return (
     <>
-      <header ref={headerRef} className="fixed w-full bg-white shadow z-50">
-        {session.status == 'authenticated' && (
-          <div className="w-full bg-gray-100">
-            <div className="max-w-7xl mx-auto px-4 py-1 flex items-center justify-between">
-              <p className="font-bold">Hallo {session.user.name}!</p>
-              <Link
-                href="/backend"
-                className="flex items-center gap-1 underline"
-              >
-                Zur Admin Seite
+      <header
+        ref={headerRef}
+        className="fixed inset-x-0 top-0 z-50 border-b border-black/5 bg-white/95 shadow-sm backdrop-blur-lg"
+      >
+        {session.status === 'authenticated' && (
+          <div className="w-full bg-stone-100">
+            <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1 text-sm">
+              <p className="font-semibold">Hallo {session.user.name}!</p>
+              <Link href="/backend" className="underline underline-offset-2">
+                Zur Admin-Seite
               </Link>
             </div>
           </div>
         )}
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/#">
-            <img src="/logo-sm.png" alt="WEINZELT" className="w-32 sm:w-40" />
+
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5">
+          <Link href="/" aria-label="Zur Weinzelt Startseite">
+            <img src="/logo-sm.png" alt="Weinzelt" className="w-32 sm:w-40" />
           </Link>
-          <nav className="hidden md:flex gap-6 items-center">
-            <Link href="/#wine-events">Events</Link>
-            <Link href="/#programm">Programm</Link>
-            <Link href="/#gastro">Getränke</Link>
-            <Link href="/about">Über uns</Link>
-            <Link href="/jobs">Jobs</Link>
-            <Link href="/impressions">Fotos</Link>
+
+          <nav className="hidden items-center gap-5 text-sm font-medium lg:flex">
+            {navigation.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="transition hover:text-gray-500"
+              >
+                {item.label}
+              </Link>
+            ))}
+
             <Link
               href="/reservation"
-              className="inline-block bg-black text-white px-3 py-2 rounded-full shadow hover:bg-gray-300 hover:text-black"
+              className="rounded-full bg-black px-5 py-2.5 text-white shadow transition hover:bg-gray-800"
             >
-              Tisch reservieren
+              Reservieren
             </Link>
           </nav>
-          <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <CloseIcon /> : <MenuIcon />}
+
+          <button
+            type="button"
+            aria-label="Navigation öffnen"
+            aria-expanded={menuOpen}
+            className="rounded-full p-2 transition hover:bg-stone-100 lg:hidden"
+            onClick={() => setMenuOpen(true)}
+          >
+            <MenuIcon />
           </button>
         </div>
-        <Drawer
-          className="md:hidden"
-          anchor="right"
-          open={menuOpen}
-          onClose={() => setMenuOpen(false)}
-        >
-          <div className="p-5 flex flex-col justify-between text-left text-xl min-w-[80vw] h-full">
-            <div className="flex flex-col gap-4">
-              <div className="flex justify-end">
-                <IconButton onClick={() => setMenuOpen(false)}>
-                  <CloseIcon fontSize="large" />
-                </IconButton>
-              </div>
-
-              {/* START Dropdown */}
-              <div>
-                <button
-                  className="w-full flex items-center justify-between"
-                  onClick={() => setStartOpen((prev) => !prev)}
-                >
-                  <span className="text-left">Start</span>
-                  {startOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                </button>
-                <Collapse in={startOpen} timeout="auto" unmountOnExit>
-                  <div className="flex flex-col gap-3 mt-3 ml-3 text-neutral-500">
-                    <Link
-                      href="/#wine-events"
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      Events
-                    </Link>
-                    <Divider />
-                    <Link href="/#programm" onClick={() => setMenuOpen(false)}>
-                      Programm & Entertainment
-                    </Link>
-                    <Divider />
-                    <Link href="/#gastro" onClick={() => setMenuOpen(false)}>
-                      Speisen & Getränke
-                    </Link>
-                    <Divider />
-                    <Link href="/#partner" onClick={() => setMenuOpen(false)}>
-                      Partner
-                    </Link>
-                  </div>
-                </Collapse>
-              </div>
-
-              <Divider />
-
-              {/* Die restlichen Menüpunkte */}
-              <Link href="/about" onClick={() => setMenuOpen(false)}>
-                Über uns
-              </Link>
-              <Divider />
-              <Link href="/jobs" onClick={() => setMenuOpen(false)}>
-                Jobs
-              </Link>
-              <Divider />
-              <Link href="/reservation" onClick={() => setMenuOpen(false)}>
-                Tisch reservieren
-              </Link>
-              <Divider />
-              <Link href="/impressions" onClick={() => setMenuOpen(false)}>
-                Fotos
-              </Link>
-            </div>
-
-            {/* Social Icons */}
-            <div className="mx-auto flex gap-5 items-center text-4xl">
-              <Link
-                href="https://www.instagram.com/weinzelt.dus/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <InstagramIcon fontSize="inherit" />
-              </Link>
-              <Link
-                href="https://www.tiktok.com/@weinzelt"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img src="/icons/tiktok.png" alt="TikTok" className="w-8 h-8" />
-              </Link>
-            </div>
-          </div>
-        </Drawer>
       </header>
-      <div style={{ height: headerHeight || 60 }} />
+
+      <Drawer anchor="right" open={menuOpen} onClose={closeMenu}>
+        <div className="flex h-full min-w-[84vw] max-w-sm flex-col p-5 sm:min-w-96">
+          <div className="flex items-center justify-between">
+            <img src="/logo-sm.png" alt="Weinzelt" className="w-36" />
+            <IconButton onClick={closeMenu} aria-label="Navigation schließen">
+              <CloseIcon fontSize="large" />
+            </IconButton>
+          </div>
+
+          <Divider sx={{ my: 3 }} />
+
+          <nav className="flex flex-col text-xl">
+            {navigation.map((item) => (
+              <div key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={closeMenu}
+                  className="block py-3"
+                >
+                  {item.label}
+                </Link>
+                <Divider />
+              </div>
+            ))}
+
+            <Link href="/about" onClick={closeMenu} className="block py-3">
+              Über uns
+            </Link>
+          </nav>
+
+          <Link
+            href="/reservation"
+            onClick={closeMenu}
+            className="mt-6 rounded-full bg-black px-6 py-4 text-center font-semibold text-white"
+          >
+            Jetzt reservieren
+          </Link>
+
+          <div className="mt-auto flex items-center justify-center gap-6 pt-10 text-4xl">
+            <Link
+              href="https://www.instagram.com/weinzelt.dus/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Weinzelt auf Instagram"
+            >
+              <InstagramIcon fontSize="inherit" />
+            </Link>
+            <Link
+              href="https://www.tiktok.com/@weinzelt"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Weinzelt auf TikTok"
+            >
+              <img src="/icons/tiktok.png" alt="" className="h-8 w-8" />
+            </Link>
+          </div>
+        </div>
+      </Drawer>
+
+      <div style={{ height: headerHeight || 68 }} />
     </>
   );
 }
