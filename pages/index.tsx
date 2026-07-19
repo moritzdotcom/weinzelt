@@ -5,7 +5,6 @@ import { KeyboardArrowRight } from '@mui/icons-material';
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
 import FoodGrid from '@/components/foodGrid';
-import { InstagramReel } from '@/components/instagramReel';
 import HeroFade from '@/components/heroFade';
 import EventDaysSection from '@/components/home/eventDaysSection';
 import HtmlHead from '@/components/htmlHead';
