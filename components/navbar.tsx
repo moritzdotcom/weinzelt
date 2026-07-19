@@ -10,7 +10,7 @@ const navigation = [
   { href: '/#programm', label: 'Programm' },
   { href: '/#wine-events', label: 'WineEvents' },
   { href: '/#gastro', label: 'Speisen & Getränke' },
-  { href: '/#konzept', label: 'Das Weinzelt' },
+  { href: '/about', label: 'Über Uns' },
   { href: '/impressions', label: 'Fotos' },
   { href: '/jobs', label: 'Jobs' },
 ];
