@@ -3,6 +3,7 @@ import archiver from 'archiver';
 import prisma from '@/lib/prismadb';
 import { getServerSession } from '@/lib/session';
 import { generateInvoicePDF } from '@/lib/pdf/generateInvoicePdf';
+import { Address } from '@/lib/reservation';
 
 type InvoiceLineItem = {
   name: string;
@@ -177,7 +178,7 @@ export default async function handler(
       issuedAt: invoice.issuedAt,
       customerName: invoice.customerName,
       customerEmail: invoice.customerEmail,
-      billingAddress: invoice.billingAddress,
+      billingAddress: invoice.billingAddress as Address,
       eventDateLabel: invoice.reservation.seating.eventDate.date,
       timeslot: invoice.reservation.seating.timeslot,
       lineItems,
