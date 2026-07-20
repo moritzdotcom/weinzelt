@@ -47,27 +47,42 @@ function parseAlbumMeta(year: number, day: string): AlbumMeta {
    *
    * 17.07. Audiokitchen
    * 17.07 - Audiokitchen
+   * 17.07. - Audiokitchen
+   * 17.07.2026 Audiokitchen
+   * 17.07.2026 - Audiokitchen
    * Freitag 17.07. Audiokitchen
+   * Freitag, 17.07. - Audiokitchen
    * Audiokitchen
    */
-  const dateMatch = trimmedDay.match(/(\d{1,2})\.(\d{1,2})(?:\.(\d{2,4}))?/);
+  const albumMatch = trimmedDay.match(
+    new RegExp(
+      `^(?:(${weekdays.join('|')})\\s*,?\\s*)?` +
+        `(\\d{1,2})\\.(\\d{1,2})` +
+        `(?:\\.(\\d{2}|\\d{4}))?` +
+        `\\.?\\s*` +
+        `(?:[-–—|:]\\s*)?` +
+        `(.*)$`,
+      'i',
+    ),
+  );
 
-  if (!dateMatch) {
+  if (!albumMatch) {
     return {
-      title: trimmedDay,
+      title: trimmedDay || `Weinzelt ${year}`,
       dateLabel: String(year),
-      sortValue: Date.UTC(year, 0, 1),
+      sortValue: Date.UTC(year, 0, 1, 12),
     };
   }
 
-  const dayNumber = Number(dateMatch[1]);
-  const monthNumber = Number(dateMatch[2]);
+  const dayNumber = Number(albumMatch[2]);
+  const monthNumber = Number(albumMatch[3]);
+  const suppliedYear = albumMatch[4];
 
   let parsedYear = year;
 
-  if (dateMatch[3]) {
-    const suppliedYear = Number(dateMatch[3]);
-    parsedYear = suppliedYear < 100 ? 2000 + suppliedYear : suppliedYear;
+  if (suppliedYear) {
+    const numericYear = Number(suppliedYear);
+    parsedYear = numericYear < 100 ? 2000 + numericYear : numericYear;
   }
 
   const date = new Date(Date.UTC(parsedYear, monthNumber - 1, dayNumber, 12));
@@ -77,27 +92,14 @@ function parseAlbumMeta(year: number, day: string): AlbumMeta {
     date.getUTCMonth() === monthNumber - 1 &&
     date.getUTCDate() === dayNumber;
 
-  let title = trimmedDay
-    .replace(dateMatch[0], '')
-    .replace(/^[\s\-–—|:]+/, '')
-    .trim();
-
-  const weekdayPattern = new RegExp(
-    `^(${weekdays.join('|')})[\\s,\\-–—|:]*`,
-    'i',
-  );
-
-  title = title.replace(weekdayPattern, '').trim();
-
-  if (!title) {
-    title = `Weinzelt ${year}`;
-  }
+  const parsedTitle = albumMatch[5].trim();
+  const title = parsedTitle || `Weinzelt ${year}`;
 
   if (!isValidDate) {
     return {
       title,
       dateLabel: String(year),
-      sortValue: Date.UTC(year, 0, 1),
+      sortValue: Date.UTC(year, 0, 1, 12),
     };
   }
 
