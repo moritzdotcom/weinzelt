@@ -120,7 +120,7 @@ export default function Gallery({
           </h2>
 
           <p className="mx-auto mt-3 max-w-xl leading-relaxed text-gray-600">
-            Für {year} – {day} wurden noch keine Fotos veröffentlicht.
+            Für {year} - {day} wurden noch keine Fotos veröffentlicht.
           </p>
         </div>
       </section>

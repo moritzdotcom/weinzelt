@@ -1,10 +1,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import Countdown from '@/components/countdown';
-import {
-  WEINZELT_END,
-  WEINZELT_OPENING,
-} from '@/lib/weinzeltDates';
+import { WEINZELT_END, WEINZELT_OPENING } from '@/lib/weinzeltDates';
 
 export default function EventStatusSection() {
   const [now, setNow] = useState<number | null>(null);
@@ -34,7 +31,7 @@ export default function EventStatusSection() {
               Bald wird wieder eingeschenkt.
             </h2>
             <p className="mt-5 max-w-2xl text-lg text-gray-700">
-              Wein, Beats und beste Stimmung – wir sehen uns auf der
+              Wein, Beats und beste Stimmung - wir sehen uns auf der
               Rheinkirmes.
             </p>
             <div className="mt-8">

@@ -275,7 +275,7 @@ export default function ImpressionenAlbumPage({
   nextAlbum,
   session,
 }: Props) {
-  const pageTitle = `${title} – Impressionen | Weinzelt Düsseldorf`;
+  const pageTitle = `${title} - Impressionen | Weinzelt Düsseldorf`;
   const description =
     photos.length > 0
       ? `Entdecke ${formatPhotoCount(photos.length)} vom ${dateLabel} im Weinzelt auf der Rheinkirmes Düsseldorf.`

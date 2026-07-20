@@ -148,7 +148,7 @@ export default function sendCompanyReservationMail(
           <tr>
             <td style="background:#111111; padding:16px 24px; text-align:center;">
               <p style="margin:0; font-size:12px; line-height:1.5; color:#ffffff;">
-                © ${year} Weinzelt – Alle Rechte vorbehalten
+                © ${year} Weinzelt - Alle Rechte vorbehalten
               </p>
             </td>
           </tr>

@@ -390,7 +390,7 @@ export default function ImpressionenPage({ albums, session }: Props) {
 
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/70 sm:text-xl">
               Wein, Beats, besondere Begegnungen und lange Nächte auf der
-              Rheinkirmes – entdecke die schönsten Momente aus dem Weinzelt.
+              Rheinkirmes - entdecke die schönsten Momente aus dem Weinzelt.
             </p>
 
             {albums.length > 0 && (

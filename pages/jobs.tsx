@@ -228,7 +228,7 @@ export default function JobsPage({ session }: { session: Session }) {
 
   return (
     <div className="min-h-screen bg-white font-sans">
-      <HtmlHead title="Weinzelt – Jobs & Bewerbung" />
+      <HtmlHead title="Weinzelt - Jobs & Bewerbung" />
 
       <Navbar session={session} />
 
@@ -322,7 +322,7 @@ export default function JobsPage({ session }: { session: Session }) {
               </p>
 
               <p className="mt-7 text-xl font-semibold leading-relaxed text-black">
-                Kein Tag ist wie der andere – und genau das macht es aus.
+                Kein Tag ist wie der andere - und genau das macht es aus.
               </p>
             </div>
 
@@ -377,7 +377,7 @@ export default function JobsPage({ session }: { session: Session }) {
               <BenefitCard
                 number="02"
                 title="Mitten im Geschehen"
-                description="Dein Arbeitsplatz liegt direkt auf der Düsseldorfer Rheinkirmes – zwischen Wein, Musik und besonderer Atmosphäre."
+                description="Dein Arbeitsplatz liegt direkt auf der Düsseldorfer Rheinkirmes - zwischen Wein, Musik und besonderer Atmosphäre."
               />
 
               <BenefitCard

@@ -41,7 +41,7 @@ export default async function handler(
 
     if (storageError) {
       console.error(storageError);
-      // optional: trotzdem löschen oder abbrechen – ich lösche trotzdem:
+      // optional: trotzdem löschen oder abbrechen - ich lösche trotzdem:
     }
 
     await prisma.impressionPhoto.delete({

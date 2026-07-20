@@ -6,7 +6,7 @@ const options = [
     title: 'VIP-Tisch',
     eyebrow: 'Für Genießer',
     description:
-      'Dein eigener Tisch, Zugang zur WineCorner und eine kuratierte Auswahl besonderer Weine – mitten im Geschehen.',
+      'Dein eigener Tisch, Zugang zur WineCorner und eine kuratierte Auswahl besonderer Weine - mitten im Geschehen.',
     image: '/home/vipArea.jpg',
     alt: 'VIP-Tische und WineCorner im Weinzelt',
     href: '/reservation/vip',
@@ -68,9 +68,7 @@ export default function ReservationOptionsSection() {
                 >
                   {option.eyebrow}
                 </p>
-                <h3 className="mt-3 text-3xl font-cocogoose">
-                  {option.title}
-                </h3>
+                <h3 className="mt-3 text-3xl font-cocogoose">{option.title}</h3>
                 <p
                   className={`mt-4 leading-relaxed ${
                     option.dark ? 'text-white/75' : 'text-gray-700'

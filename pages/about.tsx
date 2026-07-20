@@ -78,7 +78,7 @@ function ValueCard({
 export default function AboutPage({ session }: { session: Session }) {
   return (
     <div className="min-h-screen bg-white font-sans">
-      <HtmlHead title="Weinzelt – Über uns" />
+      <HtmlHead title="Weinzelt - Über uns" />
 
       <Navbar session={session} />
 
@@ -111,7 +111,7 @@ export default function AboutPage({ session }: { session: Session }) {
 
               <p className="mt-7 max-w-2xl text-lg leading-relaxed text-white/75 sm:text-xl">
                 Das Weinzelt verbindet besondere Weine, gute Musik und echte
-                Düsseldorfer Lebensfreude – getragen von Menschen, die
+                Düsseldorfer Lebensfreude - getragen von Menschen, die
                 Gastfreundschaft nicht nur organisieren, sondern leben.
               </p>
 
@@ -207,7 +207,7 @@ export default function AboutPage({ session }: { session: Session }) {
               <ValueCard
                 number="01"
                 title="Echte Gastfreundschaft"
-                text="Wir möchten, dass sich jeder Gast vom ersten Moment an willkommen fühlt – aufmerksam, persönlich und unkompliziert."
+                text="Wir möchten, dass sich jeder Gast vom ersten Moment an willkommen fühlt - aufmerksam, persönlich und unkompliziert."
               />
 
               <ValueCard
@@ -312,7 +312,7 @@ export default function AboutPage({ session }: { session: Session }) {
 
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/65">
                 Daraus entsteht ein Ort, der vertraut und gleichzeitig besonders
-                ist – mitten auf der Rheinkirmes und fest mit Düsseldorf
+                ist - mitten auf der Rheinkirmes und fest mit Düsseldorf
                 verbunden.
               </p>
             </div>

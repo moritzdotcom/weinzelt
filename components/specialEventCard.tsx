@@ -105,7 +105,7 @@ export function SpecialEventCard({
 
               <span className="inline-flex items-center gap-1.5">
                 <ScheduleRounded sx={{ fontSize: 16 }} />
-                {event.startTime}–{event.endTime} Uhr
+                {event.startTime}-{event.endTime} Uhr
               </span>
             </>
           ) : (

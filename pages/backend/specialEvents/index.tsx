@@ -195,7 +195,7 @@ function getOccurrenceLabel(occurrence: BackendSpecialEventOccurrence) {
     ? `${occurrence.eventDate.dow}, ${occurrence.eventDate.date}`
     : occurrence.eventDate.date;
 
-  return `${dateLabel} · ${occurrence.startTime}–${occurrence.endTime} Uhr`;
+  return `${dateLabel} · ${occurrence.startTime}-${occurrence.endTime} Uhr`;
 }
 
 function getShortOccurrencesLabel(event: BackendSpecialEventListItem) {

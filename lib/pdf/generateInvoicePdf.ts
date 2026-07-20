@@ -2,8 +2,7 @@ import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 import { formatAddressLines } from '../mailer/helpers/address';
-
-type Address = any; // du hast bereits Address Typen – kannst du hier ersetzen
+import { Address } from '../reservation';
 
 type InvoiceLineItem = {
   name: string;

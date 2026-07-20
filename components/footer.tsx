@@ -42,7 +42,7 @@ export default function Footer() {
             Besuch
           </p>
           <div className="mt-4 space-y-2 text-white/80">
-            <p>17.–26. Juli 2026</p>
+            <p>17.-26. Juli 2026</p>
             <p>Rheinkirmes Düsseldorf</p>
             <p>Eintritt frei</p>
           </div>

@@ -251,7 +251,7 @@ export default function BackendSpecialEventPage({
                     {specialEvent.occurrences.length === 1 && (
                       <span className="inline-flex items-center gap-1.5 text-sm">
                         <ScheduleRounded fontSize="small" />
-                        {specialEvent.occurrences[0].startTime}–
+                        {specialEvent.occurrences[0].startTime}-
                         {specialEvent.occurrences[0].endTime} Uhr
                       </span>
                     )}
@@ -283,7 +283,7 @@ export default function BackendSpecialEventPage({
                       key={occurrence.id}
                       variant="outlined"
                       icon={<CalendarMonthRounded />}
-                      label={`${occurrence.eventDate.dow}, ${occurrence.eventDate.date} · ${occurrence.startTime}–${occurrence.endTime} Uhr`}
+                      label={`${occurrence.eventDate.dow}, ${occurrence.eventDate.date} · ${occurrence.startTime}-${occurrence.endTime} Uhr`}
                       sx={{
                         borderRadius: 999,
                         fontWeight: 700,

@@ -92,7 +92,7 @@ function ImpressionsOverviewContent() {
 
   async function handleDeleteAlbum(album: AlbumOption) {
     const confirmed = confirm(
-      `Album wirklich löschen?\n\n${album.year} – ${album.day}\n${album.photoCount} Foto(s)\n\nDieser Vorgang kann nicht rückgängig gemacht werden.`,
+      `Album wirklich löschen?\n\n${album.year} - ${album.day}\n${album.photoCount} Foto(s)\n\nDieser Vorgang kann nicht rückgängig gemacht werden.`,
     );
 
     if (!confirmed) return;

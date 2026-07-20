@@ -66,7 +66,7 @@ export default function HeroFade() {
       <div className="relative mx-auto flex min-h-[620px] max-w-7xl items-center px-4 py-20 md:min-h-[720px] lg:min-h-[780px]">
         <div className="max-w-3xl text-white">
           <p className="mb-5 inline-flex rounded-full border border-white/25 bg-black/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] backdrop-blur-md sm:text-sm">
-            17.–26. Juli 2026 · Rheinkirmes Düsseldorf
+            17.-26. Juli 2026 · Rheinkirmes Düsseldorf
           </p>
 
           <h1 className="max-w-3xl text-5xl font-cocogoose leading-[0.96] sm:text-6xl lg:text-7xl">

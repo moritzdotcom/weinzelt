@@ -102,7 +102,7 @@ export function SpecialEventRegistrationForm({
       ? `${occurrence.eventDate.dow}, ${occurrence.eventDate.date}`
       : occurrence.eventDate.date;
 
-    return `${dateLabel} · ${occurrence.startTime}–${occurrence.endTime} Uhr`;
+    return `${dateLabel} · ${occurrence.startTime}-${occurrence.endTime} Uhr`;
   }
 
   const requiresPayment = Boolean(event.priceCents && event.priceCents > 0);

@@ -50,7 +50,7 @@ type ApiResponse = {
 };
 
 function formatDate(value?: string | null) {
-  if (!value) return '–';
+  if (!value) return '-';
 
   return new Intl.DateTimeFormat('de-DE', {
     dateStyle: 'medium',
