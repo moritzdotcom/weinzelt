@@ -1,10 +1,10 @@
-export type ImpressionAlbumMeta = {
+export type AlbumMeta = {
   title: string;
   dateLabel: string;
   sortValue: number;
 };
 
-const WEEKDAYS = [
+const weekdays = [
   'montag',
   'dienstag',
   'mittwoch',
@@ -14,25 +14,34 @@ const WEEKDAYS = [
   'sonntag',
 ];
 
-export function parseImpressionAlbumMeta(
-  year: number,
-  day: string,
-): ImpressionAlbumMeta {
+export function parseAlbumMeta(year: number, day: string): AlbumMeta {
   const trimmedDay = day.trim();
 
   /*
-   * Unterstützte Beispiele:
+   * Unterstützte Varianten:
    *
-   * 16.07. First Impressions
-   * 16.07 - First Impressions
-   * Donnerstag 16.07. First Impressions
-   * First Impressions
+   * 17.07. Audiokitchen
+   * 17.07 - Audiokitchen
+   * 17.07. - Audiokitchen
+   * 17.07.2026 Audiokitchen
+   * 17.07.2026 - Audiokitchen
+   * Freitag 17.07. Audiokitchen
+   * Freitag, 17.07. - Audiokitchen
+   * Audiokitchen
    */
-  const dateMatch = trimmedDay.match(
-    /(\d{1,2})\.(\d{1,2})(?:\.(\d{2,4}))?/,
+  const albumMatch = trimmedDay.match(
+    new RegExp(
+      `^(?:(${weekdays.join('|')})\\s*,?\\s*)?` +
+        `(\\d{1,2})\\.(\\d{1,2})` +
+        `(?:\\.(\\d{2}|\\d{4}))?` +
+        `\\.?\\s*` +
+        `(?:[-–—|:]\\s*)?` +
+        `(.*)$`,
+      'i',
+    ),
   );
 
-  if (!dateMatch) {
+  if (!albumMatch) {
     return {
       title: trimmedDay || `Weinzelt ${year}`,
       dateLabel: String(year),
@@ -40,40 +49,26 @@ export function parseImpressionAlbumMeta(
     };
   }
 
-  const dayNumber = Number(dateMatch[1]);
-  const monthNumber = Number(dateMatch[2]);
+  const dayNumber = Number(albumMatch[2]);
+  const monthNumber = Number(albumMatch[3]);
+  const suppliedYear = albumMatch[4];
 
   let parsedYear = year;
 
-  if (dateMatch[3]) {
-    const suppliedYear = Number(dateMatch[3]);
-    parsedYear = suppliedYear < 100 ? 2000 + suppliedYear : suppliedYear;
+  if (suppliedYear) {
+    const numericYear = Number(suppliedYear);
+    parsedYear = numericYear < 100 ? 2000 + numericYear : numericYear;
   }
 
-  const date = new Date(
-    Date.UTC(parsedYear, monthNumber - 1, dayNumber, 12),
-  );
+  const date = new Date(Date.UTC(parsedYear, monthNumber - 1, dayNumber, 12));
 
   const isValidDate =
     date.getUTCFullYear() === parsedYear &&
     date.getUTCMonth() === monthNumber - 1 &&
     date.getUTCDate() === dayNumber;
 
-  let title = trimmedDay
-    .replace(dateMatch[0], '')
-    .replace(/^[\s\-–—|:]+/, '')
-    .trim();
-
-  const weekdayPattern = new RegExp(
-    `^(${WEEKDAYS.join('|')})[\\s,\\-–—|:]*`,
-    'i',
-  );
-
-  title = title.replace(weekdayPattern, '').trim();
-
-  if (!title) {
-    title = `Weinzelt ${year}`;
-  }
+  const parsedTitle = albumMatch[5].trim();
+  const title = parsedTitle || `Weinzelt ${year}`;
 
   if (!isValidDate) {
     return {

@@ -3,10 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import prisma from '@/lib/prismadb';
 import { supabase } from '@/lib/supabase';
-import {
-  formatPhotoCount,
-  parseImpressionAlbumMeta,
-} from '@/lib/impressionAlbumMeta';
+import { formatPhotoCount, parseAlbumMeta } from '@/lib/impressionAlbumMeta';
 import Gallery, { type GalleryPhoto } from '@/components/gallery';
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
@@ -122,7 +119,7 @@ export const getServerSideProps: GetServerSideProps<Partial<Props>> = async (
     };
   }
 
-  const albumMeta = parseImpressionAlbumMeta(album.year, album.day);
+  const albumMeta = parseAlbumMeta(album.year, album.day);
 
   const photos: GalleryPhoto[] = photosRaw.map((photo) => {
     const { fullUrl, thumbnailUrl } = getStorageImageUrls(photo.path);
@@ -138,7 +135,7 @@ export const getServerSideProps: GetServerSideProps<Partial<Props>> = async (
 
   const sortedAlbums = albumsRaw
     .map((item) => {
-      const meta = parseImpressionAlbumMeta(item.year, item.day);
+      const meta = parseAlbumMeta(item.year, item.day);
 
       return {
         id: item.id,
