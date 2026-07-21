@@ -276,7 +276,7 @@ export default function ImpressionenPage({ albums, session }: Props) {
                 />
               </div>
 
-              <div className="absolute inset-0 bg-gradient-to-br from-black via-stone-950/85 to-black/70" />
+              <div className="absolute inset-0 bg-gradient-to-br from-black via-stone-950/20 to-black/5" />
             </>
           )}
 

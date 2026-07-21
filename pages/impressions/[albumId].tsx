@@ -217,8 +217,8 @@ function AlbumNavigationCard({
           <div
             className={`absolute inset-0 ${
               isNext
-                ? 'bg-gradient-to-r from-black/95 via-black/75 to-black/45'
-                : 'bg-gradient-to-r from-white via-white/90 to-white/55'
+                ? 'bg-gradient-to-r from-black/70 via-black/50 to-black/45'
+                : 'bg-gradient-to-r from-white via-white/70 to-white/45'
             }`}
           />
         </>
@@ -303,7 +303,7 @@ export default function ImpressionenAlbumPage({
                 />
               </div>
 
-              <div className="absolute inset-0 bg-gradient-to-r from-black via-stone-950/90 to-black/55" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black via-stone-950/50 to-black/25" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
             </>
           )}
