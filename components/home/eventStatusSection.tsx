@@ -25,7 +25,7 @@ export default function EventStatusSection() {
         {now === null ? null : now < opening ? (
           <>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-gray-500">
-              Opening am 17. Juli 2026
+              Opening am 16. Juli 2027
             </p>
             <h2 className="mt-3 text-3xl font-cocogoose sm:text-4xl">
               Bald wird wieder eingeschenkt.

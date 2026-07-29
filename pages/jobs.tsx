@@ -282,7 +282,7 @@ export default function JobsPage({ session }: { session: Session }) {
               </div>
 
               <div className="mt-10 grid max-w-4xl gap-3 sm:grid-cols-3">
-                <InfoPill label="Zeitraum" value="17. bis 26. Juli 2026" />
+                <InfoPill label="Zeitraum" value="16. bis 25. Juli 2027" />
 
                 <InfoPill
                   label="Verfügbarkeit"
@@ -409,7 +409,7 @@ export default function JobsPage({ session }: { session: Session }) {
               </div>
 
               <p className="text-sm text-gray-500">
-                Weinzelt 2026 · Düsseldorf
+                Weinzelt 2027 · Düsseldorf
               </p>
             </div>
 
@@ -683,7 +683,7 @@ function ApplicationForm({
             htmlFor="application-availability"
             className="mb-2 block text-sm font-semibold text-gray-700"
           >
-            Verfügbarkeit vom 17. bis 26. Juli 2026 *
+            Verfügbarkeit vom 16. bis 25. Juli 2027 *
           </label>
 
           <textarea

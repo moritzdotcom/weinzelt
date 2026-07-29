@@ -300,8 +300,7 @@ export default function EventDaysSection() {
             Jeder Tag ein eigener Vibe.
           </h2>
           <p className="mt-5 text-lg leading-relaxed text-gray-700">
-            Zuerst siehst du den aktuellen und die nächsten Veranstaltungstage.
-            Öffne eine Karte für Line-up, Specials und weitere Details.
+            Das war das Weinzelt 2026
           </p>
         </div>
 

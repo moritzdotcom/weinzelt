@@ -11,7 +11,7 @@ export default function ARGBPage() {
         />
         <h1 className="text-3xl font-semibold">
           Allgemeine Reservierungs- und Geschäftsbedingungen Weinzelt GmbH -
-          Rheinkirmes Düsseldorf 2026
+          Rheinkirmes Düsseldorf 2027
         </h1>
       </Box>
 
@@ -23,8 +23,8 @@ export default function ARGBPage() {
           von Sitz- und/oder Stehplätzen sowie - je nach Reservierungspaket -
           den Erwerb von Verzehrmarken bzw. einer Verzehrkarte (nachfolgend
           zusammen „Reservierung“) für das Weinzelt während der Düsseldorfer
-          Rheinkirmes 2026 im Zeitraum vom 17.07.2026 bis einschließlich
-          26.07.2026 (nachfolgend „Veranstaltung“) in Düsseldorf.
+          Rheinkirmes 2027 im Zeitraum vom 16.07.2027 bis einschließlich
+          25.07.2027 (nachfolgend „Veranstaltung“) in Düsseldorf.
         </p>
 
         <p>
@@ -633,7 +633,7 @@ export default function ARGBPage() {
         </h3>
         <p>
           Verzehrmarken bzw. die Verzehrkarte sind jeweils nur für die Dauer der
-          Veranstaltung vom 17.07.2026 bis einschließlich 26.07.2026 im Weinzelt
+          Veranstaltung vom 16.07.2027 bis einschließlich 25.07.2027 im Weinzelt
           einlösbar.
         </p>
         <p>

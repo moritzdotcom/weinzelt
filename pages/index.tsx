@@ -73,7 +73,7 @@ const partnerLogos = [
 
 function GoodToKnowSection() {
   const items = [
-    ['Wann', '17.-26. Juli 2026'],
+    ['Wann', '16.-25. Juli 2027'],
     ['Wo', 'Rheinkirmes Düsseldorf'],
     ['Eintritt', 'Kostenlos'],
     ['Reservierung', 'Optional, für Gruppen empfohlen'],

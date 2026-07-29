@@ -116,7 +116,7 @@ export default function Backend({ session }: { session: Session }) {
               {Math.round(
                 Math.max(
                   0,
-                  (new Date('2026-07-17T14:00').getTime() -
+                  (new Date('2027-07-16T14:00').getTime() -
                     new Date().getTime()) /
                     1000 /
                     60 /

@@ -1,6 +1,6 @@
-export const WEINZELT_YEAR = 2026;
-export const WEINZELT_OPENING = '2026-07-17T14:00:00+02:00';
-export const WEINZELT_END = '2026-07-27T05:00:00+02:00';
+export const WEINZELT_YEAR = 2027;
+export const WEINZELT_OPENING = '2027-07-16T14:00:00+02:00';
+export const WEINZELT_END = '2027-07-26T05:00:00+02:00';
 
 const EVENT_DAY_CUTOFF_HOUR = 6;
 
