@@ -19,6 +19,9 @@ export default async function handler(
     const events = await prisma.specialEvent.findMany({
       where: {
         isPublished: true,
+        event: {
+          current: true,
+        },
       },
       include: {
         occurrences: {
