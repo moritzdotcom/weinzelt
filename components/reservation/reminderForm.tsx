@@ -12,7 +12,7 @@ export default function ReservationReminderForm() {
   async function onSubmit() {
     setLoading(true);
     try {
-      await axios.post('/api/reservationReminder', {
+      await axios.post('/api/newsletter/subscribe', {
         name,
         email,
       });
