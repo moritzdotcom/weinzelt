@@ -354,7 +354,7 @@ function createCoverPage({
       .text(
         `${ISSUER.name} · ${ISSUER.line1} · ${ISSUER.postalCode} ${ISSUER.city} · USt-IdNr. ${ISSUER.vatId}`,
         48,
-        document.page.height - 110,
+        document.page.height - 70,
         {
           width: contentWidth,
           align: 'center',
