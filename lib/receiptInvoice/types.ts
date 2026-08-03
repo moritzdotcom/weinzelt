@@ -22,15 +22,8 @@ export type ReceiptPaymentLine = {
 
 export type ParsedTebiReceipt = {
   receiptNumber: string;
-
-  /**
-   * YYYY-MM-DD
-   */
   receiptDate: string;
 
-  /**
-   * Originaldarstellung aus dem Beleg.
-   */
   createdAtLabel: string;
   paidAtLabel: string | null;
 
@@ -38,6 +31,23 @@ export type ParsedTebiReceipt = {
 
   netCents: number;
   vatCents: number;
+
+  /**
+   * Summe der Beträge, die in den MwSt.-Zeilen enthalten sind.
+   * Auf dem Beispielbeleg: 2.363,00 €
+   */
+  subtotalCents: number;
+
+  /**
+   * Separat ausgewiesenes Trinkgeld.
+   * Auf dem Beispielbeleg: 187,00 €
+   */
+  tipCents: number;
+
+  /**
+   * Tatsächlich gezahlter Gesamtbetrag.
+   * Auf dem Beispielbeleg: 2.550,00 €
+   */
   grossCents: number;
 
   currency: 'EUR';

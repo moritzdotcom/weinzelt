@@ -46,23 +46,6 @@ function fullYear(year: string): number {
   return parsed >= 70 ? 1900 + parsed : 2000 + parsed;
 }
 
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function getMoneyAfterLabel(text: string, label: string): number | null {
-  const regex = new RegExp(
-    `${escapeRegExp(label)}\\s+€?\\s*([\\d.]+,\\d{2})`,
-    'i',
-  );
-
-  const match = text.match(regex);
-
-  if (!match) return null;
-
-  return parseEuroToCents(match[1]);
-}
-
 export async function parseTebiReceiptPdf(
   buffer: Buffer,
 ): Promise<ParsedTebiReceipt> {
@@ -156,36 +139,91 @@ export async function parseTebiReceiptPdf(
     0,
   );
 
-  if (Math.abs(taxGrossCents - grossCents) > 1) {
+  const subtotalMatch = text.match(/Zwischensumme\s+€?\s*([\d.]+,\d{2})/i);
+
+  const tipMatch = text.match(/Trinkgeld\s+€?\s*([\d.]+,\d{2})/i);
+
+  const tipCents = tipMatch ? parseEuroToCents(tipMatch[1]) : 0;
+
+  /**
+   * Einige Belege enthalten keine ausdrücklich bezeichnete Zwischensumme.
+   *
+   * Reihenfolge:
+   * 1. Ausgewiesene Zwischensumme verwenden
+   * 2. Gesamtbetrag abzüglich Trinkgeld
+   * 3. Summe der MwSt.-Bruttobeträge
+   */
+  const subtotalCents = subtotalMatch
+    ? parseEuroToCents(subtotalMatch[1])
+    : tipCents > 0
+      ? grossCents - tipCents
+      : taxGrossCents;
+
+  if (Math.abs(taxGrossCents - subtotalCents) > 1) {
     throw new Error(
-      'Gesamtbetrag und Umsatzsteuer-Aufschlüsselung stimmen nicht überein.',
+      [
+        'Zwischensumme und Umsatzsteuer-Aufschlüsselung stimmen nicht überein.',
+        `Zwischensumme: ${(subtotalCents / 100).toFixed(2)} €`,
+        `MwSt.-Bruttosumme: ${(taxGrossCents / 100).toFixed(2)} €`,
+      ].join(' '),
     );
   }
 
-  if (Math.abs(netCents + vatCents - grossCents) > 1) {
+  if (Math.abs(netCents + vatCents - subtotalCents) > 1) {
     throw new Error(
-      'Netto-, Umsatzsteuer- und Bruttobetrag stimmen nicht überein.',
+      [
+        'Netto-, Umsatzsteuer- und Zwischensumme stimmen nicht überein.',
+        `Netto: ${(netCents / 100).toFixed(2)} €`,
+        `MwSt.: ${(vatCents / 100).toFixed(2)} €`,
+        `Zwischensumme: ${(subtotalCents / 100).toFixed(2)} €`,
+      ].join(' '),
     );
   }
 
-  const paymentDefinitions = [
-    'Reservierungsanzahlung',
-    'Kartenzahlung',
-    'Barzahlung',
-    'Gutschein',
+  if (Math.abs(subtotalCents + tipCents - grossCents) > 1) {
+    throw new Error(
+      [
+        'Zwischensumme, Trinkgeld und Gesamtbetrag stimmen nicht überein.',
+        `Zwischensumme: ${(subtotalCents / 100).toFixed(2)} €`,
+        `Trinkgeld: ${(tipCents / 100).toFixed(2)} €`,
+        `Gesamt: ${(grossCents / 100).toFixed(2)} €`,
+      ].join(' '),
+    );
+  }
+
+  const paymentDefinitions: Array<{
+    label: string;
+    pattern: RegExp;
+  }> = [
+    {
+      label: 'Reservierungsanzahlung',
+      pattern: /Reservierungsanzahlung\s+€?\s*([\d.]+,\d{2})/i,
+    },
+    {
+      label: 'Kartenzahlung',
+      pattern: /Kartenzahlung(?:en)?\s+€?\s*([\d.]+,\d{2})/i,
+    },
+    {
+      label: 'Barzahlung',
+      pattern: /Barzahlung(?:en)?\s+€?\s*([\d.]+,\d{2})/i,
+    },
+    {
+      label: 'Gutschein',
+      pattern: /Gutschein(?:e)?\s+€?\s*([\d.]+,\d{2})/i,
+    },
   ];
 
   const payments: ReceiptPaymentLine[] = [];
 
-  for (const label of paymentDefinitions) {
-    const amountCents = getMoneyAfterLabel(text, label);
+  for (const definition of paymentDefinitions) {
+    const match = text.match(definition.pattern);
 
-    if (amountCents !== null) {
-      payments.push({
-        label,
-        amountCents,
-      });
-    }
+    if (!match) continue;
+
+    payments.push({
+      label: definition.label,
+      amountCents: parseEuroToCents(match[1]),
+    });
   }
 
   const paidCents = payments.reduce(
@@ -195,7 +233,11 @@ export async function parseTebiReceiptPdf(
 
   if (payments.length > 0 && Math.abs(paidCents - grossCents) > 1) {
     throw new Error(
-      'Die auf dem Beleg erkannten Zahlungsarten entsprechen nicht dem Gesamtbetrag.',
+      [
+        'Die erkannten Zahlungsarten entsprechen nicht dem Gesamtbetrag.',
+        `Zahlungen: ${(paidCents / 100).toFixed(2)} €`,
+        `Gesamt: ${(grossCents / 100).toFixed(2)} €`,
+      ].join(' '),
     );
   }
 
@@ -205,9 +247,13 @@ export async function parseTebiReceiptPdf(
     createdAtLabel,
     paidAtLabel,
     tableNumber,
+
     netCents,
     vatCents,
+    subtotalCents,
+    tipCents,
     grossCents,
+
     currency: 'EUR',
     taxLines,
     payments,

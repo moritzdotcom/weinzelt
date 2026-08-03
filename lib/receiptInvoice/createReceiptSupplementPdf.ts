@@ -269,6 +269,19 @@ function createCoverPage({
     }
 
     drawAmountRow({
+      label: 'Zwischensumme',
+      amount: formatCents(receipt.subtotalCents),
+      bold: true,
+    });
+
+    if (receipt.tipCents > 0) {
+      drawAmountRow({
+        label: 'Trinkgeld',
+        amount: formatCents(receipt.tipCents),
+      });
+    }
+
+    drawAmountRow({
       label: 'Gesamtbetrag',
       amount: formatCents(receipt.grossCents),
       bold: true,
