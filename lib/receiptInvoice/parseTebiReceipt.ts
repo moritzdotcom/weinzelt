@@ -1,3 +1,4 @@
+import { CanvasFactory } from 'pdf-parse/worker';
 import { PDFParse } from 'pdf-parse';
 
 import type {
@@ -5,6 +6,21 @@ import type {
   ReceiptPaymentLine,
   ReceiptTaxLine,
 } from './types';
+
+async function extractPdfText(buffer: Buffer): Promise<string> {
+  const parser = new PDFParse({
+    data: new Uint8Array(buffer),
+    CanvasFactory,
+  });
+
+  try {
+    const result = await parser.getText();
+
+    return result.text;
+  } finally {
+    await parser.destroy();
+  }
+}
 
 function parseEuroToCents(value: string): number {
   const normalized = value
@@ -50,11 +66,9 @@ function getMoneyAfterLabel(text: string, label: string): number | null {
 export async function parseTebiReceiptPdf(
   buffer: Buffer,
 ): Promise<ParsedTebiReceipt> {
-  const parser = new PDFParse({ data: buffer });
+  const rawText = await extractPdfText(buffer);
 
-  const parsedPdf = await parser.getText();
-
-  const text = parsedPdf.text
+  const text = rawText
     .replace(/\u00a0/g, ' ')
     .replace(/\r/g, '')
     .replace(/[ \t]+/g, ' ')
