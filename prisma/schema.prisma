@@ -128,11 +128,12 @@ model Reservation {
   paidAt                  DateTime?
   manualPaymentTrackedBy  String?
 
-  stripeRefundId String?             @unique
-  refundedAmount Int?
-  refundReason   String?
-  canceledAt     DateTime?
-  invoice        ReservationInvoice?
+  stripeRefundId            String?                    @unique
+  refundedAmount            Int?
+  refundReason              String?
+  canceledAt                DateTime?
+  invoice                   ReservationInvoice?
+  receiptInvoiceSupplements ReceiptInvoiceSupplement[]
 }
 
 model CompanyReservation {
@@ -187,6 +188,48 @@ model InvoiceSequence {
   year      Int      @id
   seq       Int
   updatedAt DateTime @updatedAt
+}
+
+model ReceiptInvoiceSupplement {
+  id             String @id @default(cuid())
+  documentNumber String @unique
+
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Restrict)
+
+  // Referenz auf den ursprünglichen Kassenbeleg
+  receiptNumber String
+  receiptDate   DateTime
+  tableNumber   String?
+
+  receiptCreatedAtLabel String
+  receiptPaidAtLabel    String?
+
+  // Beträge des ursprünglichen Belegs
+  netCents   Int
+  vatCents   Int
+  grossCents Int
+  currency   String @default("EUR")
+
+  // Snapshots der Daten zum Zeitpunkt der Erstellung
+  recipientCompany String
+  recipientEmail   String?
+  recipientAddress Json
+  taxLines         Json
+  payments         Json
+
+  // Archivierung
+  originalPdfPath   String
+  finalPdfPath      String
+  originalPdfSha256 String
+  finalPdfSha256    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([receiptNumber, receiptDate])
+  @@index([reservationId])
+  @@index([createdAt])
 }
 
 model PageVisit {

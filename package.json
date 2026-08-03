@@ -28,6 +28,8 @@
     "next": "15.3.8",
     "next-sitemap": "^4.2.3",
     "nodemailer": "^7.0.3",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^2.4.5",
     "pdfkit": "^0.17.1",
     "photoswipe": "^5.4.4",
     "react": "^19.0.0",

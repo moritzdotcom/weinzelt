@@ -15,6 +15,7 @@ export const BACKEND_PERMISSIONS = {
 
   DASHBOARD: 'backend.dashboard',
   INVOICES: 'backend.invoices',
+  RECEIPT_INVOICES: 'backend.receiptInvoices',
 
   REFERRAL_CODES: 'backend.referralCodes',
   SPECIAL_EVENTS: 'backend.specialEvents',

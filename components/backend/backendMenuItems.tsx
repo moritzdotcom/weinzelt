@@ -12,6 +12,7 @@ import TableBarIcon from '@mui/icons-material/TableBar';
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 import MarkAsUnreadIcon from '@mui/icons-material/MarkAsUnread';
 import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import ManageAccountsRoundedIcon from '@mui/icons-material/ManageAccountsRounded';
 import type { SvgIconComponent } from '@mui/icons-material';
@@ -125,6 +126,15 @@ export const backendMenuItems: BackendMenuItem[] = [
     Icon: ReceiptOutlinedIcon,
     group: 'Reporting',
     permission: BACKEND_PERMISSIONS.INVOICES,
+  },
+  {
+    href: '/backend/receiptInvoices/new',
+    title: 'Rechnung zum Kassenbeleg',
+    description:
+      'Kassenbeleg hochladen, Reservierung zuordnen und eine vollständige Rechnungsergänzung erzeugen.',
+    Icon: ReceiptLongIcon,
+    group: 'Reporting',
+    permission: BACKEND_PERMISSIONS.RECEIPT_INVOICES,
   },
   {
     href: '/backend/referralCodes',
