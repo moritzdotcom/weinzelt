@@ -189,7 +189,7 @@ export default function ReceiptInvoicesPage({ session }: { session: Session }) {
   return (
     <BackendPermissionGuard
       session={session}
-      permission={BACKEND_PERMISSIONS.INVOICES}
+      permission={BACKEND_PERMISSIONS.RECEIPT_INVOICES}
       deniedTitle="Kein Zugriff auf Rechnungskorrekturen"
       deniedDescription="Du hast keine Berechtigung, Rechnungskorrekturen im Backend anzusehen."
     >

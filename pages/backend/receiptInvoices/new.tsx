@@ -262,7 +262,7 @@ export default function NewReceiptInvoicePage({
   return (
     <BackendPermissionGuard
       session={session}
-      permission={BACKEND_PERMISSIONS.INVOICES}
+      permission={BACKEND_PERMISSIONS.RECEIPT_INVOICES}
       deniedTitle="Kein Zugriff auf Rechnungen"
       deniedDescription="Du hast keine Berechtigung, Rechnungsergänzungen zu erstellen."
     >
