@@ -39,5 +39,9 @@ export async function downloadReceiptInvoicePdf(path: string): Promise<Buffer> {
 export async function removeReceiptInvoiceFiles(paths: string[]) {
   if (paths.length === 0) return;
 
-  await supabase.storage.from(BUCKET).remove(paths);
+  const { error } = await supabase.storage.from(BUCKET).remove(paths);
+
+  if (error) {
+    console.error('Receipt invoice cleanup failed:', error);
+  }
 }

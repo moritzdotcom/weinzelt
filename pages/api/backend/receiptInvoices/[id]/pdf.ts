@@ -59,13 +59,13 @@ export default async function handler(
 
     const filename = `${sanitizeFilename(document.documentNumber)}.pdf`;
 
-    const disposition = download ? 'attachment' : 'inline';
-
     res.setHeader('Content-Type', 'application/pdf');
 
     res.setHeader(
       'Content-Disposition',
-      `${disposition}; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(
+      `${
+        download ? 'attachment' : 'inline'
+      }; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(
         filename,
       )}`,
     );
@@ -76,7 +76,7 @@ export default async function handler(
 
     return res.status(200).send(pdf);
   } catch (error) {
-    console.error('Receipt invoice PDF could not be loaded:', error);
+    console.error(error);
 
     return res.status(500).json({
       message: 'PDF konnte nicht geladen werden.',

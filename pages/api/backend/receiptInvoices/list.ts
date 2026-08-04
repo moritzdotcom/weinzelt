@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { Prisma } from '@prisma/client';
+import { Prisma, ReceiptInvoiceCaseType } from '@prisma/client';
 
 import prisma from '@/lib/prismadb';
 import { getServerSession } from '@/lib/session';
@@ -7,9 +7,10 @@ import { getServerSession } from '@/lib/session';
 export type ReceiptInvoiceCorrectionListItem = {
   id: string;
   documentNumber: string;
+  caseType: ReceiptInvoiceCaseType | 'LEGACY';
 
-  receiptNumber: string;
-  receiptDate: string;
+  receiptNumbers: string[];
+  receiptDate: string | null;
   tableNumber: string | null;
 
   recipientCompany: string;
@@ -17,7 +18,6 @@ export type ReceiptInvoiceCorrectionListItem = {
 
   grossCents: number;
   currency: string;
-
   createdAt: string;
 
   reservation: {
@@ -27,7 +27,7 @@ export type ReceiptInvoiceCorrectionListItem = {
     people: number;
     type: string;
     tableNumber: string | null;
-  };
+  } | null;
 };
 
 export type ApiReceiptInvoiceCorrectionsListResponse = {
@@ -89,17 +89,14 @@ export default async function handler(
   const pageSize = Math.min(Math.max(Number(req.query.pageSize ?? 25), 1), 100);
 
   const from = parseDate(req.query.from);
+
   const to = parseDate(req.query.to);
 
   const where: Prisma.ReceiptInvoiceSupplementWhereInput = {
     ...(from || to
       ? {
           createdAt: {
-            ...(from
-              ? {
-                  gte: from,
-                }
-              : {}),
+            ...(from ? { gte: from } : {}),
             ...(to
               ? {
                   lte: endOfDay(to),
@@ -159,10 +156,14 @@ export default async function handler(
               },
             },
             {
-              reservation: {
-                tableNumber: {
-                  contains: q,
-                  mode: 'insensitive',
+              case: {
+                sourceReceipts: {
+                  some: {
+                    receiptNumber: {
+                      contains: q,
+                      mode: 'insensitive',
+                    },
+                  },
                 },
               },
             },
@@ -187,18 +188,28 @@ export default async function handler(
         select: {
           id: true,
           documentNumber: true,
-
           receiptNumber: true,
           receiptDate: true,
           tableNumber: true,
-
           recipientCompany: true,
           recipientEmail: true,
-
           grossCents: true,
           currency: true,
-
           createdAt: true,
+
+          case: {
+            select: {
+              type: true,
+              sourceReceipts: {
+                orderBy: {
+                  receiptDate: 'asc',
+                },
+                select: {
+                  receiptNumber: true,
+                },
+              },
+            },
+          },
 
           reservation: {
             select: {
@@ -222,31 +233,33 @@ export default async function handler(
       corrections: corrections.map((correction) => ({
         id: correction.id,
         documentNumber: correction.documentNumber,
-
-        receiptNumber: correction.receiptNumber,
-        receiptDate: correction.receiptDate.toISOString(),
+        caseType: correction.case?.type ?? 'LEGACY',
+        receiptNumbers: correction.case?.sourceReceipts.length
+          ? correction.case.sourceReceipts.map((source) => source.receiptNumber)
+          : correction.receiptNumber
+            ? [correction.receiptNumber]
+            : [],
+        receiptDate: correction.receiptDate?.toISOString() ?? null,
         tableNumber: correction.tableNumber,
-
         recipientCompany: correction.recipientCompany,
         recipientEmail: correction.recipientEmail,
-
         grossCents: correction.grossCents,
         currency: correction.currency,
-
         createdAt: correction.createdAt.toISOString(),
-
-        reservation: {
-          id: correction.reservation.id,
-          name: correction.reservation.name,
-          email: correction.reservation.email,
-          people: correction.reservation.people,
-          type: correction.reservation.type,
-          tableNumber: correction.reservation.tableNumber,
-        },
+        reservation: correction.reservation
+          ? {
+              id: correction.reservation.id,
+              name: correction.reservation.name,
+              email: correction.reservation.email,
+              people: correction.reservation.people,
+              type: correction.reservation.type,
+              tableNumber: correction.reservation.tableNumber,
+            }
+          : null,
       })),
     });
   } catch (error) {
-    console.error('Receipt invoice corrections could not be loaded:', error);
+    console.error(error);
 
     return res.status(500).json({
       message: 'Rechnungskorrekturen konnten nicht geladen werden.',

@@ -134,6 +134,7 @@ model Reservation {
   canceledAt                DateTime?
   invoice                   ReservationInvoice?
   receiptInvoiceSupplements ReceiptInvoiceSupplement[]
+  receiptInvoiceCases       ReceiptInvoiceCase[]
 }
 
 model CompanyReservation {
@@ -190,14 +191,34 @@ model InvoiceSequence {
   updatedAt DateTime @updatedAt
 }
 
-model ReceiptInvoiceSupplement {
-  id             String @id @default(cuid())
-  documentNumber String @unique
+enum ReceiptInvoiceCaseType {
+  SINGLE
+  COLLECTION
+  SPLIT
+}
 
-  reservationId String
-  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Restrict)
+model ReceiptInvoiceCase {
+  id   String                 @id @default(cuid())
+  type ReceiptInvoiceCaseType
 
-  // Referenz auf den ursprünglichen Kassenbeleg
+  reservationId String?
+  reservation   Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+
+  sourceReceipts ReceiptInvoiceSourceReceipt[]
+  documents      ReceiptInvoiceSupplement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([reservationId])
+  @@index([createdAt])
+}
+
+model ReceiptInvoiceSourceReceipt {
+  id     String             @id @default(cuid())
+  caseId String
+  case   ReceiptInvoiceCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
   receiptNumber String
   receiptDate   DateTime
   tableNumber   String?
@@ -205,30 +226,74 @@ model ReceiptInvoiceSupplement {
   receiptCreatedAtLabel String
   receiptPaidAtLabel    String?
 
-  // Beträge des ursprünglichen Belegs
-  netCents   Int
-  vatCents   Int
-  grossCents Int
-  currency   String @default("EUR")
+  netCents      Int
+  vatCents      Int
+  subtotalCents Int
+  tipCents      Int
+  grossCents    Int
+  currency      String @default("EUR")
 
-  // Snapshots der Daten zum Zeitpunkt der Erstellung
+  taxLines Json
+  payments Json
+
+  originalPdfPath   String
+  originalPdfSha256 String
+
+  createdAt DateTime @default(now())
+
+  @@unique([receiptNumber, receiptDate])
+  @@index([caseId])
+}
+
+// Das bestehende ReceiptInvoiceSupplement-Modell durch diese erweiterte
+// Fassung ersetzen bzw. die neuen/nullable Felder übernehmen.
+model ReceiptInvoiceSupplement {
+  id             String @id @default(cuid())
+  documentNumber String @unique
+
+  caseId String?
+  case   ReceiptInvoiceCase? @relation(fields: [caseId], references: [id], onDelete: SetNull)
+
+  reservationId String?
+  reservation   Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+
+  // Für alte Einzelbelege und zur schnellen Anzeige.
+  // Bei Sammelbelegen können diese Werte leer sein.
+  receiptNumber         String?
+  receiptDate           DateTime?
+  tableNumber           String?
+  receiptCreatedAtLabel String?
+  receiptPaidAtLabel    String?
+
+  netCents      Int
+  vatCents      Int
+  subtotalCents Int    @default(0)
+  tipCents      Int    @default(0)
+  grossCents    Int
+  currency      String @default("EUR")
+
   recipientCompany String
   recipientEmail   String?
   recipientAddress Json
-  taxLines         Json
-  payments         Json
 
-  // Archivierung
-  originalPdfPath   String
-  finalPdfPath      String
-  originalPdfSha256 String
-  finalPdfSha256    String
+  taxLines    Json
+  payments    Json
+  allocations Json?
+
+  // Bei neuen Vorgängen liegen Originale primär in ReceiptInvoiceSourceReceipt.
+  // Die Felder bleiben für alte Datensätze und einzelne Belege bestehen.
+  originalPdfPath   String?
+  originalPdfSha256 String?
+
+  finalPdfPath   String
+  finalPdfSha256 String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([receiptNumber, receiptDate])
+  @@index([caseId])
   @@index([reservationId])
+  @@index([receiptNumber, receiptDate])
   @@index([createdAt])
 }
 

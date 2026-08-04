@@ -33,9 +33,7 @@ import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import BackendHeader from '@/components/backend/header';
 import BackendPermissionGuard from '@/components/backend/BackendPermissionGuard';
 import { ReservationDetailsDialog } from '@/components/backend/reservationDetailDialog';
-
 import { BACKEND_PERMISSIONS } from '@/lib/backend/permissions';
-
 import type { Session } from '@/hooks/useSession';
 
 import type {
@@ -64,7 +62,9 @@ function formatMoney(cents: number, currency = 'EUR'): string {
   }).format(cents / 100);
 }
 
-function formatReceiptDate(value: string): string {
+function formatReceiptDate(value: string | null): string {
+  if (!value) return '—';
+
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
@@ -90,12 +90,26 @@ function formatCreatedAt(value: string): string {
   }).format(date);
 }
 
+function caseTypeLabel(type: ReceiptInvoiceCorrectionListItem['caseType']) {
+  switch (type) {
+    case 'COLLECTION':
+      return 'Sammelbeleg';
+    case 'SPLIT':
+      return 'Teilrechnung';
+    case 'SINGLE':
+      return 'Einzelbeleg';
+    default:
+      return 'Bestandsdokument';
+  }
+}
+
 export default function ReceiptInvoicesPage({ session }: { session: Session }) {
   const [corrections, setCorrections] = useState<
     ReceiptInvoiceCorrectionListItem[]
   >([]);
 
   const [total, setTotal] = useState(0);
+
   const [page, setPage] = useState(1);
 
   const [q, setQ] = useState('');
@@ -110,9 +124,10 @@ export default function ReceiptInvoicesPage({ session }: { session: Session }) {
     null,
   );
 
-  const totalPages = useMemo(() => {
-    return Math.max(Math.ceil(total / PAGE_SIZE), 1);
-  }, [total]);
+  const totalPages = useMemo(
+    () => Math.max(Math.ceil(total / PAGE_SIZE), 1),
+    [total],
+  );
 
   async function loadCorrections() {
     try {
@@ -171,25 +186,10 @@ export default function ReceiptInvoicesPage({ session }: { session: Session }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, from, to, page]);
 
-  function handleSearchChange(value: string) {
-    setPage(1);
-    setQ(value);
-  }
-
-  function handleFromChange(value: string) {
-    setPage(1);
-    setFrom(value);
-  }
-
-  function handleToChange(value: string) {
-    setPage(1);
-    setTo(value);
-  }
-
   return (
     <BackendPermissionGuard
       session={session}
-      permission={BACKEND_PERMISSIONS.RECEIPT_INVOICES}
+      permission={BACKEND_PERMISSIONS.INVOICES}
       deniedTitle="Kein Zugriff auf Rechnungskorrekturen"
       deniedDescription="Du hast keine Berechtigung, Rechnungskorrekturen im Backend anzusehen."
     >
@@ -197,14 +197,14 @@ export default function ReceiptInvoicesPage({ session }: { session: Session }) {
         <Stack spacing={4}>
           <BackendHeader
             title="Rechnungskorrekturen"
-            subtitle="Erstellte Rechnungsergänzungen zu Kassenbelegen suchen, anzeigen und herunterladen."
+            subtitle="Einzel-, Sammel- und Teilrechnungen suchen, anzeigen und herunterladen."
             action={
               <Button
                 variant="contained"
                 startIcon={<AddRoundedIcon />}
-                href="/backend/receiptInvoices/new"
+                href="/backend/receiptInvoices/new?mode=single"
               >
-                Neue Rechnungskorrektur
+                Neues Dokument
               </Button>
             }
           />
@@ -238,14 +238,13 @@ export default function ReceiptInvoicesPage({ session }: { session: Session }) {
                   md: 'row',
                 }}
                 spacing={2}
-                alignItems={{
-                  xs: 'stretch',
-                  md: 'center',
-                }}
               >
                 <TextField
                   value={q}
-                  onChange={(event) => handleSearchChange(event.target.value)}
+                  onChange={(event) => {
+                    setPage(1);
+                    setQ(event.target.value);
+                  }}
                   placeholder="Dokument, Beleg, Firma, Name, E-Mail oder Tisch suchen"
                   size="small"
                   fullWidth
@@ -263,13 +262,14 @@ export default function ReceiptInvoicesPage({ session }: { session: Session }) {
                   type="date"
                   size="small"
                   value={from}
-                  onChange={(event) => handleFromChange(event.target.value)}
+                  onChange={(event) => {
+                    setPage(1);
+                    setFrom(event.target.value);
+                  }}
                   InputLabelProps={{
                     shrink: true,
                   }}
-                  sx={{
-                    minWidth: 180,
-                  }}
+                  sx={{ minWidth: 180 }}
                 />
 
                 <TextField
@@ -277,13 +277,14 @@ export default function ReceiptInvoicesPage({ session }: { session: Session }) {
                   type="date"
                   size="small"
                   value={to}
-                  onChange={(event) => handleToChange(event.target.value)}
+                  onChange={(event) => {
+                    setPage(1);
+                    setTo(event.target.value);
+                  }}
                   InputLabelProps={{
                     shrink: true,
                   }}
-                  sx={{
-                    minWidth: 180,
-                  }}
+                  sx={{ minWidth: 180 }}
                 />
               </Stack>
             </Box>
@@ -302,18 +303,12 @@ export default function ReceiptInvoicesPage({ session }: { session: Session }) {
                   sm: 'row',
                 }}
                 justifyContent="space-between"
-                alignItems={{
-                  xs: 'flex-start',
-                  sm: 'center',
-                }}
                 spacing={1}
               >
                 <Typography variant="body2" color="text.secondary">
                   {loading
-                    ? 'Rechnungskorrekturen werden geladen...'
-                    : `${total} Rechnungskorrektur${
-                        total === 1 ? '' : 'en'
-                      } gefunden`}
+                    ? 'Dokumente werden geladen...'
+                    : `${total} Dokument${total === 1 ? '' : 'e'} gefunden`}
                 </Typography>
 
                 {(q || from || to) && (
@@ -334,20 +329,19 @@ export default function ReceiptInvoicesPage({ session }: { session: Session }) {
 
             <Divider />
 
-            <Box sx={{ overflowX: 'auto' }}>
+            <Box
+              sx={{
+                overflowX: 'auto',
+              }}
+            >
               <Table>
                 <TableHead>
                   <TableRow>
                     <TableCell>Dokument</TableCell>
-
                     <TableCell>Rechnungsempfänger</TableCell>
-
                     <TableCell>Kassenbeleg</TableCell>
-
                     <TableCell>Reservierung</TableCell>
-
                     <TableCell align="right">Betrag</TableCell>
-
                     <TableCell align="right">Aktionen</TableCell>
                   </TableRow>
                 </TableHead>
@@ -369,7 +363,6 @@ export default function ReceiptInvoicesPage({ session }: { session: Session }) {
                         <Box
                           sx={{
                             py: 7,
-                            px: 2,
                             textAlign: 'center',
                           }}
                         >
@@ -382,139 +375,142 @@ export default function ReceiptInvoicesPage({ session }: { session: Session }) {
                           />
 
                           <Typography fontWeight={700}>
-                            Keine Rechnungskorrekturen gefunden
-                          </Typography>
-
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{
-                              mt: 0.5,
-                            }}
-                          >
-                            Passe die Suche oder den Zeitraum an.
+                            Keine Dokumente gefunden
                           </Typography>
                         </Box>
                       </TableCell>
                     </TableRow>
                   ) : (
-                    corrections.map((correction) => {
-                      const tableNumber =
-                        correction.tableNumber ||
-                        correction.reservation.tableNumber;
+                    corrections.map((correction) => (
+                      <TableRow key={correction.id} hover>
+                        <TableCell>
+                          <Typography fontWeight={800}>
+                            {correction.documentNumber}
+                          </Typography>
 
-                      return (
-                        <TableRow key={correction.id} hover>
-                          <TableCell>
-                            <Typography fontWeight={800}>
-                              {correction.documentNumber}
-                            </Typography>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                            flexWrap="wrap"
+                            sx={{ mt: 0.5 }}
+                          >
+                            <Chip
+                              size="small"
+                              variant="outlined"
+                              label={caseTypeLabel(correction.caseType)}
+                            />
 
                             <Typography variant="body2" color="text.secondary">
-                              Erstellt am{' '}
                               {formatCreatedAt(correction.createdAt)}
                             </Typography>
-                          </TableCell>
+                          </Stack>
+                        </TableCell>
 
-                          <TableCell>
-                            <Typography fontWeight={700}>
-                              {correction.recipientCompany}
-                            </Typography>
+                        <TableCell>
+                          <Typography fontWeight={700}>
+                            {correction.recipientCompany}
+                          </Typography>
 
-                            <Typography variant="body2" color="text.secondary">
-                              {correction.recipientEmail ||
-                                'Keine E-Mail hinterlegt'}
-                            </Typography>
-                          </TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {correction.recipientEmail || 'Keine E-Mail'}
+                          </Typography>
+                        </TableCell>
 
-                          <TableCell>
-                            <Stack spacing={0.5} alignItems="flex-start">
-                              <Chip
-                                size="small"
-                                variant="outlined"
-                                label={`Beleg ${correction.receiptNumber}`}
-                              />
+                        <TableCell>
+                          <Typography fontWeight={700}>
+                            {correction.receiptNumbers.length > 0
+                              ? correction.receiptNumbers.join(', ')
+                              : '—'}
+                          </Typography>
+
+                          <Typography variant="body2" color="text.secondary">
+                            {formatReceiptDate(correction.receiptDate)}
+                            {correction.tableNumber
+                              ? ` · Tisch ${correction.tableNumber}`
+                              : ''}
+                          </Typography>
+                        </TableCell>
+
+                        <TableCell>
+                          {correction.reservation ? (
+                            <>
+                              <Typography fontWeight={700}>
+                                {correction.reservation.name}
+                              </Typography>
 
                               <Typography
                                 variant="body2"
                                 color="text.secondary"
                               >
-                                {formatReceiptDate(correction.receiptDate)}
-                                {tableNumber ? ` · Tisch ${tableNumber}` : ''}
+                                {correction.reservation.email}
                               </Typography>
-                            </Stack>
-                          </TableCell>
+                            </>
+                          ) : (
+                            <Chip
+                              size="small"
+                              variant="outlined"
+                              label="Ohne Reservierung"
+                            />
+                          )}
+                        </TableCell>
 
-                          <TableCell>
-                            <Typography fontWeight={700}>
-                              {correction.reservation.name}
-                            </Typography>
+                        <TableCell align="right">
+                          <Typography fontWeight={800}>
+                            {formatMoney(
+                              correction.grossCents,
+                              correction.currency,
+                            )}
+                          </Typography>
 
-                            <Typography variant="body2" color="text.secondary">
-                              {correction.reservation.email}
-                            </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            bereits bezahlt
+                          </Typography>
+                        </TableCell>
 
-                            <Typography variant="body2" color="text.secondary">
-                              {correction.reservation.people} Personen ·{' '}
-                              {correction.reservation.type}
-                            </Typography>
-                          </TableCell>
+                        <TableCell align="right">
+                          <Stack
+                            direction="row"
+                            spacing={0.5}
+                            justifyContent="flex-end"
+                          >
+                            <Tooltip title="PDF anzeigen">
+                              <IconButton
+                                component="a"
+                                href={`/api/backend/receiptInvoices/${correction.id}/pdf`}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                <PictureAsPdfRoundedIcon />
+                              </IconButton>
+                            </Tooltip>
 
-                          <TableCell align="right">
-                            <Typography fontWeight={800}>
-                              {formatMoney(
-                                correction.grossCents,
-                                correction.currency,
-                              )}
-                            </Typography>
+                            <Tooltip title="PDF herunterladen">
+                              <IconButton
+                                component="a"
+                                href={`/api/backend/receiptInvoices/${correction.id}/pdf?download=1`}
+                              >
+                                <DownloadRoundedIcon />
+                              </IconButton>
+                            </Tooltip>
 
-                            <Typography variant="body2" color="text.secondary">
-                              bereits bezahlt
-                            </Typography>
-                          </TableCell>
-
-                          <TableCell align="right">
-                            <Stack
-                              direction="row"
-                              spacing={0.5}
-                              justifyContent="flex-end"
-                            >
-                              <Tooltip title="PDF anzeigen">
-                                <IconButton
-                                  component="a"
-                                  href={`/api/backend/receiptInvoices/${correction.id}/pdf`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                >
-                                  <PictureAsPdfRoundedIcon />
-                                </IconButton>
-                              </Tooltip>
-
-                              <Tooltip title="PDF herunterladen">
-                                <IconButton
-                                  component="a"
-                                  href={`/api/backend/receiptInvoices/${correction.id}/pdf?download=1`}
-                                >
-                                  <DownloadRoundedIcon />
-                                </IconButton>
-                              </Tooltip>
-
+                            {correction.reservation && (
                               <Tooltip title="Reservierung anzeigen">
                                 <IconButton
                                   onClick={() =>
                                     setReservationDialogId(
-                                      correction.reservation.id,
+                                      correction.reservation!.id,
                                     )
                                   }
                                 >
                                   <VisibilityRoundedIcon />
                                 </IconButton>
                               </Tooltip>
-                            </Stack>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
+                            )}
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    ))
                   )}
                 </TableBody>
               </Table>
@@ -534,9 +530,7 @@ export default function ReceiptInvoicesPage({ session }: { session: Session }) {
                   <Pagination
                     page={page}
                     count={totalPages}
-                    onChange={(_event, nextPage) => {
-                      setPage(nextPage);
-                    }}
+                    onChange={(_event, nextPage) => setPage(nextPage)}
                     color="primary"
                     shape="rounded"
                   />

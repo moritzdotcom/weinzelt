@@ -4,10 +4,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from '@/lib/session';
 import { parseTebiReceiptPdf } from '@/lib/receiptInvoice/parseTebiReceipt';
 import {
-  getUploadedFile,
+  getUploadedFiles,
   parseMultipartForm,
 } from '@/lib/receiptInvoice/parseMultipartForm';
-import type { ParsedTebiReceipt } from '@/lib/receiptInvoice/types';
+import type { ParseReceiptResponse } from '@/lib/receiptInvoice/types';
 
 export const config = {
   api: {
@@ -15,15 +15,18 @@ export const config = {
   },
 };
 
-export type ParseReceiptResponse = {
-  receipt: ParsedTebiReceipt;
-};
-
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ParseReceiptResponse | { message: string }>,
+  res: NextApiResponse<
+    | ParseReceiptResponse
+    | {
+        message: string;
+      }
+  >,
 ) {
   if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+
     return res.status(405).json({
       message: 'Method not allowed',
     });
@@ -37,11 +40,14 @@ export default async function handler(
     });
   }
 
-  let temporaryPath: string | null = null;
+  const temporaryPaths: string[] = [];
 
   try {
     const { files } = await parseMultipartForm(req);
-    const file = getUploadedFile(files, 'file');
+
+    const uploadedFiles = getUploadedFiles(files, 'file', 'files');
+
+    const file = uploadedFiles[0];
 
     if (!file) {
       return res.status(400).json({
@@ -49,7 +55,7 @@ export default async function handler(
       });
     }
 
-    temporaryPath = file.filepath;
+    temporaryPaths.push(file.filepath);
 
     const isPdf =
       file.mimetype === 'application/pdf' ||
@@ -62,6 +68,7 @@ export default async function handler(
     }
 
     const buffer = await fs.readFile(file.filepath);
+
     const receipt = await parseTebiReceiptPdf(buffer);
 
     return res.status(200).json({
@@ -77,8 +84,10 @@ export default async function handler(
           : 'Der Kassenbeleg konnte nicht gelesen werden.',
     });
   } finally {
-    if (temporaryPath) {
-      await fs.unlink(temporaryPath).catch(() => undefined);
-    }
+    await Promise.all(
+      temporaryPaths.map((temporaryPath) =>
+        fs.unlink(temporaryPath).catch(() => undefined),
+      ),
+    );
   }
 }

@@ -23,37 +23,101 @@ export type ReceiptPaymentLine = {
 export type ParsedTebiReceipt = {
   receiptNumber: string;
   receiptDate: string;
-
   createdAtLabel: string;
   paidAtLabel: string | null;
-
   tableNumber: string | null;
 
   netCents: number;
   vatCents: number;
-
-  /**
-   * Summe der Beträge, die in den MwSt.-Zeilen enthalten sind.
-   * Auf dem Beispielbeleg: 2.363,00 €
-   */
   subtotalCents: number;
-
-  /**
-   * Separat ausgewiesenes Trinkgeld.
-   * Auf dem Beispielbeleg: 187,00 €
-   */
   tipCents: number;
-
-  /**
-   * Tatsächlich gezahlter Gesamtbetrag.
-   * Auf dem Beispielbeleg: 2.550,00 €
-   */
   grossCents: number;
 
   currency: 'EUR';
-
   taxLines: ReceiptTaxLine[];
   payments: ReceiptPaymentLine[];
+};
+
+export type ReceiptInvoiceMode =
+  | 'SINGLE'
+  | 'COLLECTION'
+  | 'SPLIT';
+
+export type ReceiptAssignmentType =
+  | 'RESERVATION'
+  | 'MANUAL';
+
+export type ReceiptInvoiceRecipientInput = {
+  email?: string;
+  billingAddress: BillingAddressInput;
+};
+
+export type SingleReceiptInvoiceConfiguration = {
+  mode: 'SINGLE';
+  assignmentType: ReceiptAssignmentType;
+  recipient: ReceiptInvoiceRecipientInput;
+  saveBillingAddress: boolean;
+};
+
+export type CollectionReceiptInvoiceConfiguration = {
+  mode: 'COLLECTION';
+  assignmentType: 'RESERVATION';
+  recipient: ReceiptInvoiceRecipientInput;
+  saveBillingAddress: boolean;
+};
+
+export type SplitRecipientAllocationInput = {
+  rate: number;
+  grossCents: number;
+};
+
+export type SplitRecipientInput = {
+  email?: string;
+  billingAddress: BillingAddressInput;
+  allocations: SplitRecipientAllocationInput[];
+  tipCents: number;
+};
+
+export type SplitReceiptInvoiceConfiguration = {
+  mode: 'SPLIT';
+  assignmentType: ReceiptAssignmentType;
+  recipients: SplitRecipientInput[];
+};
+
+export type CreateReceiptInvoiceConfiguration =
+  | SingleReceiptInvoiceConfiguration
+  | CollectionReceiptInvoiceConfiguration
+  | SplitReceiptInvoiceConfiguration;
+
+export type CreatedReceiptInvoiceDocument = {
+  id: string;
+  documentNumber: string;
+  pdfUrl: string;
+};
+
+export type CreateReceiptInvoiceCaseResponse = {
+  caseId: string;
+  documents: CreatedReceiptInvoiceDocument[];
+};
+
+export type ReceiptInvoiceReservationSearchItem = {
+  id: string;
+  name: string;
+  email: string;
+  people: number;
+  type: string;
+  paymentStatus: string;
+  tableNumber: string | null;
+  createdAt: string;
+  billingAddress: BillingAddressInput | null;
+};
+
+export type ReceiptInvoiceReservationSearchResponse = {
+  reservations: ReceiptInvoiceReservationSearchItem[];
+};
+
+export type ParseReceiptResponse = {
+  receipt: ParsedTebiReceipt;
 };
 
 export function emptyBillingAddress(): BillingAddressInput {
@@ -79,10 +143,10 @@ export function normalizeBillingAddress(
 
   const stringValue = (...keys: string[]) => {
     for (const key of keys) {
-      const value = raw[key];
+      const item = raw[key];
 
-      if (typeof value === 'string' && value.trim()) {
-        return value.trim();
+      if (typeof item === 'string' && item.trim()) {
+        return item.trim();
       }
     }
 
@@ -112,9 +176,34 @@ export function isCompleteBillingAddress(
 
   return Boolean(
     address.company.trim() &&
-    address.line1.trim() &&
-    address.postalCode.trim() &&
-    address.city.trim() &&
-    address.country.trim(),
+      address.line1.trim() &&
+      address.postalCode.trim() &&
+      address.city.trim() &&
+      address.country.trim(),
   );
+}
+
+export function parseReceiptInvoiceMode(
+  value: unknown,
+): ReceiptInvoiceMode {
+  const raw = Array.isArray(value) ? value[0] : value;
+
+  if (raw === 'collection') return 'COLLECTION';
+  if (raw === 'split') return 'SPLIT';
+  if (raw === 'COLLECTION' || raw === 'SPLIT') return raw;
+
+  return 'SINGLE';
+}
+
+export function modeToQuery(
+  mode: ReceiptInvoiceMode,
+): string {
+  switch (mode) {
+    case 'COLLECTION':
+      return 'collection';
+    case 'SPLIT':
+      return 'split';
+    default:
+      return 'single';
+  }
 }

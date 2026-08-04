@@ -10,9 +10,9 @@ export function parseMultipartForm(
   req: NextApiRequest,
 ): Promise<ParsedMultipartForm> {
   const form = formidable({
-    multiples: false,
-    maxFiles: 1,
-    maxFileSize: 10 * 1024 * 1024,
+    multiples: true,
+    maxFiles: 20,
+    maxFileSize: 12 * 1024 * 1024,
     keepExtensions: true,
   });
 
@@ -38,22 +38,20 @@ export function getStringField(fields: Fields, name: string): string | null {
     return value[0]?.trim() || null;
   }
 
-  // @ts-ignore
-  return typeof value === 'string' ? value.trim() || null : null;
+  return typeof value === 'string'
+    ? // @ts-ignore
+      value.trim() || null
+    : null;
 }
 
-export function getBooleanField(fields: Fields, name: string): boolean {
-  const value = getStringField(fields, name);
+export function getUploadedFiles(files: Files, ...names: string[]): File[] {
+  for (const name of names) {
+    const value = files[name];
 
-  return value === 'true' || value === '1';
-}
+    if (!value) continue;
 
-export function getUploadedFile(files: Files, name: string): File | null {
-  const value = files[name];
-
-  if (Array.isArray(value)) {
-    return value[0] ?? null;
+    return Array.isArray(value) ? value : [value];
   }
 
-  return value ?? null;
+  return [];
 }
