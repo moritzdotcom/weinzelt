@@ -128,8 +128,8 @@ export const backendMenuItems: BackendMenuItem[] = [
     permission: BACKEND_PERMISSIONS.INVOICES,
   },
   {
-    href: '/backend/receiptInvoices/new',
-    title: 'Rechnung zum Kassenbeleg',
+    href: '/backend/receiptInvoices',
+    title: 'Bewirtungsbelege',
     description:
       'Kassenbeleg hochladen, Reservierung zuordnen und eine vollständige Rechnungsergänzung erzeugen.',
     Icon: ReceiptLongIcon,

@@ -271,6 +271,8 @@ export default function NewReceiptInvoicePage({
           <BackendHeader
             title="Rechnung zum Kassenbeleg"
             subtitle="Kassenbeleg hochladen, Reservierung zuordnen und eine vollständige Rechnungsergänzung erzeugen."
+            backHref="/backend/receiptInvoices"
+            backLabel="Zurück zur Übersicht"
           />
 
           {error && <Alert severity="error">{error}</Alert>}
